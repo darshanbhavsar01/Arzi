@@ -1,0 +1,90 @@
+{
+  "prompt_ref": "explain_flags@v1",
+  "schema": "FlagNarrativesDraft",
+  "call": {
+    "prompt_ref": "explain_flags@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 4661,
+    "output_tokens": 1062,
+    "thinking_tokens": 1960,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "items": [
+      {
+        "flag_id": "NON_PAYABLE",
+        "headline": "Non-medical items are excluded from coverage.",
+        "explanation": "Under Annexure I, incidental and non-medical items like laundry and specific consumables are not payable. The insurer has deducted {{flag.NON_PAYABLE.amount}} for these lines. Note that circular details for Annexure I should be confirmed.",
+        "fix": "Collect these non-payable items from the patient as per policy terms.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I"
+        ]
+      },
+      {
+        "flag_id": "SUBSUMED_ITEM",
+        "headline": "Registration charges are incorrectly treated as separate deductions.",
+        "explanation": "Registration charges are subsumed items that should not be deducted separately under Annexure I. An amount of {{flag.SUBSUMED_ITEM.amount}} was incorrectly cut, and we can recover {{flag.SUBSUMED_ITEM.recoverable}} through an appeal. Please verify the exact circular details before submission.",
+        "fix": "File an appeal to recover the wrongly deducted amount.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I"
+        ]
+      },
+      {
+        "flag_id": "ROOM_RENT_EXCESS",
+        "headline": "Room rent exceeds the permitted policy limit.",
+        "explanation": "Policy 4.2 restricts room, boarding, and nursing charges to the schedule limit. Occupying a room above this limit resulted in a deduction of {{flag.ROOM_RENT_EXCESS.amount}}.",
+        "fix": "Move the patient to an eligible room category or take written upgrade consent.",
+        "citations": [
+          "policy:4.2"
+        ]
+      },
+      {
+        "flag_id": "PROP_ROOM_RENT",
+        "headline": "Proportionate deductions applied to associated medical expenses.",
+        "explanation": "Choosing a higher room category than eligible triggers proportionate deductions on associated expenses like surgeon, OT, and nursing fees under policy 4.3 and IRDAI norms. The insurer applied a deduction of {{flag.PROP_ROOM_RENT.amount}} based on these rules.",
+        "fix": "Move to an eligible room category or obtain the patient's written upgrade consent.",
+        "citations": [
+          "IRDAI_PROP_DED_2020",
+          "policy:4.3",
+          "policy:4.2"
+        ]
+      },
+      {
+        "flag_id": "COPAY",
+        "headline": "Mandatory policy co-payment applied to the claim.",
+        "explanation": "Policy 7.4 requires a co-payment percentage to be applied on the admissible claim amount. This standard deduction totals {{flag.COPAY.amount}} across the bill lines.",
+        "fix": "Inform the patient about the applicable co-payment deduction.",
+        "citations": [
+          "policy:7.4"
+        ]
+      },
+      {
+        "flag_id": "PROP_WRONGLY_APPLIED",
+        "headline": "Proportionate deductions incorrectly applied to excluded categories.",
+        "explanation": "Under IRDAI guidelines, proportionate deductions do not apply to ICU charges, pharmacy, diagnostics, or implants. The insurer incorrectly cut {{flag.PROP_WRONGLY_APPLIED.amount}}, and an appeal can recover {{flag.PROP_WRONGLY_APPLIED.recoverable}}.",
+        "fix": "File an appeal to challenge the incorrect proportionate deductions.",
+        "citations": [
+          "IRDAI_PROP_DED_2020"
+        ]
+      },
+      {
+        "flag_id": "DOC_MISSING-investigation_reports",
+        "headline": "Investigation reports are missing from the claim submission.",
+        "explanation": "Policy 9.2 requires all claims to be supported by complete investigation reports. The laboratory and radiology lines are flagged because these documents are currently absent.",
+        "fix": "Attach the missing investigation reports to complete the file.",
+        "citations": [
+          "policy:9.2"
+        ]
+      },
+      {
+        "flag_id": "DOC_MISSING-implant_invoice",
+        "headline": "Implant invoice and sticker are required for processing.",
+        "explanation": "Policy 9.2 mandates submitting the implant invoice and sticker whenever an implant is used. Without this document, the implant line cannot be verified.",
+        "fix": "Attach the missing implant invoice and sticker to the claim.",
+        "citations": [
+          "policy:9.2"
+        ]
+      }
+    ]
+  }
+}

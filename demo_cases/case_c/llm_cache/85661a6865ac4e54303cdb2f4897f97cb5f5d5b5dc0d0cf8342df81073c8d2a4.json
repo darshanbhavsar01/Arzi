@@ -1,0 +1,32 @@
+{
+  "prompt_ref": "appeal_insurer_gro@v1",
+  "schema": "AppealDraftOutput",
+  "call": {
+    "prompt_ref": "appeal_insurer_gro@v1",
+    "model": "gemini-2.5-flash",
+    "input_tokens": 2298,
+    "output_tokens": 404,
+    "thinking_tokens": 931,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "subject": "Request to review the rejection of claim for Right Total Knee Replacement",
+    "facts": "The patient was admitted on October 20, 2026, for treatment of Primary osteoarthritis, right knee, and underwent a Right total knee replacement. Suraksha Health Insurance Co. rejected the claim on November 4, 2026, citing the pre-existing disease waiting period.",
+    "items": [
+      {
+        "flag_id": "WAITING_REJECTION_INVALID",
+        "argument": "The insurer rejected the claim for Right Total Knee Replacement, citing the pre-existing disease waiting period. However, as per policy clause 5.1, expenses related to a pre-existing disease are covered after the waiting period stated in the Policy Schedule. The policy schedule specifies a 36-month waiting period for Osteoarthritis of the knee. The patient has completed 40 months of continuous coverage, which exceeds the 36-month waiting period. Furthermore, IRDAI guidelines on pre-existing diseases cap the maximum waiting period at 36 months. Therefore, the rejection of the claim on this ground is incorrect, and the amount of {{flag.WAITING_REJECTION_INVALID.recoverable}} should be paid.",
+        "citations": [
+          "policy:5.1",
+          "IRDAI_PED_36M"
+        ]
+      }
+    ],
+    "relief": "We request Suraksha Health Insurance Co. to review this claim decision, approve the claim, and remit the recoverable amount of {{totals.recoverable}}. We expect a written resolution to this grievance within 15 days, as per insurer grievance resolution timelines.",
+    "citations": [
+      "policy:5.1",
+      "IRDAI_PED_36M",
+      "INSURER_GRIEVANCE_15D"
+    ]
+  }
+}

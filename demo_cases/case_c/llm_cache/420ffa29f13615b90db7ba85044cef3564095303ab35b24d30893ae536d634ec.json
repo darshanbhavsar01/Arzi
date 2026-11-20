@@ -1,0 +1,39 @@
+{
+  "prompt_ref": "family_explain@v2",
+  "schema": "FamilyExplanationDraft",
+  "call": {
+    "prompt_ref": "family_explain@v2",
+    "model": "gemini-2.5-flash",
+    "input_tokens": 2308,
+    "output_tokens": 358,
+    "thinking_tokens": 831,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "headline": "The insurer rejected your claim, but it seems wrong and can be challenged.",
+    "what_happened": [
+      "Your family member was in the hospital from October 20 to October 24, 2026, for a right knee replacement due to osteoarthritis.",
+      "The total bill was {{totals.billed}}.",
+      "Suraksha Health Insurance Co. rejected the claim.",
+      "They said it was because of the pre-existing disease waiting period."
+    ],
+    "why": [
+      "Your policy states a 36-month pre-existing disease waiting period for osteoarthritis.",
+      "However, you have had continuous insurance cover for 40 months, which is more than the waiting period.",
+      "This means the waiting period was already completed when the treatment took place.",
+      "Also, IRDAI rules cap the maximum waiting period for such conditions at 36 months.",
+      "Therefore, the insurer's rejection appears incorrect."
+    ],
+    "next_steps": [
+      "The hospital desk will help you prepare an appeal to Suraksha Health Insurance Co.",
+      "You should not pay the {{totals.billed}} difference to the hospital yet.",
+      "Keep all your policy papers and hospital bills safe.",
+      "We expect to recover {{flag.WAITING_REJECTION_INVALID.recoverable}} for you."
+    ],
+    "reassurance": "We are working to get this decision changed for you.",
+    "citations": [
+      "IRDAI_PED_36M",
+      "policy:5.1"
+    ]
+  }
+}

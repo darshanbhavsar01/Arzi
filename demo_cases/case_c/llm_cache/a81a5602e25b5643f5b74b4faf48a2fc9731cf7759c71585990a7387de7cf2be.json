@@ -1,0 +1,44 @@
+{
+  "prompt_ref": "explain_flags@v1",
+  "schema": "FlagNarrativesDraft",
+  "call": {
+    "prompt_ref": "explain_flags@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 2545,
+    "output_tokens": 449,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "items": [
+      {
+        "flag_id": "WAITING_REJECTION_INVALID",
+        "headline": "Pre-existing disease waiting period rejection is incorrect",
+        "explanation": "The insurer rejected the claim under policy:5.1 citing a pre-existing disease waiting period, but the patient has 40 months of continuous coverage which exceeds the 36-month statutory maximum under IRDAI_PED_36M. This wrongful rejection puts {{flag.WAITING_REJECTION_INVALID.amount}} at risk, and an appeal can recover {{flag.WAITING_REJECTION_INVALID.recoverable}}.",
+        "fix": "File an appeal with the insurer attaching proof of continuous coverage exceeding the waiting period.",
+        "citations": [
+          "IRDAI_PED_36M",
+          "policy:5.1"
+        ]
+      },
+      {
+        "flag_id": "DOC_MISSING-investigation_reports",
+        "headline": "Investigation reports missing from claim file",
+        "explanation": "Under policy:9.2, claims must be supported by investigation reports to establish medical necessity. Line 7 diagnostics lack these reports, placing {{flag.DOC_MISSING-investigation_reports.amount}} at risk.",
+        "fix": "Attach the missing laboratory and radiology investigation reports to complete the file.",
+        "citations": [
+          "policy:9.2"
+        ]
+      },
+      {
+        "flag_id": "DOC_MISSING-implant_invoice",
+        "headline": "Implant invoice and sticker required",
+        "explanation": "Under policy:9.2, claims involving surgical implants must include the implant invoice and sticker. Line 8 is missing this documentation, placing {{flag.DOC_MISSING-implant_invoice.amount}} at risk.",
+        "fix": "Attach the implant invoice and sticker to the claim documents.",
+        "citations": [
+          "policy:9.2"
+        ]
+      }
+    ]
+  }
+}

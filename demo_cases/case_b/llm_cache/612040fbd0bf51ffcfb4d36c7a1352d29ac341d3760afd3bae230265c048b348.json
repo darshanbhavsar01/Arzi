@@ -1,0 +1,42 @@
+{
+  "prompt_ref": "appeal_insurer_gro@v1",
+  "schema": "AppealDraftOutput",
+  "call": {
+    "prompt_ref": "appeal_insurer_gro@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 3074,
+    "output_tokens": 539,
+    "thinking_tokens": 2501,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "subject": "Request to review the deductions on claim settlement",
+    "facts": "The patient was admitted from 2026-10-03 to 2026-10-08 for fracture of neck of right femur and underwent right hip hemiarthroplasty. Upon discharge, the hospital submitted the final bill under policy rules. The insurer issued a settlement letter dated 2026-11-02, approving an amount of {{letter.approved}} out of the claimed amount of {{letter.claimed}}, while making erroneous deductions.",
+    "items": [
+      {
+        "flag_id": "SUBSUMED_ITEM",
+        "argument": "The insurer incorrectly deducted registration charges (line 12) as a non-payable item. Under Non-payable items: Annexure I, Lists I to IV (IRDAI_NON_PAYABLE_ANNEX_I) and policy:8.1, administrative fees like registration are not subject to separate disallowance unless explicitly restricted. We request you to reverse this deduction and release the amount of {{flag.SUBSUMED_ITEM.recoverable}}.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I",
+          "policy:8.1"
+        ]
+      },
+      {
+        "flag_id": "PROP_WRONGLY_APPLIED",
+        "argument": "The insurer has incorrectly applied a proportionate deduction to ICU charges (line 2), pharmacy and medicines (line 6), and laboratory and radiology (line 7). According to Norms on proportionate deductions (IRDAI_PROP_DED_2020) and policy:4.3, pharmacy, diagnostics, and ICU charges are expressly excluded from associated expenses subject to proportionate scaling. Therefore, the deduction is unjustified, and we request the release of {{flag.PROP_WRONGLY_APPLIED.recoverable}}.",
+        "citations": [
+          "IRDAI_PROP_DED_2020",
+          "policy:4.3"
+        ]
+      }
+    ],
+    "relief": "We request you to review these deductions and disburse the total recoverable amount of {{totals.recoverable}} at the earliest. As per the Insurer grievance resolution timeline (INSURER_GRIEVANCE_15D), we expect a written response to this grievance within 15 days.",
+    "citations": [
+      "IRDAI_NON_PAYABLE_ANNEX_I",
+      "policy:8.1",
+      "IRDAI_PROP_DED_2020",
+      "policy:4.3",
+      "INSURER_GRIEVANCE_15D"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "prompt_ref": "family_explain@v2",
+  "schema": "FamilyExplanationDraft",
+  "call": {
+    "prompt_ref": "family_explain@v2",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 4979,
+    "output_tokens": 326,
+    "thinking_tokens": 707,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "headline": "The insurer has made deductions from your hospital bill, but some parts can be challenged.",
+    "what_happened": [
+      "Suraksha Health Insurance Co. has reviewed your claim for the right hip hemiarthroplasty.",
+      "They paid a part of the bill, but deducted some amounts for room rent, co-payment, and other items."
+    ],
+    "why": [
+      "Non-payable items like laundry are not covered by the policy.",
+      "Proportionate deductions were applied because you used a room above your policy limit.",
+      "Some deductions were wrongly applied to items that should not be reduced under the rules."
+    ],
+    "next_steps": [
+      "Ask the hospital desk to help prepare an appeal for the disputed deductions.",
+      "Keep all your policy papers and final bills safely with you.",
+      "Submit the missing investigation reports and implant invoice to support your claim.",
+      "Check with the hospital billing desk before paying any difference."
+    ],
+    "reassurance": "We are helping you sort through these deductions so you can understand every step clearly.",
+    "citations": [
+      "IRDAI_NON_PAYABLE_ANNEX_I",
+      "IRDAI_PROP_DED_2020",
+      "policy:4.2",
+      "policy:4.3",
+      "policy:7.4",
+      "policy:9.2"
+    ]
+  }
+}

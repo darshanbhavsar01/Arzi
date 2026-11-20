@@ -1,0 +1,40 @@
+{
+  "prompt_ref": "family_explain@v2",
+  "schema": "FamilyExplanationDraft",
+  "call": {
+    "prompt_ref": "family_explain@v2",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 3662,
+    "output_tokens": 354,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "headline": "Some charges may not be fully paid by your insurance because of room limits and non-payable items.",
+    "what_happened": [
+      "Your hospital bill includes charges for your room, surgery, and care during your stay.",
+      "Insurance companies review bills against policy limits before paying them.",
+      "Your policy has specific rules about room rent, non-payable items, and your share of the cost."
+    ],
+    "why": [
+      "The insurer expects deductions because the room category you chose is higher than your policy's limit.",
+      "Certain items like laundry and personal comforts are classified as non-payable items under policy rules.",
+      "Your policy also includes a co-payment share that applies to admissible claim amounts."
+    ],
+    "next_steps": [
+      "Speak with the hospital billing desk to understand the exact breakdown of charges.",
+      "Ask if choosing a different room category is possible to reduce extra costs.",
+      "Keep all your policy papers and hospital bills safely together.",
+      "Check with the hospital desk before paying any difference out of pocket."
+    ],
+    "reassurance": "We are looking closely at every detail to help you understand your bill. Arzi will help review your documents carefully.",
+    "citations": [
+      "IRDAI_NON_PAYABLE_ANNEX_I",
+      "IRDAI_PROP_DED_2020",
+      "policy:4.2",
+      "policy:4.3",
+      "policy:7.4",
+      "policy:8.1"
+    ]
+  }
+}

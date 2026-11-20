@@ -1,0 +1,37 @@
+{
+  "prompt_ref": "family_explain@v2",
+  "schema": "FamilyExplanationDraft",
+  "call": {
+    "prompt_ref": "family_explain@v2",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 2863,
+    "output_tokens": 335,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "headline": "The insurer rejected your claim based on a waiting period, but your policy's waiting period has already passed.",
+    "what_happened": [
+      "Suraksha Health Insurance Co. (fictional) refused to pay your hospital bill for the knee replacement surgery.",
+      "They stated that you are still in the pre-existing disease waiting period.",
+      "Additionally, some documents like investigation reports and the implant invoice are missing from the papers."
+    ],
+    "why": [
+      "Your policy has a 36-month pre-existing disease waiting period, but you have already completed 40 months of continuous cover.",
+      "The insurer's reason for rejection does not match your policy rules because your waiting time is over.",
+      "Also, the insurer needs all supporting documents like investigation reports and implant invoices to process the bills."
+    ],
+    "next_steps": [
+      "Ask the hospital desk to help write an appeal against the waiting period rejection.",
+      "Gather and submit the missing investigation reports and the implant invoice to the hospital desk.",
+      "Keep your policy papers and continuous cover records safe.",
+      "Check with the hospital desk before paying any money out of pocket."
+    ],
+    "reassurance": "We are preparing a written request to the insurer to review their decision and correct this rejection.",
+    "citations": [
+      "IRDAI_PED_36M",
+      "policy:5.1",
+      "policy:9.2"
+    ]
+  }
+}
