@@ -307,11 +307,52 @@ class AuditResult(_Value):
 # --------------------------------------------------------------------------- persistence
 
 
+RunStatus = Literal["queued", "running", "completed", "failed"]
+RunEventType = Literal[
+    "stage.started", "stage.completed", "flag.created", "run.completed", "run.failed"
+]
+
+
+class RunEvent(_Value):
+    """One streamed pipeline event; ``seq`` doubles as the SSE event id for resumption."""
+
+    seq: Annotated[int, Field(ge=1)]
+    type: RunEventType
+    stage: Name | None = None
+    at: dt.datetime
+    data: dict[str, int | str | float | bool | None] = Field(default_factory=dict)
+
+
+class LlmCall(_Value):
+    """Token usage and estimated cost of one model call, for the run record and the ledger."""
+
+    prompt_ref: Name
+    model: Name
+    input_tokens: int = 0
+    output_tokens: int = 0
+    thinking_tokens: int = 0
+    cost_micro_inr: int = 0
+    replayed: bool = False
+
+
 class AuditRun(_Value):
+    """One pipeline execution. Persisted as its own document; the claim keeps a summary."""
+
     run_id: Name
     engine_version: Name
+    status: RunStatus = "queued"
+    idempotency_key: Annotated[str, Field(max_length=128)] | None = None
     started_at: dt.datetime
     finished_at: dt.datetime | None = None
+    events: tuple[RunEvent, ...] = ()
+    calls: tuple[LlmCall, ...] = ()
+    prompt_versions: tuple[str, ...] = ()
+    error: Annotated[str, Field(max_length=80)] | None = None
+    """A stable error slug only, never an exception message (it could quote a document)."""
+
+    @property
+    def cost_micro_inr(self) -> int:
+        return sum(call.cost_micro_inr for call in self.calls)
 
 
 class AppealSummary(_Value):
@@ -322,15 +363,62 @@ class AppealSummary(_Value):
     content_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
 
 
+class Consent(_Value):
+    """DPDP consent for processing this claim's documents, recorded before any extraction."""
+
+    given_by: Name
+    purpose: Literal["claim_audit"] = "claim_audit"
+    recorded_by: Name
+    at: dt.datetime
+
+
+class ReviewIssue(_Value):
+    """Something a person must confirm before the numbers can be trusted."""
+
+    code: Literal[
+        "low_confidence_line",
+        "total_mismatch",
+        "unreadable_amount",
+        "unmapped_deduction",
+        "cap_unresolved",
+        "missing_document",
+        "missing_field",
+    ]
+    message: Text
+    line_id: int | None = None
+
+
+class RedactionSummary(_Value):
+    """What redaction replaced, by identifier kind (counts only; never the values)."""
+
+    counts: dict[str, int] = Field(default_factory=dict)
+
+    @property
+    def total(self) -> int:
+        return sum(self.counts.values())
+
+
 class ClaimRecord(_Value):
-    """The persisted claim, scoped to one hospital (tenant). Evolve it with ``model_copy``."""
+    """The persisted claim, scoped to one hospital (tenant). Evolve it with ``model_copy``.
+
+    ``revision`` is the optimistic-concurrency token: a write succeeds only if the stored
+    revision still equals the one the writer read.
+    """
 
     hospital_id: Name
     claim_id: Name
+    mode: ClaimMode = ClaimMode.PRE_SUBMISSION
+    insurer_hint: Name | None = None
     status: ClaimStatus = ClaimStatus.DRAFT
     schema_version: int = SCHEMA_VERSION
+    revision: int = 0
+    created_at: dt.datetime | None = None
+    updated_at: dt.datetime | None = None
+    consent: Consent | None = None
     facts: ClaimFacts | None = None
     audit: AuditResult | None = None
+    issues: tuple[ReviewIssue, ...] = ()
+    redaction: RedactionSummary | None = None
     runs: tuple[AuditRun, ...] = ()
     appeals: tuple[AppealSummary, ...] = ()
     audit_refs: tuple[str, ...] = ()
