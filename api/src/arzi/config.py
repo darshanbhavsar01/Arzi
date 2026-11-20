@@ -20,6 +20,8 @@ class Environment(StrEnum):
 
 class LlmMode(StrEnum):
     LIVE = "live"
+    HYBRID = "hybrid"
+    """Recorded answers for the demo cases; live Gemini (budget-guarded) for anything else."""
     REPLAY = "replay"
     FAKE = "fake"
 

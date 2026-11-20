@@ -66,12 +66,14 @@ gcloud run services update arzi --region asia-south1 --min-instances=0   # rever
 
 ## LLM mode flip
 
-The live link defaults to `replay` (recorded Gemini responses, no spend). To use Vertex AI for
-documents outside the demo cases (spend is bounded by `ARZI_DAILY_BUDGET_INR`):
+The live link runs `hybrid`: the demo cases are served from recorded Gemini responses (free,
+instant) and any other document goes to Vertex AI behind the daily budget guard
+(`ARZI_DAILY_BUDGET_INR`, ₹100; prices from `ARZI_PRICE_TABLE_JSON`, passed by `make deploy`).
+Modes: `replay` (never spends), `hybrid`, `live` (everything live). To switch:
 
 ```bash
-gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_MODE=live
-gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_MODE=replay  # back
+gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_MODE=replay   # stop all model spend
+gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_MODE=hybrid   # back
 ```
 
 ## Smoke test after a deploy

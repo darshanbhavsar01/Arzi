@@ -140,10 +140,12 @@ export default function SettingsPage() {
           <TabsContent value="system">
             <dl className="divide-y divide-border">
               <Row label="AI mode">
-                <Badge tone={w.llm_mode === 'live' ? 'success' : 'info'}>{w.llm_mode}</Badge>{' '}
+                <Badge tone={w.llm_mode === 'live' || w.llm_mode === 'hybrid' ? 'success' : 'info'}>
+                  {w.llm_mode}
+                </Badge>{' '}
                 <span className="ml-1 text-ink-muted">
-                  {w.llm_mode === 'live'
-                    ? `Gemini via ${w.llm_provider === 'vertex' ? 'Vertex AI' : 'AI Studio'}`
+                  {w.llm_mode === 'live' || w.llm_mode === 'hybrid'
+                    ? `${w.llm_mode === 'hybrid' ? 'Recorded for demo cases, otherwise Gemini' : 'Gemini'} via ${w.llm_provider === 'vertex' ? 'Vertex AI' : 'AI Studio'}`
                     : 'Recorded Gemini responses (no model cost)'}
                 </span>
               </Row>

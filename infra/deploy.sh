@@ -3,7 +3,7 @@
 #
 #   PROJECT_ID=... make deploy
 #
-# Optional: ARZI_LLM_MODE (default replay until model IDs are chosen), ARZI_MODEL_FLASH,
+# Optional: ARZI_LLM_MODE (replay|hybrid|live; default replay), ARZI_DAILY_BUDGET_INR, ARZI_PRICE_TABLE_JSON, ARZI_MODEL_FLASH,
 # ARZI_MODEL_PRO, ARZI_MODEL_TTS, ARZI_MODEL_LIVE, ARZI_VERTEX_LOCATION, BUCKET.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
@@ -13,13 +13,14 @@ BUCKET="$(bucket_name)"
 LLM_MODE="${ARZI_LLM_MODE:-replay}"
 BUILD_SHA="$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 
-env_vars="ARZI_ENV=cloud,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,ARZI_GCP_REGION=$REGION"
-env_vars+=",ARZI_BUCKET=$BUCKET,ARZI_LLM_MODE=$LLM_MODE,ARZI_BUILD_SHA=$BUILD_SHA"
+# "@" separates variables (gcloud "^@^" syntax) because the price table is JSON with commas.
+env_vars="ARZI_ENV=cloud@GOOGLE_CLOUD_PROJECT=$PROJECT_ID@ARZI_GCP_REGION=$REGION"
+env_vars+="@ARZI_BUCKET=$BUCKET@ARZI_LLM_MODE=$LLM_MODE@ARZI_BUILD_SHA=$BUILD_SHA"
 # The deployed app always uses Vertex AI; AI Studio (free tier) is for local testing only and
 # the app refuses it when ARZI_ENV=cloud.
-env_vars+=",ARZI_LLM_PROVIDER=vertex"
-for name in ARZI_MODEL_FLASH ARZI_MODEL_PRO ARZI_MODEL_TTS ARZI_MODEL_LIVE ARZI_VERTEX_LOCATION; do
-  if [ -n "${!name:-}" ]; then env_vars+=",$name=${!name}"; fi
+env_vars+="@ARZI_LLM_PROVIDER=vertex"
+for name in ARZI_MODEL_FLASH ARZI_MODEL_PRO ARZI_MODEL_TTS ARZI_MODEL_LIVE ARZI_VERTEX_LOCATION \n  ARZI_DAILY_BUDGET_INR ARZI_PRICE_TABLE_JSON; do
+  if [ -n "${!name:-}" ]; then env_vars+="@$name=${!name}"; fi
 done
 
 cat <<EOF
@@ -35,7 +36,7 @@ run gcloud run deploy "$SERVICE" --project="$PROJECT_ID" --source . --region "$R
   --service-account "$(sa_email)" \
   --min-instances 0 --max-instances 3 --cpu 1 --memory 1Gi --concurrency 20 --timeout 300 \
   --allow-unauthenticated \
-  --set-env-vars "$env_vars"
+  --set-env-vars "^@^$env_vars"
 
 # The source-deploy repository exists only after the first deploy; keep the newest 3 images.
 run gcloud artifacts repositories set-cleanup-policies cloud-run-source-deploy \

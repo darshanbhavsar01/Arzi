@@ -153,20 +153,28 @@ export function AppShell() {
               content={
                 workspace.llm_mode === 'live'
                   ? 'Gemini on Vertex AI, budget-guarded'
-                  : 'Model answers served from recorded Gemini responses'
+                  : workspace.llm_mode === 'hybrid'
+                    ? 'Demo cases from recorded Gemini responses; your own documents run live on Gemini, budget-guarded'
+                    : 'Model answers served from recorded Gemini responses'
               }
             >
               <Badge
-                tone={workspace.llm_mode === 'live' ? 'success' : 'info'}
+                tone={
+                  workspace.llm_mode === 'live' || workspace.llm_mode === 'hybrid'
+                    ? 'success'
+                    : 'info'
+                }
                 tabIndex={0}
                 className="hidden md:inline-flex"
               >
                 AI:{' '}
                 {workspace.llm_mode === 'live'
                   ? 'Live'
-                  : workspace.llm_mode === 'replay'
-                    ? 'Replay'
-                    : 'Fake'}
+                  : workspace.llm_mode === 'hybrid'
+                    ? 'Hybrid'
+                    : workspace.llm_mode === 'replay'
+                      ? 'Replay'
+                      : 'Fake'}
               </Badge>
             </Tooltip>
           ) : null}

@@ -22,6 +22,7 @@ from arzi.adapters.genai_client import (
     ai_studio_models,
     vertex_models,
 )
+from arzi.adapters.hybrid import ReplayThenLiveLlm, ReplayThenLiveSpeech
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
 from arzi.adapters.tts import (
     BudgetedSpeech,
@@ -116,6 +117,17 @@ def build_speech(
         return ReplaySpeech(settings.replay_dir, voice=settings.tts_voice)
     if settings.llm_mode is LlmMode.FAKE:
         return SilentSpeech()
+    live = _live_speech(settings, ledger, clock)
+    if settings.llm_mode is LlmMode.HYBRID:
+        return ReplayThenLiveSpeech(
+            ReplaySpeech(settings.replay_dir, voice=settings.tts_voice), live
+        )
+    return live
+
+
+def _live_speech(
+    settings: Settings, ledger: CostLedgerStore, clock: Callable[[], dt.datetime]
+) -> SpeechClient:
     if not settings.model_tts:
         raise ConfigurationError("live mode needs ARZI_MODEL_TTS for narration")
     models, _, prices = _live_models(settings, settings.model_tts)
@@ -148,6 +160,16 @@ def build_llm(
         return ReplayLlmClient(settings.replay_dir, delay_s=settings.replay_delay_ms / 1000)
     if settings.llm_mode is LlmMode.FAKE:
         return FakeLlmClient(FixtureLlmClient(settings.replay_dir))
+    live = _live_llm(settings, ledger, clock)
+    if settings.llm_mode is LlmMode.HYBRID:
+        replay = ReplayLlmClient(settings.replay_dir, delay_s=settings.replay_delay_ms / 1000)
+        return ReplayThenLiveLlm(replay, live)
+    return live
+
+
+def _live_llm(
+    settings: Settings, ledger: CostLedgerStore, clock: Callable[[], dt.datetime]
+) -> LlmClient:
     if not settings.model_flash:
         raise ConfigurationError("live mode needs ARZI_MODEL_FLASH")
     models, gcs_uris, prices = _live_models(settings, settings.model_flash)
