@@ -151,3 +151,42 @@ class DocumentKind(StrEnum):
     INVESTIGATION_REPORTS = "investigation_reports"
     IMPLANT_INVOICE = "implant_invoice"
     INSURER_LETTER = "insurer_letter"
+
+
+class ReasoningStatus(StrEnum):
+    """How a model-written step ended, after its guardrails ran.
+
+    ``needs_review``: the output failed validation twice; it is kept, hidden behind a warning,
+    for a person to fix. ``unavailable``: no output (model down, budget reached, replay miss);
+    the deterministic audit still stands without it.
+    """
+
+    PASSED = "passed"
+    RETRIED = "retried"
+    NEEDS_REVIEW = "needs_review"
+    UNAVAILABLE = "unavailable"
+    SKIPPED = "skipped"
+
+
+class PolicyTermKind(StrEnum):
+    """Policy terms the interpreter maps to clauses; the engine reads the same terms."""
+
+    ROOM_RENT_CAP = "room_rent_cap"
+    PROPORTIONATE_DEDUCTION = "proportionate_deduction"
+    ICU_CAP = "icu_cap"
+    COPAY = "copay"
+    SUB_LIMIT = "sub_limit"
+    PED_WAITING = "ped_waiting"
+    SPECIFIC_WAITING = "specific_waiting"
+    ASSOCIATED_EXPENSES = "associated_expenses"
+    NON_PAYABLE_COVER = "non_payable_cover"
+    CLAIM_DOCUMENTS = "claim_documents"
+
+
+class GroOutcome(StrEnum):
+    """What came of a written complaint to the insurer's Grievance Redressal Officer."""
+
+    PENDING = "pending"
+    REJECTED = "rejected"
+    UNSATISFACTORY = "unsatisfactory"
+    NO_REPLY = "no_reply"
