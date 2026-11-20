@@ -101,8 +101,8 @@ export default function SignInPage() {
           <div className="mt-6 flex items-start gap-3 text-[0.8125rem] text-ink-subtle">
             <Lock className="mt-0.5 size-4 shrink-0" aria-hidden />
             <p>
-              Pilot hospitals sign in with their Google Workspace account; access is scoped to one
-              hospital and every action is written to the claim’s audit log.
+              Access is scoped to one hospital, and every action (uploads, corrections, drafts,
+              signatures) is written to the claim’s audit log.
             </p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 /**
  * The desk session. In demo mode the API signs every request in as the demo desk user; the client
- * only remembers that the person chose to enter the demo workspace. Firebase Auth replaces this in
- * Phase 7 behind the same hook. Storage can be unavailable (private windows), so access is guarded.
+ * only remembers that the person chose to enter the demo workspace. Storage can be unavailable
+ * (private windows), so access is guarded.
  */
 import { useSyncExternalStore } from 'react';
 

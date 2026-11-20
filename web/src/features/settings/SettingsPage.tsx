@@ -103,8 +103,8 @@ export default function SettingsPage() {
                 {w.user_name} <Badge className="ml-2">{w.user_role.replace('_', ' ')}</Badge>
               </Row>
               <Row label="Sign-in">
-                Demo workspace. Pilot hospitals sign in with Google Workspace (Firebase
-                Authentication); access is limited to one hospital.
+                Demo workspace for one hospital. Every action is recorded with the user in the
+                claim’s audit log.
               </Row>
               <Row label="Who can sign appeals">
                 Any named reviewer; their name, role, time and the content hash are recorded on
