@@ -445,5 +445,13 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 6: re-record family explanations and narration on Vertex AI with the demo-day TTS model.
 - Phase 6: the hospital desk contact belongs on the hospital profile (settings page).
 
+## Phase 7 (scoped down; the deliverable is the live link, not code)
+- Shipped: server-side role gate. Only `reviewer`/`admin` can sign or export a desk appeal (403
+  `role-forbidden`); the demo workspace principal is a reviewer. Public family links are unaffected.
+- Shipped: `make eval` (`evals/run.py`, replay) -> `evals/report.md`: 11/11 flags, 11/11 exact
+  rupee amounts, totals exact on cases A/B/C, narration guardrails passed, median 0.23 s.
+- Deliberately skipped by owner decision (time, no code submission): Firebase Auth, tenancy test
+  sweep, security headers/rate limits, DLP/privacy endpoints, tracing, Document AI/DLP flags.
+
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.
