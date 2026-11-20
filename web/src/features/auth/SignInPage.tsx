@@ -1,6 +1,13 @@
 /** Sign-in: the brand story on cream, and the way into the workspace. */
-import { ArrowRight, FileSearch, Lock, ScrollText, ShieldCheck } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router';
+import {
+  ArrowRight,
+  FileSearch,
+  HeartHandshake,
+  Lock,
+  ScrollText,
+  ShieldCheck,
+} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router';
 
 import { ArziMark, ArziWordmark } from '@/components/brand';
 import { Button } from '@/components/ui/button';
@@ -105,6 +112,20 @@ export default function SignInPage() {
               signatures) is written to the claim’s audit log.
             </p>
           </div>
+
+          <Link
+            to="/check"
+            className="mt-8 flex items-center gap-3 rounded-xl border border-cream-deep bg-cream px-4 py-3 hover:border-accent"
+          >
+            <HeartHandshake className="size-5 shrink-0 text-accent" aria-hidden />
+            <span className="flex-1 text-sm">
+              <span className="block font-semibold text-ink">A patient’s family?</span>
+              <span className="text-ink-muted">
+                Check a rejected or cut claim for free, in ગુજરાતી, हिन्दी or English.
+              </span>
+            </span>
+            <ArrowRight className="size-4 text-ink-subtle" aria-hidden />
+          </Link>
         </div>
       </section>
     </div>

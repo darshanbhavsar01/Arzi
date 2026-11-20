@@ -8,6 +8,7 @@ from arzi.domain.models import Hospital, RoomCategory
 from arzi.domain.money import rupees
 
 DEMO_HOSPITAL_ID = "sanjeevani-ahd"
+PUBLIC_HOSPITAL_ID = "public"
 
 DEMO_HOSPITAL = Hospital(
     name="Sanjeevani Multispeciality Hospital",
@@ -18,3 +19,5 @@ DEMO_HOSPITAL = Hospital(
         RoomCategory(name="Single private AC", rate_per_day=rupees(8_000)),
     ),
 )
+
+PUBLIC_HOSPITAL = Hospital(name="Arzi free claim check", city="Online")

@@ -11,7 +11,12 @@ import asyncio
 import sys
 from collections.abc import Sequence
 
-from arzi.adapters.demo_seed import DEMO_HOSPITAL, DEMO_HOSPITAL_ID
+from arzi.adapters.demo_seed import (
+    DEMO_HOSPITAL,
+    DEMO_HOSPITAL_ID,
+    PUBLIC_HOSPITAL,
+    PUBLIC_HOSPITAL_ID,
+)
 from arzi.config import Settings
 
 
@@ -23,7 +28,9 @@ async def seed(settings: Settings) -> None:
     db = firestore.AsyncClient(
         project=settings.google_cloud_project, database=settings.firestore_database
     )
-    await FirestoreClaimRepository(db).seed_hospital(DEMO_HOSPITAL_ID, DEMO_HOSPITAL)
+    repo = FirestoreClaimRepository(db)
+    await repo.seed_hospital(DEMO_HOSPITAL_ID, DEMO_HOSPITAL)
+    await repo.seed_hospital(PUBLIC_HOSPITAL_ID, PUBLIC_HOSPITAL)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -36,6 +43,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     target = f"projects/{settings.google_cloud_project}/databases/{settings.firestore_database}"
     print(f"{target}: hospitals/{DEMO_HOSPITAL_ID} ← {DEMO_HOSPITAL.model_dump_json()}")
+    print(f"{target}: hospitals/{PUBLIC_HOSPITAL_ID} ← {PUBLIC_HOSPITAL.model_dump_json()}")
     if not args.dry_run:
         asyncio.run(seed(settings))
         print("written")
