@@ -138,6 +138,22 @@ def _usage(request: LlmRequest[Any], response: Any) -> LlmCall:  # noqa: ANN401 
     )
 
 
+class ClientModels:
+    """The async models API of a ``genai.Client`` that is kept alive.
+
+    The SDK closes its HTTP transport when the ``Client`` is garbage-collected, so handing out
+    ``client.aio.models`` alone fails on the next call ("the client has been closed").
+    """
+
+    def __init__(self, client: Any) -> None:  # noqa: ANN401 - genai.Client
+        self._client = client
+
+    async def generate_content(self, *, model: str, contents: Any, config: Any) -> Any:  # noqa: ANN401 - SDK types
+        return await self._client.aio.models.generate_content(
+            model=model, contents=contents, config=config
+        )
+
+
 def vertex_models(project: str, location: str, timeout_s: float) -> _AsyncModels:
     """The SDK's async models API, created lazily so local modes never load credentials."""
     from google import genai
@@ -149,8 +165,7 @@ def vertex_models(project: str, location: str, timeout_s: float) -> _AsyncModels
         location=location,
         http_options=types.HttpOptions(timeout=int(timeout_s * 1000)),
     )
-    models: _AsyncModels = client.aio.models
-    return models
+    return ClientModels(client)
 
 
 def ai_studio_models(api_key: str, timeout_s: float) -> _AsyncModels:
@@ -163,8 +178,7 @@ def ai_studio_models(api_key: str, timeout_s: float) -> _AsyncModels:
         # JSON mode (structured output) is only enabled on v1beta for some AI Studio models.
         http_options=types.HttpOptions(timeout=int(timeout_s * 1000), api_version="v1beta"),
     )
-    models: _AsyncModels = client.aio.models
-    return models
+    return ClientModels(client)
 
 
 # --------------------------------------------------------------------------- record / replay

@@ -178,3 +178,46 @@ async def test_negative_thinking_budget_leaves_the_model_default() -> None:
     client, _ = _client(models)
     await client.generate_structured(_request(thinking_budget=-1))
     assert models.calls[0]["config"].thinking_config is None
+
+
+class _ClosingClient:
+    """Mimics ``genai.Client``: its transport closes when the client is garbage-collected."""
+
+    calls: list[dict[str, Any]] = []  # noqa: RUF012 - shared by the instances of one test
+    transport = {"closed": False}  # noqa: RUF012
+
+    def __init__(self, **options: Any) -> None:  # noqa: ANN401 - SDK options
+        self.options = options
+        _ClosingClient.transport = {"closed": False}
+        transport = _ClosingClient.transport
+
+        async def generate_content(**kwargs: Any) -> str:  # noqa: ANN401 - SDK arguments
+            if transport["closed"]:
+                raise RuntimeError("Cannot send a request, as the client has been closed.")
+            _ClosingClient.calls.append(kwargs)
+            return "response"
+
+        self.aio = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
+
+    def __del__(self) -> None:
+        _ClosingClient.transport["closed"] = True
+
+
+@pytest.mark.parametrize("factory", ["vertex", "ai_studio"])
+async def test_model_factories_keep_the_sdk_client_alive(
+    factory: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import gc
+
+    from google import genai
+
+    from arzi.adapters.genai_client import ai_studio_models, vertex_models
+
+    monkeypatch.setattr(genai, "Client", _ClosingClient)
+    models = (
+        vertex_models("p", "global", 30.0) if factory == "vertex" else ai_studio_models("k", 30.0)
+    )
+    gc.collect()
+    response = await models.generate_content(model="m", contents=["x"], config=None)
+    assert response == "response"
+    assert not _ClosingClient.transport["closed"]
