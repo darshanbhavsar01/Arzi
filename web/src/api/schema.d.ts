@@ -258,6 +258,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/claims/{claim_id}/appeals/forums": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Forums
+         * @description Where this appeal can go now, with the checklist behind each answer.
+         */
+        get: operations["forums_api_v1_claims__claim_id__appeals_forums_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/appeals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Appeals */
+        get: operations["list_appeals_api_v1_claims__claim_id__appeals_get"];
+        put?: never;
+        /**
+         * Draft Appeal
+         * @description Draft the next version with the AppealDrafter. Repeating the request with the same
+         *     ``Idempotency-Key`` returns the same version instead of drafting (and paying) again.
+         */
+        post: operations["draft_appeal_api_v1_claims__claim_id__appeals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/appeals/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Appeal */
+        get: operations["get_appeal_api_v1_claims__claim_id__appeals__version__get"];
+        /**
+         * Edit Appeal
+         * @description Save a reviewer's edits as the next version. Amounts must stay placeholders.
+         */
+        put: operations["edit_appeal_api_v1_claims__claim_id__appeals__version__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/appeals/{version}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Appeal */
+        post: operations["submit_appeal_api_v1_claims__claim_id__appeals__version__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/appeals/{version}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Appeal
+         * @description A named reviewer signs; the SHA-256 of the exact content is stored with the signature.
+         */
+        post: operations["sign_appeal_api_v1_claims__claim_id__appeals__version__sign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/appeals/{version}/export.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Appeal
+         * @description The signed letter as a PDF; refused (409) until a named reviewer has signed it.
+         */
+        get: operations["export_appeal_api_v1_claims__claim_id__appeals__version__export_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/meta/citations": {
         parameters: {
             query?: never;
@@ -300,11 +420,82 @@ export interface components {
             /** Room Category Used */
             room_category_used?: string | null;
         };
+        /** AppealContent */
+        AppealContent: {
+            subject: components["schemas"]["Prose"];
+            facts: components["schemas"]["Prose"];
+            /** Items */
+            items: components["schemas"]["AppealItem"][];
+            relief: components["schemas"]["Prose"];
+            /** Relief Amount */
+            relief_amount: number;
+            /**
+             * Enclosures
+             * @default []
+             */
+            enclosures: string[];
+        };
+        /**
+         * AppealEdit
+         * @description A reviewer's changes; omitted sections stay as they are. Amounts stay placeholders.
+         */
+        AppealEdit: {
+            /** Subject */
+            subject?: string | null;
+            /** Facts */
+            facts?: string | null;
+            /** Relief */
+            relief?: string | null;
+            /** Arguments */
+            arguments?: components["schemas"]["ArgumentEdit"][] | null;
+        };
         /**
          * AppealForum
          * @enum {string}
          */
         AppealForum: "insurer_gro" | "bima_bharosa" | "ombudsman";
+        /**
+         * AppealItem
+         * @description One disputed deduction or rejection. Amount and insurer reason come from the engine and
+         *     the letter; only ``argument`` is drafted.
+         */
+        AppealItem: {
+            /** Flag Id */
+            flag_id: string;
+            /** Rule Id */
+            rule_id: string;
+            /** Amount */
+            amount: number;
+            /** Amount Ref */
+            amount_ref: string;
+            /** Insurer Reason */
+            insurer_reason: string;
+            argument: components["schemas"]["Prose"];
+            /**
+             * Citations
+             * @default []
+             */
+            citations: string[];
+        };
+        /**
+         * AppealSignature
+         * @description Who reviewed the appeal, and the SHA-256 of exactly what they signed.
+         */
+        AppealSignature: {
+            /** Reviewer Name */
+            reviewer_name: string;
+            /** Reviewer Role */
+            reviewer_role: string;
+            /** Signed By */
+            signed_by: string;
+            /**
+             * Signed At
+             * Format: date-time
+             */
+            signed_at: string;
+            /** Content Sha256 */
+            content_sha256: string;
+        };
         /**
          * AppealStatus
          * @enum {string}
@@ -324,6 +515,49 @@ export interface components {
             status: components["schemas"]["AppealStatus"];
             /** Content Sha256 */
             content_sha256?: string | null;
+        };
+        /**
+         * AppealVersion
+         * @description One immutable version of a claim's appeal. Edits create the next version.
+         */
+        AppealVersion: {
+            /** Claim Id */
+            claim_id: string;
+            /** Version */
+            version: number;
+            forum: components["schemas"]["AppealForum"];
+            /** @default draft */
+            status: components["schemas"]["AppealStatus"];
+            content: components["schemas"]["AppealContent"];
+            drafting: components["schemas"]["ReasoningStatus"];
+            /** Prompt Ref */
+            prompt_ref?: string | null;
+            /**
+             * Violations
+             * @default []
+             */
+            violations: string[];
+            /** Based On */
+            based_on?: number | null;
+            /** Idempotency Key */
+            idempotency_key?: string | null;
+            /** Created By */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            signature?: components["schemas"]["AppealSignature"] | null;
+            /** Exported At */
+            exported_at?: string | null;
+        };
+        /** ArgumentEdit */
+        ArgumentEdit: {
+            /** Flag Id */
+            flag_id: string;
+            /** Argument */
+            argument: string;
         };
         /**
          * AuditLogEntry
@@ -518,6 +752,25 @@ export interface components {
          */
         ClaimMode: "pre_submission" | "post_deduction" | "post_rejection";
         /**
+         * ClaimNarratives
+         * @description Plain-language explanation and fix for each flag. Amounts stay engine-owned.
+         */
+        ClaimNarratives: {
+            status: components["schemas"]["ReasoningStatus"];
+            /** Prompt Ref */
+            prompt_ref?: string | null;
+            /**
+             * Violations
+             * @default []
+             */
+            violations: string[];
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["FlagNarrative"][];
+        };
+        /**
          * ClaimRecord
          * @description The persisted claim, scoped to one hospital (tenant). Evolve it with ``model_copy``.
          *
@@ -558,6 +811,8 @@ export interface components {
              */
             issues: components["schemas"]["ReviewIssue"][];
             redaction?: components["schemas"]["RedactionSummary"] | null;
+            policy_review?: components["schemas"]["PolicyReview"] | null;
+            narratives?: components["schemas"]["ClaimNarratives"] | null;
             /**
              * Runs
              * @default []
@@ -685,6 +940,11 @@ export interface components {
              */
             uploaded_at: string;
         };
+        /** DraftAppeal */
+        DraftAppeal: {
+            forum: components["schemas"]["AppealForum"];
+            gro_complaint?: components["schemas"]["GroComplaint"] | null;
+        };
         /**
          * FixCode
          * @enum {string}
@@ -744,6 +1004,68 @@ export interface components {
          * @enum {string}
          */
         FlagKind: "deduction" | "advisory" | "dispute";
+        /** FlagNarrative */
+        FlagNarrative: {
+            /** Flag Id */
+            flag_id: string;
+            headline: components["schemas"]["Prose"];
+            explanation: components["schemas"]["Prose"];
+            fix: components["schemas"]["Prose"];
+            /**
+             * Citations
+             * @default []
+             */
+            citations: string[];
+        };
+        /** ForumCheck */
+        ForumCheck: {
+            /** Code */
+            code: string;
+            /** Label */
+            label: string;
+            /** Met */
+            met: boolean | null;
+        };
+        /** ForumOption */
+        ForumOption: {
+            forum: components["schemas"]["AppealForum"];
+            /** Eligible */
+            eligible: boolean;
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Checks
+             * @default []
+             */
+            checks: components["schemas"]["ForumCheck"][];
+            /** Response Window */
+            response_window?: string | null;
+            /**
+             * Citations
+             * @default []
+             */
+            citations: string[];
+        };
+        /**
+         * GroComplaint
+         * @description The written complaint already sent to the insurer, if any.
+         */
+        GroComplaint: {
+            /**
+             * Filed On
+             * Format: date
+             */
+            filed_on: string;
+            outcome: components["schemas"]["GroOutcome"];
+            /** Replied On */
+            replied_on?: string | null;
+        };
+        /**
+         * GroOutcome
+         * @description What came of a written complaint to the insurer's Grievance Redressal Officer.
+         * @enum {string}
+         */
+        GroOutcome: "pending" | "rejected" | "unsatisfactory" | "no_reply";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1016,6 +1338,59 @@ export interface components {
             /** Page */
             page?: number | null;
         };
+        /**
+         * PolicyReview
+         * @description The policy interpreter's reading: which clause governs each term, in plain language.
+         */
+        PolicyReview: {
+            status: components["schemas"]["ReasoningStatus"];
+            /** Prompt Ref */
+            prompt_ref?: string | null;
+            /**
+             * Violations
+             * @default []
+             */
+            violations: string[];
+            /**
+             * Terms
+             * @default []
+             */
+            terms: components["schemas"]["PolicyTermNote"][];
+        };
+        /**
+         * PolicyTermKind
+         * @description Policy terms the interpreter maps to clauses; the engine reads the same terms.
+         * @enum {string}
+         */
+        PolicyTermKind: "room_rent_cap" | "proportionate_deduction" | "icu_cap" | "copay" | "sub_limit" | "ped_waiting" | "specific_waiting" | "associated_expenses" | "non_payable_cover" | "claim_documents";
+        /** PolicyTermNote */
+        PolicyTermNote: {
+            term: components["schemas"]["PolicyTermKind"];
+            /** Clause Id */
+            clause_id?: string | null;
+            summary: components["schemas"]["Prose"];
+            /** Confidence */
+            confidence: number;
+            /**
+             * Needs Confirmation
+             * @default false
+             */
+            needs_confirmation: boolean;
+        };
+        /**
+         * Prose
+         * @description Model- or person-written text whose rupee amounts are placeholders.
+         *
+         *     ``template`` holds ``{{totals.at_risk}}``-style placeholders; ``text`` is the same prose with
+         *     each placeholder filled from the rules engine. ``text`` is None when the template could not
+         *     be rendered (a step that needs review), so the UI shows a warning instead.
+         */
+        Prose: {
+            /** Template */
+            template: string;
+            /** Text */
+            text?: string | null;
+        };
         /** ReadinessReport */
         ReadinessReport: {
             /** Ready */
@@ -1023,6 +1398,16 @@ export interface components {
             /** Checks */
             checks: components["schemas"]["CheckResult"][];
         };
+        /**
+         * ReasoningStatus
+         * @description How a model-written step ended, after its guardrails ran.
+         *
+         *     ``needs_review``: the output failed validation twice; it is kept, hidden behind a warning,
+         *     for a person to fix. ``unavailable``: no output (model down, budget reached, replay miss);
+         *     the deterministic audit still stands without it.
+         * @enum {string}
+         */
+        ReasoningStatus: "passed" | "retried" | "needs_review" | "unavailable" | "skipped";
         /**
          * RedactionSummary
          * @description What redaction replaced, by identifier kind (counts only; never the values).
@@ -1047,7 +1432,7 @@ export interface components {
              * Code
              * @enum {string}
              */
-            code: "low_confidence_line" | "total_mismatch" | "unreadable_amount" | "unmapped_deduction" | "cap_unresolved" | "missing_document" | "missing_field";
+            code: "low_confidence_line" | "total_mismatch" | "unreadable_amount" | "unmapped_deduction" | "cap_unresolved" | "missing_document" | "missing_field" | "policy_term_unconfirmed";
             /** Message */
             message: string;
             /** Line Id */
@@ -1117,6 +1502,22 @@ export interface components {
          * @enum {string}
          */
         Severity: "info" | "low" | "medium" | "high" | "critical";
+        /** SignRequest */
+        SignRequest: {
+            /** Reviewer Name */
+            reviewer_name: string;
+            /**
+             * Reviewer Role
+             * @description e.g. 'TPA desk manager'
+             */
+            reviewer_role: string;
+            /**
+             * Declaration
+             * @description I have read this appeal and confirm it is accurate to the best of my knowledge.
+             * @constant
+             */
+            declaration: true;
+        };
         /**
          * SubLimit
          * @description A cap on what is payable for a named procedure or condition.
@@ -1717,6 +2118,294 @@ export interface operations {
                 };
                 content: {
                     "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    forums_api_v1_claims__claim_id__appeals_forums_get: {
+        parameters: {
+            query?: {
+                gro_filed_on?: string | null;
+                gro_outcome?: components["schemas"]["GroOutcome"] | null;
+                gro_replied_on?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForumOption"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_appeals_api_v1_claims__claim_id__appeals_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    draft_appeal_api_v1_claims__claim_id__appeals_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "idempotency-key"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftAppeal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_appeal_api_v1_claims__claim_id__appeals__version__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_appeal_api_v1_claims__claim_id__appeals__version__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppealEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    submit_appeal_api_v1_claims__claim_id__appeals__version__submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sign_appeal_api_v1_claims__claim_id__appeals__version__sign_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_appeal_api_v1_claims__claim_id__appeals__version__export_pdf_get: {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
                 };
             };
             /** @description Validation Error */

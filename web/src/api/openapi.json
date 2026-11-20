@@ -1014,6 +1014,627 @@
         }
       }
     },
+    "/api/v1/claims/{claim_id}/appeals/forums": {
+      "get": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Forums",
+        "description": "Where this appeal can go now, with the checklist behind each answer.",
+        "operationId": "forums_api_v1_claims__claim_id__appeals_forums_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "gro_filed_on",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Gro Filed On"
+            }
+          },
+          {
+            "name": "gro_outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/GroOutcome"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Gro Outcome"
+            }
+          },
+          {
+            "name": "gro_replied_on",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Gro Replied On"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ForumOption"
+                  },
+                  "title": "Response Forums Api V1 Claims  Claim Id  Appeals Forums Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claim_id}/appeals": {
+      "post": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Draft Appeal",
+        "description": "Draft the next version with the AppealDrafter. Repeating the request with the same\n``Idempotency-Key`` returns the same version instead of drafting (and paying) again.",
+        "operationId": "draft_appeal_api_v1_claims__claim_id__appeals_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftAppeal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppealVersion"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "List Appeals",
+        "operationId": "list_appeals_api_v1_claims__claim_id__appeals_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppealVersion"
+                  },
+                  "title": "Response List Appeals Api V1 Claims  Claim Id  Appeals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claim_id}/appeals/{version}": {
+      "get": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Get Appeal",
+        "operationId": "get_appeal_api_v1_claims__claim_id__appeals__version__get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppealVersion"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Edit Appeal",
+        "description": "Save a reviewer's edits as the next version. Amounts must stay placeholders.",
+        "operationId": "edit_appeal_api_v1_claims__claim_id__appeals__version__put",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppealEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppealVersion"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claim_id}/appeals/{version}/submit": {
+      "post": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Submit Appeal",
+        "operationId": "submit_appeal_api_v1_claims__claim_id__appeals__version__submit_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppealVersion"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claim_id}/appeals/{version}/sign": {
+      "post": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Sign Appeal",
+        "description": "A named reviewer signs; the SHA-256 of the exact content is stored with the signature.",
+        "operationId": "sign_appeal_api_v1_claims__claim_id__appeals__version__sign_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppealVersion"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claim_id}/appeals/{version}/export.pdf": {
+      "get": {
+        "tags": [
+          "appeals"
+        ],
+        "summary": "Export Appeal",
+        "description": "The signed letter as a PDF; refused (409) until a named reviewer has signed it.",
+        "operationId": "export_appeal_api_v1_claims__claim_id__appeals__version__export_pdf_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Version"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Download"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/meta/citations": {
       "get": {
         "tags": [
@@ -1110,6 +1731,108 @@
         "type": "object",
         "title": "Admission"
       },
+      "AppealContent": {
+        "properties": {
+          "subject": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "facts": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AppealItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "relief": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "relief_amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Relief Amount"
+          },
+          "enclosures": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "type": "array",
+            "title": "Enclosures",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "subject",
+          "facts",
+          "items",
+          "relief",
+          "relief_amount"
+        ],
+        "title": "AppealContent"
+      },
+      "AppealEdit": {
+        "properties": {
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "facts": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facts"
+          },
+          "relief": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relief"
+          },
+          "arguments": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ArgumentEdit"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Arguments"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AppealEdit",
+        "description": "A reviewer's changes; omitted sections stay as they are. Amounts stay placeholders."
+      },
       "AppealForum": {
         "type": "string",
         "enum": [
@@ -1118,6 +1841,106 @@
           "ombudsman"
         ],
         "title": "AppealForum"
+      },
+      "AppealItem": {
+        "properties": {
+          "flag_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Flag Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Amount"
+          },
+          "amount_ref": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Amount Ref"
+          },
+          "insurer_reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Insurer Reason"
+          },
+          "argument": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "citations": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Citations",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "flag_id",
+          "rule_id",
+          "amount",
+          "amount_ref",
+          "insurer_reason",
+          "argument"
+        ],
+        "title": "AppealItem",
+        "description": "One disputed deduction or rejection. Amount and insurer reason come from the engine and\nthe letter; only ``argument`` is drafted."
+      },
+      "AppealSignature": {
+        "properties": {
+          "reviewer_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reviewer Name"
+          },
+          "reviewer_role": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Reviewer Role"
+          },
+          "signed_by": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Signed By"
+          },
+          "signed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Signed At"
+          },
+          "content_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Content Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reviewer_name",
+          "reviewer_role",
+          "signed_by",
+          "signed_at",
+          "content_sha256"
+        ],
+        "title": "AppealSignature",
+        "description": "Who reviewed the appeal, and the SHA-256 of exactly what they signed."
       },
       "AppealStatus": {
         "type": "string",
@@ -1170,6 +1993,147 @@
           "forum"
         ],
         "title": "AppealSummary"
+      },
+      "AppealVersion": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Claim Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "forum": {
+            "$ref": "#/components/schemas/AppealForum"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AppealStatus",
+            "default": "draft"
+          },
+          "content": {
+            "$ref": "#/components/schemas/AppealContent"
+          },
+          "drafting": {
+            "$ref": "#/components/schemas/ReasoningStatus"
+          },
+          "prompt_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Ref"
+          },
+          "violations": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "type": "array",
+            "title": "Violations",
+            "default": []
+          },
+          "based_on": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Based On"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "created_by": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppealSignature"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exported_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exported At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "claim_id",
+          "version",
+          "forum",
+          "content",
+          "drafting",
+          "created_by",
+          "created_at"
+        ],
+        "title": "AppealVersion",
+        "description": "One immutable version of a claim's appeal. Edits create the next version."
+      },
+      "ArgumentEdit": {
+        "properties": {
+          "flag_id": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Flag Id"
+          },
+          "argument": {
+            "type": "string",
+            "maxLength": 6000,
+            "title": "Argument"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "flag_id",
+          "argument"
+        ],
+        "title": "ArgumentEdit"
       },
       "AuditLogEntry": {
         "properties": {
@@ -1656,6 +2620,50 @@
         "title": "ClaimMode",
         "description": "Where the claim is in its life, which decides which rules can fire."
       },
+      "ClaimNarratives": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ReasoningStatus"
+          },
+          "prompt_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Ref"
+          },
+          "violations": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "type": "array",
+            "title": "Violations",
+            "default": []
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FlagNarrative"
+            },
+            "type": "array",
+            "title": "Items",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ClaimNarratives",
+        "description": "Plain-language explanation and fix for each flag. Amounts stay engine-owned."
+      },
       "ClaimRecord": {
         "properties": {
           "hospital_id": {
@@ -1767,6 +2775,26 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/RedactionSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "policy_review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PolicyReview"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "narratives": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClaimNarratives"
               },
               {
                 "type": "null"
@@ -2103,6 +3131,29 @@
         ],
         "title": "DocumentOut"
       },
+      "DraftAppeal": {
+        "properties": {
+          "forum": {
+            "$ref": "#/components/schemas/AppealForum"
+          },
+          "gro_complaint": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GroComplaint"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forum"
+        ],
+        "title": "DraftAppeal"
+      },
       "FixCode": {
         "type": "string",
         "enum": [
@@ -2223,6 +3274,174 @@
         ],
         "title": "FlagKind",
         "description": "How a flag's amount relates to the totals.\n\n``deduction``: the engine expects the insurer to cut this amount; summed into ``at_risk``.\n``advisory``: a risk with no computed cut; the amount is the exposure, not a deduction.\n``dispute``: the insurer cut or rejected something it should not have; ``recoverable`` is\nsummed into ``recoverable_on_appeal``."
+      },
+      "FlagNarrative": {
+        "properties": {
+          "flag_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Flag Id"
+          },
+          "headline": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "explanation": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "fix": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "citations": {
+            "items": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "array",
+            "title": "Citations",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "flag_id",
+          "headline",
+          "explanation",
+          "fix"
+        ],
+        "title": "FlagNarrative"
+      },
+      "ForumCheck": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "met": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Met"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "met"
+        ],
+        "title": "ForumCheck"
+      },
+      "ForumOption": {
+        "properties": {
+          "forum": {
+            "$ref": "#/components/schemas/AppealForum"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/ForumCheck"
+            },
+            "type": "array",
+            "title": "Checks",
+            "default": []
+          },
+          "response_window": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Window"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forum",
+          "eligible"
+        ],
+        "title": "ForumOption"
+      },
+      "GroComplaint": {
+        "properties": {
+          "filed_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Filed On"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/GroOutcome"
+          },
+          "replied_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replied On"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "filed_on",
+          "outcome"
+        ],
+        "title": "GroComplaint",
+        "description": "The written complaint already sent to the insurer, if any."
+      },
+      "GroOutcome": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "rejected",
+          "unsatisfactory",
+          "no_reply"
+        ],
+        "title": "GroOutcome",
+        "description": "What came of a written complaint to the insurer's Grievance Redressal Officer."
       },
       "HTTPValidationError": {
         "properties": {
@@ -2907,6 +4126,137 @@
         ],
         "title": "PolicyClause"
       },
+      "PolicyReview": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ReasoningStatus"
+          },
+          "prompt_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Ref"
+          },
+          "violations": {
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "type": "array",
+            "title": "Violations",
+            "default": []
+          },
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyTermNote"
+            },
+            "type": "array",
+            "title": "Terms",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PolicyReview",
+        "description": "The policy interpreter's reading: which clause governs each term, in plain language."
+      },
+      "PolicyTermKind": {
+        "type": "string",
+        "enum": [
+          "room_rent_cap",
+          "proportionate_deduction",
+          "icu_cap",
+          "copay",
+          "sub_limit",
+          "ped_waiting",
+          "specific_waiting",
+          "associated_expenses",
+          "non_payable_cover",
+          "claim_documents"
+        ],
+        "title": "PolicyTermKind",
+        "description": "Policy terms the interpreter maps to clauses; the engine reads the same terms."
+      },
+      "PolicyTermNote": {
+        "properties": {
+          "term": {
+            "$ref": "#/components/schemas/PolicyTermKind"
+          },
+          "clause_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clause Id"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Prose"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "needs_confirmation": {
+            "type": "boolean",
+            "title": "Needs Confirmation",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "term",
+          "summary",
+          "confidence"
+        ],
+        "title": "PolicyTermNote"
+      },
+      "Prose": {
+        "properties": {
+          "template": {
+            "type": "string",
+            "maxLength": 6000,
+            "title": "Template"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "template"
+        ],
+        "title": "Prose",
+        "description": "Model- or person-written text whose rupee amounts are placeholders.\n\n``template`` holds ``{{totals.at_risk}}``-style placeholders; ``text`` is the same prose with\neach placeholder filled from the rules engine. ``text`` is None when the template could not\nbe rendered (a step that needs review), so the UI shows a warning instead."
+      },
       "ReadinessReport": {
         "properties": {
           "ready": {
@@ -2927,6 +4277,18 @@
           "checks"
         ],
         "title": "ReadinessReport"
+      },
+      "ReasoningStatus": {
+        "type": "string",
+        "enum": [
+          "passed",
+          "retried",
+          "needs_review",
+          "unavailable",
+          "skipped"
+        ],
+        "title": "ReasoningStatus",
+        "description": "How a model-written step ended, after its guardrails ran.\n\n``needs_review``: the output failed validation twice; it is kept, hidden behind a warning,\nfor a person to fix. ``unavailable``: no output (model down, budget reached, replay miss);\nthe deterministic audit still stands without it."
       },
       "RedactionSummary": {
         "properties": {
@@ -2964,7 +4326,8 @@
               "unmapped_deduction",
               "cap_unresolved",
               "missing_document",
-              "missing_field"
+              "missing_field",
+              "policy_term_unconfirmed"
             ],
             "title": "Code"
           },
@@ -3175,6 +4538,37 @@
           "critical"
         ],
         "title": "Severity"
+      },
+      "SignRequest": {
+        "properties": {
+          "reviewer_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Reviewer Name"
+          },
+          "reviewer_role": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Reviewer Role",
+            "description": "e.g. 'TPA desk manager'"
+          },
+          "declaration": {
+            "type": "boolean",
+            "const": true,
+            "title": "Declaration",
+            "description": "I have read this appeal and confirm it is accurate to the best of my knowledge."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reviewer_name",
+          "reviewer_role",
+          "declaration"
+        ],
+        "title": "SignRequest"
       },
       "SubLimit": {
         "properties": {
