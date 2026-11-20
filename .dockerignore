@@ -5,11 +5,10 @@
 !api/uv.lock
 !api/src/
 !web/
-!demo_cases/*/llm_cache/
-!demo_cases/*/extraction/
-# The synthetic documents, for "Load demo cases" (about 2.5 MB).
-!demo_cases/*/*.pdf
-!demo_cases/*/*.jpg
+# The parent must be re-included explicitly, or the builder never walks into demo_cases/.
+# Everything replay mode needs ships: recordings, extractions, narration audio, documents.
+!demo_cases/
+demo_cases/**/*.md
 web/node_modules/
 web/dist/
 web/coverage/
