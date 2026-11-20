@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
+from arzi.adapters.demo_seed import DEMO_HOSPITAL
 from arzi.domain.enums import (
     ClaimMode,
     CopayBase,
@@ -26,7 +27,6 @@ from arzi.domain.models import (
     BillLine,
     ClaimFacts,
     Copay,
-    Hospital,
     InsurerDeduction,
     InsurerLetter,
     Patient,
@@ -34,7 +34,6 @@ from arzi.domain.models import (
     PerDayAmountCap,
     Policy,
     PolicyClause,
-    RoomCategory,
     SubLimit,
     WaitingCondition,
 )
@@ -256,15 +255,7 @@ _BASE_POLICY = Policy(
     continuous_cover_months=0,
 )
 
-HOSPITAL = Hospital(
-    name=HOSPITAL_NAME,
-    city="Ahmedabad",
-    room_categories=(
-        RoomCategory(name="General ward", rate_per_day=rupees(2_500)),
-        RoomCategory(name="Twin sharing", rate_per_day=rupees(4_500)),
-        RoomCategory(name="Single private AC", rate_per_day=rupees(8_000)),
-    ),
-)
+HOSPITAL = DEMO_HOSPITAL
 
 ALL_CLAIM_DOCUMENTS = (
     DocumentKind.POLICY,
