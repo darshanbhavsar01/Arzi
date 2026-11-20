@@ -185,12 +185,20 @@ def ai_studio_models(api_key: str, timeout_s: float) -> _AsyncModels:
 
 
 class ReplayLlmClient:
-    """Serves recorded responses; ``<root>/*/llm_cache/<key>.json``."""
+    """Serves recorded responses; ``<root>/*/llm_cache/<key>.json``.
 
-    def __init__(self, root: Path) -> None:
+    ``delay_s`` paces each response (demo presentation: a recorded audit otherwise finishes
+    faster than anyone can watch it stream). Runs still show the responses as replayed.
+    """
+
+    def __init__(self, root: Path, *, delay_s: float = 0.0, sleep: Sleep = anyio.sleep) -> None:
         self._root = root
+        self._delay_s = delay_s
+        self._sleep = sleep
 
     async def generate_structured[T: BaseModel](self, request: LlmRequest[T]) -> LlmResult[T]:
+        if self._delay_s:
+            await self._sleep(self._delay_s)
         key = cache_key(request)
         matches = sorted(self._root.glob(f"*/llm_cache/{key}.json"))
         if not matches:

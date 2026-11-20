@@ -78,6 +78,8 @@ class Settings(BaseSettings):
 
     replay_dir: Path = Path(__file__).resolve().parents[3] / "demo_cases"
     """Recorded LLM responses are read from ``<replay_dir>/*/llm_cache/``."""
+    replay_delay_ms: int = Field(default=0, ge=0, le=5000)
+    """Pause before each recorded response, so a demo audit streams at a watchable pace."""
     llm_record_dir: Path | None = None
     """When set in live mode, every response is also written here as a replay recording."""
     llm_timeout_s: float = Field(default=90.0, gt=0)

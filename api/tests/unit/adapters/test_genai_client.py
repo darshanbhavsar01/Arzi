@@ -221,3 +221,17 @@ async def test_model_factories_keep_the_sdk_client_alive(
     response = await models.generate_content(model="m", contents=["x"], config=None)
     assert response == "response"
     assert not _ClosingClient.transport["closed"]
+
+
+async def test_replay_can_be_paced_for_a_watchable_demo(tmp_path: Path) -> None:
+    from arzi.adapters.genai_client import ReplayLlmClient
+
+    pauses: list[float] = []
+
+    async def sleep(seconds: float) -> None:
+        pauses.append(seconds)
+
+    client = ReplayLlmClient(tmp_path, delay_s=0.6, sleep=sleep)
+    with pytest.raises(LlmUnavailableError):
+        await client.generate_structured(_request())
+    assert pauses == [0.6]

@@ -74,7 +74,7 @@ def build_llm(
     settings: Settings, ledger: CostLedgerStore, clock: Callable[[], dt.datetime]
 ) -> LlmClient:
     if settings.llm_mode is LlmMode.REPLAY:
-        return ReplayLlmClient(settings.replay_dir)
+        return ReplayLlmClient(settings.replay_dir, delay_s=settings.replay_delay_ms / 1000)
     if settings.llm_mode is LlmMode.FAKE:
         return FakeLlmClient(FixtureLlmClient(settings.replay_dir))
     if not settings.model_flash:
