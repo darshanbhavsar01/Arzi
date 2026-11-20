@@ -30,7 +30,7 @@
     "icu_cap_per_day": null,
     "copay": {
       "percent": "10",
-      "on_claimed_amount": false,
+      "applies_to": "admissible",
       "clause": "7.4"
     },
     "sub_limits": [

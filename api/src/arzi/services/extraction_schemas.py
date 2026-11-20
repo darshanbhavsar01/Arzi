@@ -73,10 +73,20 @@ class RoomRentCapText(_Schema):
     clause: str | None = None
 
 
+class CopayBaseText(StrEnum):
+    ADMISSIBLE = "admissible"
+    CLAIMED = "claimed"
+
+
 class CopayText(_Schema):
     percent: str | None = Field(None, description="Printed co-payment percentage; null if nil")
-    on_claimed_amount: bool = Field(
-        False, description="True only if the policy applies co-pay to the claimed amount"
+    applies_to: CopayBaseText = Field(
+        CopayBaseText.ADMISSIBLE,
+        description=(
+            "What the percentage is applied to, as the policy words it: 'admissible' for the "
+            "admissible, approved or payable claim amount (the usual wording); 'claimed' only "
+            "if the policy explicitly says the claimed or billed amount"
+        ),
     )
     clause: str | None = None
 

@@ -12,6 +12,7 @@ from arzi.services.extraction_schemas import (
     BillExtraction,
     BillLineText,
     ClauseText,
+    CopayBaseText,
     CopayText,
     DeductionText,
     DischargeExtraction,
@@ -171,7 +172,7 @@ def test_copay_icu_cap_and_merged_policies() -> None:
     schedule = PolicyExtraction(
         sum_insured="Rs. 3,00,000",
         first_inception_date="2024-04-12",
-        copay=CopayText(percent="20", on_claimed_amount=True, clause="7.4"),
+        copay=CopayText(percent="20", applies_to=CopayBaseText.CLAIMED, clause="7.4"),
         icu_cap_per_day="Rs. 10,000",
         sub_limits=[SubLimitText(item="Cataract", limit="Rs. 40,000", clause="6.1")],
     )
@@ -315,3 +316,17 @@ def test_match_line_refuses_ambiguous_rows() -> None:
     )
     facts = reconcile(_input(bills=[bill])).facts
     assert match_line("Charges", facts.bill_lines) is None
+
+
+def test_amounts_inside_words_need_a_currency_mark() -> None:
+    policy = POLICY.model_copy(
+        update={
+            "sub_limits": [
+                SubLimitText(item="Cataract", limit="Rs. 40,000.00 per eye", clause="6.1"),
+                SubLimitText(item="Hernia", limit="up to 1 per year"),
+            ]
+        }
+    )
+    outcome = reconcile(_input(policies=[policy]))
+    assert [s.limit for s in outcome.facts.policy.sub_limits] == [rupees(40_000)]
+    assert _codes(outcome) == ["missing_field"]

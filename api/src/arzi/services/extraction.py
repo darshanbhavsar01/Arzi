@@ -18,8 +18,8 @@ from arzi.services.ports import FilePart, LlmClient, LlmRequest, StoredDocument
 
 CLASSIFY = load_prompt("classify_document", 1)
 PROMPTS: dict[DocType, Prompt] = {
-    DocType.POLICY_SCHEDULE: load_prompt("extract_policy", 1),
-    DocType.POLICY_WORDING: load_prompt("extract_policy", 1),
+    DocType.POLICY_SCHEDULE: load_prompt("extract_policy", 2),
+    DocType.POLICY_WORDING: load_prompt("extract_policy", 2),
     DocType.ITEMISED_BILL: load_prompt("extract_bill", 1),
     DocType.DISCHARGE_SUMMARY: load_prompt("extract_discharge", 1),
     DocType.INSURER_LETTER: load_prompt("extract_insurer_letter", 1),

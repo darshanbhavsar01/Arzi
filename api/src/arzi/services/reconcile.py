@@ -45,6 +45,7 @@ from arzi.rules.matching import THRESHOLD, coverage_score, normalise
 from arzi.services.errors import AppError
 from arzi.services.extraction_schemas import (
     BillExtraction,
+    CopayBaseText,
     DischargeExtraction,
     DocType,
     InsurerLetterExtraction,
@@ -54,6 +55,8 @@ from arzi.services.extraction_schemas import (
 )
 
 LOW_CONFIDENCE = 0.8
+_MARKED = r"(?:₹|\bRs\.?|\bINR)\s*\d[\d,]*(?:\.\d+)?"
+_MARKED_AMOUNT = re.compile(_MARKED, re.IGNORECASE)
 _PERCENT = re.compile(r"(\d+(?:\.\d+)?)")
 _DATE_FORMATS = ("%Y-%m-%d", "%d-%b-%Y", "%d/%m/%Y", "%d-%m-%Y", "%d %b %Y", "%d %B %Y")
 
@@ -155,11 +158,23 @@ def months_between(start: dt.date, end: dt.date) -> int:
 
 
 def _amount(text: str | None) -> Paise | None:
+    """A printed amount, also when it sits in words ("Rs. 40,000.00 per eye").
+
+    Inside surrounding words only a figure marked as money (₹, Rs or INR) counts, so the "1"
+    of "1% of sum insured" is never read as one rupee.
+    """
     if text is None:
         return None
     try:
         return to_paise(text)
     except MoneyParseError:
+        pass
+    match = _MARKED_AMOUNT.search(text)
+    if match is None:
+        return None
+    try:
+        return to_paise(match.group(0))
+    except MoneyParseError:  # pragma: no cover - the pattern admits only plain amounts
         return None
 
 
@@ -340,7 +355,9 @@ def _copay(p: PolicyExtraction, issues: _Issues) -> Copay | None:
     if pct is None:
         issues.add("missing_field", "The co-payment percentage could not be read.")
         return None
-    base = CopayBase.CLAIMED if p.copay.on_claimed_amount else CopayBase.ADMISSIBLE
+    base = (
+        CopayBase.CLAIMED if p.copay.applies_to is CopayBaseText.CLAIMED else CopayBase.ADMISSIBLE
+    )
     return Copay(pct=pct, base=base, clause_id=p.copay.clause)
 
 
