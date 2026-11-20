@@ -8,7 +8,7 @@
 | 2 | done | 2026-11-20 | Generator for 3 cases: 20 PDFs + scanned JPG, facts/expected/identifiers JSON, README; byte-stable. |
 | 3 | done | 2026-11-20 | Upload → SSE-streamed audit → persisted claim; live (Vertex AI; AI Studio for testing) / replay / fake LLM modes; redaction; reconcile; cost ledger + budget guard; Firestore/GCS adapters. Recorded A, B, C replay. |
 | 4 | done | 2026-11-20 | ADK Workflow audit (policy interpreter + flag explainer as guarded LlmAgents), citation whitelist + amount guard, forum-specific AppealDrafter, versioned review/sign with SHA-256, signed PDF export, forum checklist. Recorded A, B, C replay. |
-| 5 | not started | | Desk web app |
+| 5 | done | 2026-11-20 | Desk web app: design system, shell, worklist, new-audit wizard, claim workspace (pdf.js viewer, flags, bill lines, policy, activity), appeal editor with signing and PDF, appeals list, settings; demo cases in one click. |
 | 6 | not started | | Family experience |
 | 7 | not started | | Production hardening |
 | 8 | not started | | Analytics |
@@ -58,6 +58,15 @@
 | Signed PDF opens and shows the hash | pass: pypdfium2 opens it and finds `Content SHA-256: <hash>` and the reviewer line on every page; rendered pages reviewed for cases B (2 pages) and C; identical bytes on re-export |
 | Recorded responses in `llm_cache`; replay demos all three cases | pass: `record_demo.py case_a case_b case_c --replay` exits 0 offline; every agent step and both appeals `passed` |
 | `make check` green | pass (recipes run directly): 607 API tests, 99.15% coverage; rules gate 100% (153 tests); ruff, mypy strict, ESLint, Prettier, tsc, Vitest |
+
+### Phase 5 gate
+| Check | Result |
+|---|---|
+| Three Playwright journeys green | pass: A (wizard upload → streamed audit → ₹67,887.50 at risk, 4 flags, fix saves ₹46,875, maths, accept, line opens the photographed bill), B (draft GRO appeal → Verify acknowledgement → submit → sign → PDF download starts with `%PDF-`), C (Ombudsman disabled until a rejected complaint is entered; appeal cites the 36-month PED cap, ₹3,10,000), plus sign-in. Production build served by FastAPI, replay mode |
+| axe: zero serious/critical | pass on sign-in, wizard, workspace, appeal editor and forum checklist (one real issue fixed: the account button's name did not contain its visible initials) |
+| Lighthouse desktop ≥ 90 (performance, accessibility) | pass, signed in: worklist 93 / 100, claim workspace 100 / 99, appeal editor 100 / 98; best practices 100; CLS ≤ 0.055 |
+| Screenshots in `docs/screens/` | pass: 8 screens at 1600×1000 from a clean demo load |
+| `make check` green | pass (recipes run directly): 614 API tests, 99.16% coverage; rules gate 100%; ESLint strict, Prettier, tsc, 30 Vitest tests |
 
 ## Decisions
 - 2026-11-20 — Record architecture decisions as ADRs (ADR-0001).
@@ -217,6 +226,28 @@
 - 2026-11-20 — Reasoning agents default to a 1024-token thinking budget and an 8192-token output
   cap: with the model's default budget the policy interpreter's JSON came back truncated.
 
+- 2026-11-20 — Phase 5: submission is the deck, the live link and a demo video (not the code), so the
+  end-to-end product and its UI come first; quality gates stay on.
+- 2026-11-20 — Desk UI on Tailwind v4 with the default palette removed (`--color-*: initial`), Radix
+  primitives via the `radix-ui` package, TanStack Query for server state only (no global store),
+  TanStack Table 8 (9 is a new API), native `<select>` in dense tables and filters.
+- 2026-11-20 — New audit keeps files in the browser until Run audit, so a wrong file can be removed and
+  abandoned audits leave no draft claims (there is no document delete endpoint).
+- 2026-11-20 — Locked amounts: the amount guard guarantees every ₹ figure in rendered appeal text came from
+  a placeholder, so the editor marks rendered ₹ figures as locked chips and inserts placeholders from a
+  menu in edit mode; typed amounts are rejected by the server (422) and shown inline.
+- 2026-11-20 — The worklist rows, flag decisions, run history, document types, workspace panel and
+  "Load demo cases" are API additions for the desk (`/claims` summary fields, `/flags/{id}/review`,
+  `/runs`, `/meta/workspace`, `/demo/cases`). Flag decisions are audited; dismissing needs a reason.
+- 2026-11-20 — The money band splits the bill by deduction flags (they sum exactly to at risk, including
+  claim-level co-payment), not by line deductions.
+- 2026-11-20 — `ARZI_REPLAY_DELAY_MS` paces recorded responses for demos (default 0). The deployed
+  demo should set it (about 600) so the streamed pipeline is visible; runs still say "Replayed".
+- 2026-11-20 — KPI tiles show exact amounts below a lakh (₹67,887.50), lakh/crore above, so tiles match
+  the rows.
+- 2026-11-20 — SPA served by FastAPI with client-route fallback and cache headers (ADR-0007). The image
+  now ships the synthetic documents and sets `ARZI_REPLAY_DIR` (replay previously resolved inside the venv).
+
 ## Model choices
 Checked 2026-11-20 with `make models` (listing only; first real call is in Phase 3). Rule: newest of
 each tier, `asia-south1` if served there, otherwise `global`.
@@ -288,6 +319,14 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 4: fixed a regression from the SDK downgrade found while recording: google-genai 2.x closes
   its transport when the `Client` is garbage-collected, so the factories now keep it alive.
 
+- Phase 5: sign-in offers only the demo workspace (Google SSO is Phase 7); "Share with family" and the
+  free family check are Phase 6; Analytics is not in the sidebar until Phase 8.
+- Phase 5: pdf.js highlights search hits on the text layer; the photographed bill (JPEG) has no text
+  layer, so lines on it open the image without a highlight.
+- Phase 5: the IRDAI discharge clock counts from claim creation (no discharge-request time is captured yet).
+- Phase 5: Lighthouse was run with the Node API against a signed-in Chrome profile (the CLI's fresh
+  profile lands on sign-in), from a scratch install so it is not a project dependency.
+
 ## Follow-ups
 - Phase 3: models live in different locations (Flash/Pro/TTS global, Live asia-south1), but
   settings have one `ARZI_VERTEX_LOCATION` (deployed as `global`). Add a per-model location map
@@ -341,6 +380,12 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 4: the GRO prompt lets the model say "within 15 days"; prefer "about 15 days" while
   `INSURER_GRIEVANCE_15D` is `verify`.
 - Phase 4: re-record the agent and appeal responses on Vertex AI with the demo-day model.
+- Phase 5: capture the discharge-request time and run the IRDAI clock from it.
+- Phase 5: a document delete endpoint, so uploaded files can be replaced on a draft claim.
+- Phase 5: an OCR text layer for photographed bills (Document AI or Gemini boxes) to highlight lines on images.
+- Phase 5: CI job for `make test-e2e` (needs uv and Chromium on the runner).
+- Phase 7/9: a hybrid LLM mode for the live link (replay for the demo cases, live Vertex AI for anything
+  else behind the budget guard), so a judge's own document does not fail with `replay-miss`.
 
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.

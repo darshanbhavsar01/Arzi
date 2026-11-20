@@ -8,7 +8,11 @@ reviews and signs.
 > Arzi is decision support. A qualified person reviews and signs every appeal.
 > All data in this repository is synthetic; hospitals and insurers named in demos are fictional.
 
-<!-- Screenshot: added in Phase 5 (docs/screens/) -->
+![Claim workspace: money at stake, the flags with their citations and fix, beside the photographed bill](docs/screens/03-workspace-pre-submission.png)
+
+More screens in [`docs/screens/`](docs/screens/): worklist, deduction workspace, bill lines, forum checklist, appeal editor and the signed appeal.
+
+**Try it:** open the app, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
 
 ## Quick start
 
