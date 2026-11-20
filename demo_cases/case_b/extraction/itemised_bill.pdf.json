@@ -1,0 +1,148 @@
+{
+  "document": "itemised_bill.pdf",
+  "sha256": "0ecf33328adbd228704ab6b8c0b579b3bbe9de2f9ba6ca4d9283433c2492161b",
+  "document_type": "itemised_bill",
+  "extraction": {
+    "identifiers": {
+      "patient_name": "Hemlata Dilip Joshi",
+      "phone": "+91 99999 02468",
+      "email": null,
+      "address": "12, Gulmohar Park (fictional), Maninagar, Ahmedabad 380008",
+      "aadhaar": null,
+      "pan": null,
+      "uhid": "SMH-UHID-0388",
+      "ip_number": "IP/2026/10/0652",
+      "policy_number": "SHI/PSF/2026/003881",
+      "member_id": null,
+      "claim_number": null
+    },
+    "hospital_name": "Sanjeevani Multispeciality Hospital",
+    "patient_age": 54,
+    "admission_date": "2026-10-03",
+    "discharge_date": "2026-10-08",
+    "room_category": "Single private AC",
+    "lines": [
+      {
+        "serial": 1,
+        "description": "Single private AC room",
+        "category": "room",
+        "qty": "4",
+        "rate": "8,000.00",
+        "amount": "32,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 2,
+        "description": "ICU charges",
+        "category": "icu",
+        "qty": "1",
+        "rate": "15,000.00",
+        "amount": "15,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 3,
+        "description": "Surgeon fees",
+        "category": "surgeon",
+        "qty": "1",
+        "rate": "60,000.00",
+        "amount": "60,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 4,
+        "description": "Operation theatre charges",
+        "category": "ot",
+        "qty": "1",
+        "rate": "25,000.00",
+        "amount": "25,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 5,
+        "description": "Nursing charges",
+        "category": "nursing",
+        "qty": "1",
+        "rate": "8,000.00",
+        "amount": "8,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 6,
+        "description": "Pharmacy and medicines",
+        "category": "pharmacy",
+        "qty": "1",
+        "rate": "30,000.00",
+        "amount": "30,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 7,
+        "description": "Laboratory and radiology",
+        "category": "diagnostics",
+        "qty": "1",
+        "rate": "12,000.00",
+        "amount": "12,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 8,
+        "description": "Bipolar hip prosthesis (implant)",
+        "category": "implant",
+        "qty": "1",
+        "rate": "40,000.00",
+        "amount": "40,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 9,
+        "description": "Laundry charges",
+        "category": "non_payable",
+        "qty": "1",
+        "rate": "1,200.00",
+        "amount": "1,200.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 10,
+        "description": "Cold pack / hot pack",
+        "category": "non_payable",
+        "qty": "1",
+        "rate": "800.00",
+        "amount": "800.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 11,
+        "description": "Crepe bandage",
+        "category": "non_payable",
+        "qty": "1",
+        "rate": "1,500.00",
+        "amount": "1,500.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 12,
+        "description": "Registration charges",
+        "category": "other",
+        "qty": "1",
+        "rate": "1,000.00",
+        "amount": "1,000.00",
+        "page": 1,
+        "confidence": 0.97
+      }
+    ],
+    "printed_total": "2,26,500.00"
+  }
+}

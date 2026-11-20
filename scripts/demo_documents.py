@@ -294,7 +294,7 @@ def itemised_bill(case: DemoCase, path: Path) -> None:
             str(line.line_id),
             line.description,
             CATEGORY_LABEL[line.category],
-            str(line.qty.normalize()),
+            format(line.qty.normalize(), "f"),
             money(_rate(line)),
             money(line.amount),
         ]
@@ -445,7 +445,11 @@ def policy_schedule(case: DemoCase, path: Path) -> None:
         ["Sum insured (floater)", rs(policy.sum_insured), "-"],
         ["Room rent limit", _room_limit(case), "4.2"],
         ["ICU limit", "No limit (actual charges)", "4.4"],
-        ["Co-payment", f"{copay.pct.normalize()}% of admissible claim" if copay else "Nil", "7.4"],
+        [
+            "Co-payment",
+            f"{copay.pct.normalize():f}% of admissible claim" if copay else "Nil",
+            "7.4",
+        ],
         ["Sub-limits", sub_limits or "None", "6.1"],
         ["Specific waiting periods", specific or "None", "5.2"],
         ["Pre-existing diseases declared", ped or "None declared", "5.1"],

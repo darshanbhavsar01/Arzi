@@ -1,0 +1,59 @@
+{
+  "document": "policy_schedule.pdf",
+  "sha256": "42d9460fb1cdfa2070cf080f2dd39d19af4ca9df96103cfe9b4f8bf8a799288f",
+  "document_type": "policy_schedule",
+  "extraction": {
+    "identifiers": {
+      "patient_name": "Hemlata Dilip Joshi",
+      "phone": null,
+      "email": "hemlata.joshi@example.com",
+      "address": "12, Gulmohar Park (fictional), Maninagar, Ahmedabad 380008",
+      "aadhaar": null,
+      "pan": "ZQXPJ7364M",
+      "uhid": null,
+      "ip_number": null,
+      "policy_number": "SHI/PSF/2026/003881",
+      "member_id": "SHI-M-0388102",
+      "claim_number": null
+    },
+    "insurer": "Suraksha Health Insurance Co. (fictional)",
+    "product": "Parivar Suraksha Floater (fictional)",
+    "sum_insured": "Rs. 5,00,000.00",
+    "first_inception_date": "2024-04-03",
+    "room_rent_cap": {
+      "kind": "per_day_amount",
+      "amount": "Rs. 5,000.00",
+      "percent": null,
+      "category": null,
+      "clause": "4.2"
+    },
+    "icu_cap_per_day": null,
+    "copay": {
+      "percent": "10",
+      "on_claimed_amount": false,
+      "clause": "7.4"
+    },
+    "sub_limits": [
+      {
+        "item": "Cataract",
+        "limit": "Rs. 40,000.00",
+        "clause": "6.1"
+      }
+    ],
+    "specific_waiting": [
+      {
+        "condition": "Cataract",
+        "months": 24,
+        "clause": "5.2"
+      },
+      {
+        "condition": "Hernia",
+        "months": 24,
+        "clause": "5.2"
+      }
+    ],
+    "ped_declared": [],
+    "non_medical_cover_opted": false,
+    "clauses": []
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "document": "bill_scanned.jpg",
+  "sha256": "96ff2bfd19801c283b574f82d73f904d7ef4ae87f1fbbbe00d4bec4fd7d449a2",
+  "document_type": "itemised_bill",
+  "extraction": {
+    "identifiers": {
+      "patient_name": "Ramesh Kantilal Parmar",
+      "phone": "+91 99999 01234",
+      "email": null,
+      "address": "B-14, Shantivan Society (fictional), Vastrapur, Ahmedabad 380015",
+      "aadhaar": null,
+      "pan": null,
+      "uhid": "SMH-UHID-0417",
+      "ip_number": "IP/2026/10/0731",
+      "policy_number": "SHI/PSF/2026/004417",
+      "member_id": null,
+      "claim_number": null
+    },
+    "hospital_name": "Sanjeevani Multispeciality Hospital",
+    "patient_age": 67,
+    "admission_date": "2026-10-12",
+    "discharge_date": "2026-10-17",
+    "room_category": "Single private AC",
+    "lines": [
+      {
+        "serial": 1,
+        "description": "Single private AC room",
+        "category": "room",
+        "qty": "4",
+        "rate": "8,000.00",
+        "amount": "32,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 2,
+        "description": "ICU charges",
+        "category": "icu",
+        "qty": "1",
+        "rate": "15,000.00",
+        "amount": "15,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 3,
+        "description": "Surgeon fees",
+        "category": "surgeon",
+        "qty": "1",
+        "rate": "60,000.00",
+        "amount": "60,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 4,
+        "description": "Operation theatre charges",
+        "category": "ot",
+        "qty": "1",
+        "rate": "25,000.00",
+        "amount": "25,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 5,
+        "description": "Nursing charges",
+        "category": "nursing",
+        "qty": "1",
+        "rate": "8,000.00",
+        "amount": "8,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 6,
+        "description": "Pharmacy and medicines",
+        "category": "pharmacy",
+        "qty": "1",
+        "rate": "30,000.00",
+        "amount": "30,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 7,
+        "description": "Laboratory and radiology",
+        "category": "diagnostics",
+        "qty": "1",
+        "rate": "12,000.00",
+        "amount": "12,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 8,
+        "description": "Bipolar hip prosthesis (implant)",
+        "category": "implant",
+        "qty": "1",
+        "rate": "40,000.00",
+        "amount": "40,000.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 9,
+        "description": "Laundry charges",
+        "category": "non_payable",
+        "qty": "1",
+        "rate": "1,200.00",
+        "amount": "1,200.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 10,
+        "description": "Cold pack / hot pack",
+        "category": "non_payable",
+        "qty": "1",
+        "rate": "800.00",
+        "amount": "800.00",
+        "page": 1,
+        "confidence": 0.97
+      },
+      {
+        "serial": 11,
+        "description": "Crepe bandage",
+        "category": "non_payable",
+        "qty": "1",
+        "rate": "1,500.00",
+        "amount": "1,500.00",
+        "page": 1,
+        "confidence": 0.97
+      }
+    ],
+    "printed_total": "2,25,500.00"
+  }
+}

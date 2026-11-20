@@ -1,0 +1,27 @@
+{
+  "document": "discharge_summary.pdf",
+  "sha256": "a6d8e0ac39f66dc15845c1b411ed9c84eb3a726277259a1334f3921c00a73d74",
+  "document_type": "discharge_summary",
+  "extraction": {
+    "identifiers": {
+      "patient_name": "Bhanuben Mahendra Patel",
+      "phone": "+91 99999 03579",
+      "email": null,
+      "address": null,
+      "aadhaar": "9273 6481 5032",
+      "pan": null,
+      "uhid": "SMH-UHID-0459",
+      "ip_number": "IP/2026/10/0802",
+      "policy_number": "SHI/PSF/2026/002236",
+      "member_id": null,
+      "claim_number": null
+    },
+    "patient_age": 63,
+    "admission_date": "2026-10-20",
+    "discharge_date": "2026-10-24",
+    "diagnosis": "Primary osteoarthritis, right knee",
+    "icd10": "M17.1",
+    "procedure": "Right total knee replacement",
+    "room_category": "Twin sharing"
+  }
+}

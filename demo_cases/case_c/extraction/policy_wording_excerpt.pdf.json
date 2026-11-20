@@ -1,0 +1,87 @@
+{
+  "document": "policy_wording_excerpt.pdf",
+  "sha256": "a640e50eaf1342e9c936ba6125a3a9d8674bed247bf60bb5be904548e1f358fc",
+  "document_type": "policy_wording",
+  "extraction": {
+    "identifiers": {
+      "patient_name": null,
+      "phone": null,
+      "email": null,
+      "address": null,
+      "aadhaar": null,
+      "pan": null,
+      "uhid": null,
+      "ip_number": null,
+      "policy_number": null,
+      "member_id": null,
+      "claim_number": null
+    },
+    "insurer": "Suraksha Health Insurance Co. (fictional)",
+    "product": "Parivar Suraksha Floater (fictional)",
+    "sum_insured": null,
+    "first_inception_date": null,
+    "room_rent_cap": null,
+    "icu_cap_per_day": null,
+    "copay": null,
+    "sub_limits": [],
+    "specific_waiting": [],
+    "ped_declared": [],
+    "non_medical_cover_opted": null,
+    "clauses": [
+      {
+        "id": "4.2",
+        "title": "Room rent",
+        "text": "Room, boarding and nursing charges are payable up to the room-rent limit shown in the Policy Schedule for each day of hospitalisation. Charges above the limit are borne by the insured person.",
+        "page": 1
+      },
+      {
+        "id": "4.3",
+        "title": "Proportionate deduction",
+        "text": "If the insured person occupies a room above the eligible limit, associated medical expenses are payable in the proportion that the eligible room rent bears to the room rent actually charged. Associated medical expenses do not include pharmacy and consumables, implants and medical devices, and diagnostics, and no proportionate deduction applies to ICU charges.",
+        "page": 1
+      },
+      {
+        "id": "4.4",
+        "title": "ICU charges",
+        "text": "Intensive care unit charges are payable up to the ICU limit shown in the Policy Schedule, if any.",
+        "page": 1
+      },
+      {
+        "id": "5.1",
+        "title": "Pre-existing diseases",
+        "text": "Expenses related to a pre-existing disease declared in the proposal are covered after the waiting period stated in the Policy Schedule of continuous coverage since the first policy with the Company.",
+        "page": 2
+      },
+      {
+        "id": "5.2",
+        "title": "Specific waiting periods",
+        "text": "Treatment of the conditions listed in the Policy Schedule is covered after the stated waiting period of continuous coverage.",
+        "page": 2
+      },
+      {
+        "id": "6.1",
+        "title": "Sub-limits",
+        "text": "Payment for the procedures listed in the Policy Schedule is limited to the amount stated against each procedure.",
+        "page": 2
+      },
+      {
+        "id": "7.4",
+        "title": "Co-payment",
+        "text": "Each admissible claim is subject to the co-payment percentage stated in the Policy Schedule, applied on the admissible claim amount.",
+        "page": 3
+      },
+      {
+        "id": "8.1",
+        "title": "Non-medical expenses",
+        "text": "Items listed as not payable in the list of non-medical expenses annexed to this policy are not payable unless an optional cover for them is in force.",
+        "page": 3
+      },
+      {
+        "id": "9.2",
+        "title": "Claim documents",
+        "text": "Claims must be supported by the discharge summary, the final itemised bill, investigation reports and, where an implant is used, the implant invoice and sticker.",
+        "page": 3
+      }
+    ]
+  }
+}

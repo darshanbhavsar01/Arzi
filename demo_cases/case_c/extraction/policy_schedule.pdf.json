@@ -1,0 +1,61 @@
+{
+  "document": "policy_schedule.pdf",
+  "sha256": "84f7c2d6868c18a44552cb55e42c8ca8f9efd914a33546b2f833c9a157f485d8",
+  "document_type": "policy_schedule",
+  "extraction": {
+    "identifiers": {
+      "patient_name": "Bhanuben Mahendra Patel",
+      "phone": null,
+      "email": "bhanuben.patel@example.com",
+      "address": "7, Ambika Nagar (fictional), Naranpura, Ahmedabad 380013",
+      "aadhaar": null,
+      "pan": "ZQXPB2957L",
+      "uhid": null,
+      "ip_number": null,
+      "policy_number": "SHI/PSF/2026/002236",
+      "member_id": "SHI-M-0223603",
+      "claim_number": null
+    },
+    "insurer": "Suraksha Health Insurance Co. (fictional)",
+    "product": "Parivar Suraksha Floater (fictional)",
+    "sum_insured": "Rs. 5,00,000.00",
+    "first_inception_date": "2023-06-20",
+    "room_rent_cap": {
+      "kind": "pct_of_sum_insured",
+      "amount": null,
+      "percent": "1",
+      "category": null,
+      "clause": "4.2"
+    },
+    "icu_cap_per_day": null,
+    "copay": null,
+    "sub_limits": [
+      {
+        "item": "Cataract",
+        "limit": "Rs. 40,000.00",
+        "clause": "6.1"
+      }
+    ],
+    "specific_waiting": [
+      {
+        "condition": "Cataract",
+        "months": 24,
+        "clause": "5.2"
+      },
+      {
+        "condition": "Hernia",
+        "months": 24,
+        "clause": "5.2"
+      }
+    ],
+    "ped_declared": [
+      {
+        "condition": "Osteoarthritis of knee",
+        "months": 36,
+        "clause": "5.1"
+      }
+    ],
+    "non_medical_cover_opted": false,
+    "clauses": []
+  }
+}

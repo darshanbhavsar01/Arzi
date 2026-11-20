@@ -1,5 +1,6 @@
 """The committed demo cases are exactly what the generator and the engine produce today."""
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -54,22 +55,38 @@ def test_committed_facts_match_the_case_definition(case: DemoCase) -> None:
     assert ClaimFacts.model_validate_json(committed) == case.facts
 
 
+# Its sha256 follows the platform's JPEG encoder; compared field by field below instead.
+SCAN_FIXTURE = Path("case_a") / "extraction" / "bill_scanned.jpg.json"
+
+
+def _generated(root: Path) -> list[Path]:
+    return sorted(
+        p.relative_to(root)
+        for p in root.rglob("*")
+        if p.suffix in {".pdf", ".json"}
+        and "llm_cache" not in p.parts
+        and (p.parent.name.startswith("case_") or p.parent.name == "extraction")
+    )
+
+
 def test_regeneration_is_byte_identical(regenerated: Path) -> None:
-    committed = sorted(
-        p.relative_to(DEMO_CASES)
-        for p in DEMO_CASES.rglob("*")
-        if p.suffix in {".pdf", ".json"} and p.parent.name.startswith("case_")
-    )
-    fresh = sorted(
-        p.relative_to(regenerated) for p in regenerated.rglob("*") if p.suffix in {".pdf", ".json"}
-    )
-    assert committed == fresh
+    committed = _generated(DEMO_CASES)
+    assert committed == _generated(regenerated)
     changed = [
         str(rel)
         for rel in committed
-        if (DEMO_CASES / rel).read_bytes() != (regenerated / rel).read_bytes()
+        if rel != SCAN_FIXTURE
+        and (DEMO_CASES / rel).read_bytes() != (regenerated / rel).read_bytes()
     ]
     assert not changed, f"run `make demo-cases` and commit: {changed}"
+
+
+def test_scan_fixture_matches_apart_from_the_image_hash(regenerated: Path) -> None:
+    old = json.loads((DEMO_CASES / SCAN_FIXTURE).read_text(encoding="utf-8"))
+    new = json.loads((regenerated / SCAN_FIXTURE).read_text(encoding="utf-8"))
+    assert {**old, "sha256": None} == {**new, "sha256": None}
+    scan = (DEMO_CASES / "case_a" / "bill_scanned.jpg").read_bytes()
+    assert old["sha256"] == hashlib.sha256(scan).hexdigest()
 
 
 def test_scanned_bill_matches_within_codec_tolerance(regenerated: Path) -> None:
@@ -151,3 +168,18 @@ def test_insurer_letters_carry_the_letter_amounts() -> None:
 )
 def test_amount_in_words_uses_indian_numbering(amount: Paise, words: str) -> None:
     assert in_words(amount) == words
+
+
+@pytest.mark.parametrize(
+    ("case", "printed"),
+    [
+        ("case_a", "10% of admissible claim"),
+        ("case_b", "10% of admissible claim"),
+        ("case_c", "1% of sum insured per day"),
+    ],
+)
+def test_percentages_print_as_plain_numbers(case: str, printed: str) -> None:
+    """Regression: Decimal(10).normalize() renders as '1E+1' unless formatted with 'f'."""
+    text = _pdf_text(DEMO_CASES / case / "policy_schedule.pdf")
+    assert printed in text
+    assert "E+" not in text

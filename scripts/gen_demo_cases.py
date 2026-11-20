@@ -8,6 +8,7 @@ documents, for redaction tests) and the PDFs. Running it twice gives identical b
 """
 
 import argparse
+import hashlib
 import json
 import sys
 from collections.abc import Callable, Sequence
@@ -26,6 +27,7 @@ from demo_documents import (
     rejection_letter,
     scan,
 )
+from demo_extractions import fixtures
 
 from arzi.domain.enums import InsurerLetterType
 from arzi.domain.models import AuditResult
@@ -114,6 +116,24 @@ def generate_case(case: DemoCase, out_dir: Path) -> list[Path]:
     if case.scanned_bill:
         scan(directory / "itemised_bill.pdf", directory / "bill_scanned.jpg", SCAN_SEED)
         written.append(directory / "bill_scanned.jpg")
+    written += write_extraction_fixtures(case, directory)
+    return written
+
+
+def write_extraction_fixtures(case: DemoCase, directory: Path) -> list[Path]:
+    """``extraction/<file>.json``: the ideal transcription of each document, keyed by its hash."""
+    target = directory / "extraction"
+    target.mkdir(exist_ok=True)
+    written = []
+    for name, (doc_type, extraction) in fixtures(case).items():
+        payload = {
+            "document": name,
+            "sha256": hashlib.sha256((directory / name).read_bytes()).hexdigest(),
+            "document_type": str(doc_type),
+            "extraction": extraction.model_dump(mode="json") if extraction else None,
+        }
+        _write_json(target / f"{name}.json", payload)
+        written.append(target / f"{name}.json")
     return written
 
 
