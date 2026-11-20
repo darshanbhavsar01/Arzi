@@ -1,0 +1,28 @@
+/*
+ * Design tokens. Components reference these variables only; raw colour values live here.
+ * Contrast notes: accent (#D9482B) is ~4.3:1 on white, so it is for icons, large text and
+ * highlights; small accent text and accent buttons with white labels use accent-strong.
+ */
+:root {
+  --color-navy: #1e2a44;
+  --color-accent: #d9482b;
+  --color-accent-strong: #b83b21;
+  --color-cream: #f7f2e8;
+  --color-slate: #cdd3e0;
+  --color-canvas: #f8f7f4;
+  --color-surface: #ffffff;
+  --color-text: var(--color-navy);
+  --color-text-muted: #4a5470;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-6: 3rem;
+
+  --radius-md: 0.5rem;
+  --focus-ring: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-navy);
+}

@@ -1,0 +1,61 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.placeholder {
+  display: grid;
+  min-height: 100vh;
+  grid-template-rows: 1fr auto;
+}
+
+.placeholder__main {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-2);
+  text-align: center;
+}
+
+.placeholder__logo {
+  width: 96px;
+  height: 96px;
+}
+
+.placeholder__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.placeholder__lead {
+  max-width: 36rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.placeholder__footer {
+  padding: var(--space-2);
+  border-top: 1px solid var(--color-slate);
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
