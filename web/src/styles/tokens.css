@@ -1,28 +1,85 @@
 /*
- * Design tokens. Components reference these variables only; raw colour values live here.
- * Contrast notes: accent (#D9482B) is ~4.3:1 on white, so it is for icons, large text and
- * highlights; small accent text and accent buttons with white labels use accent-strong.
+ * Design tokens: the only place raw colour values live. Tailwind's default palette is removed
+ * (`--color-*: initial`), so components can use these tokens and nothing else.
+ *
+ * Contrast (on white): ink 13.9:1 · ink-muted 7.4:1 · ink-subtle 4.9:1 · accent 4.3:1 (icons,
+ * large text and highlights only) · accent-strong 5.6:1 (small accent text, accent buttons).
+ * Each semantic tone has bg / fg / border variants; fg on bg passes WCAG AA.
  */
-:root {
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+
+  /* Brand */
   --color-navy: #1e2a44;
+  --color-navy-hover: #2b3a5e;
+  --color-navy-soft: #e8ebf2;
   --color-accent: #d9482b;
   --color-accent-strong: #b83b21;
+  --color-accent-soft: #fbece7;
   --color-cream: #f7f2e8;
+  --color-cream-deep: #efe6d4;
   --color-slate: #cdd3e0;
+
+  /* Surfaces and text */
   --color-canvas: #f8f7f4;
   --color-surface: #ffffff;
-  --color-text: var(--color-navy);
-  --color-text-muted: #4a5470;
+  --color-sunken: #f3f2ee;
+  --color-border: #e4e6ec;
+  --color-border-strong: #cdd3e0;
+  --color-ink: #1e2a44;
+  --color-ink-muted: #4a5470;
+  --color-ink-subtle: #646d86;
+
+  /* Semantic */
+  --color-success-bg: #e8f5ee;
+  --color-success: #1d6b43;
+  --color-success-border: #b7dcc6;
+  --color-warning-bg: #fff4dc;
+  --color-warning: #8a5800;
+  --color-warning-border: #efd18e;
+  --color-danger-bg: #fdecea;
+  --color-danger: #b42318;
+  --color-danger-border: #f4c1bb;
+  --color-info-bg: #eaf1fb;
+  --color-info: #1f5aa6;
+  --color-info-border: #c2d5f1;
+
+  /* Charts and money bands */
+  --color-band-payable: #1e2a44;
+  --color-band-room: #d9482b;
+  --color-band-prop: #e9846c;
+  --color-band-nonpay: #8a5800;
+  --color-band-copay: #9aa3b8;
+  --color-band-other: #cdd3e0;
 
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
 
-  --space-1: 0.5rem;
-  --space-2: 1rem;
-  --space-3: 1.5rem;
-  --space-4: 2rem;
-  --space-6: 3rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
 
-  --radius-md: 0.5rem;
-  --focus-ring: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-navy);
+  --shadow-card: 0 1px 2px rgb(30 42 68 / 0.06), 0 0 0 1px rgb(30 42 68 / 0.02);
+  --shadow-pop: 0 10px 30px -8px rgb(30 42 68 / 0.22), 0 2px 6px rgb(30 42 68 / 0.08);
+
+  --animate-fade-in: fade-in 160ms ease-out;
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(2px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes pulse-soft {
+    50% {
+      opacity: 0.55;
+    }
+  }
 }
