@@ -3,14 +3,16 @@
 **Your claim, defended before and after the insurer says no.** Arzi audits Indian hospital
 health-insurance claims before filing, shows every likely deduction with the ₹ at risk and the
 exact policy clause or IRDAI rule, and drafts clause-cited appeals that a qualified person
-reviews and signs.
+reviews and signs. The patient's family gets the same decision explained in Gujarati, Hindi or
+English, with narrated audio, on a private link; anyone can run a free check of a rejection
+letter at `/check`.
 
 > Arzi is decision support. A qualified person reviews and signs every appeal.
 > All data in this repository is synthetic; hospitals and insurers named in demos are fictional.
 
 ![Claim workspace: money at stake, the flags with their citations and fix, beside the photographed bill](docs/screens/03-workspace-pre-submission.png)
 
-More screens in [`docs/screens/`](docs/screens/): worklist, deduction workspace, bill lines, forum checklist, appeal editor and the signed appeal.
+More screens in [`docs/screens/`](docs/screens/): worklist, deduction workspace, bill lines, forum checklist, appeal editor, the signed appeal, the family page on a phone and the free check.
 
 **Try it:** open the app, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
 

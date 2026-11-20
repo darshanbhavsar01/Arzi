@@ -9,7 +9,7 @@
 | 3 | done | 2026-11-20 | Upload → SSE-streamed audit → persisted claim; live (Vertex AI; AI Studio for testing) / replay / fake LLM modes; redaction; reconcile; cost ledger + budget guard; Firestore/GCS adapters. Recorded A, B, C replay. |
 | 4 | done | 2026-11-20 | ADK Workflow audit (policy interpreter + flag explainer as guarded LlmAgents), citation whitelist + amount guard, forum-specific AppealDrafter, versioned review/sign with SHA-256, signed PDF export, forum checklist. Recorded A, B, C replay. |
 | 5 | done | 2026-11-20 | Desk web app: design system, shell, worklist, new-audit wizard, claim workspace (pdf.js viewer, flags, bill lines, policy, activity), appeal editor with signing and PDF, appeals list, settings; demo cases in one click. |
-| 6 | not started | | Family experience |
+| 6 | done | 2026-11-21 | Family explanation in Gujarati, Hindi and English with narrated audio, hashed 7-day share links, mobile family page, free public "check my claim" through to a family-signed appeal PDF. Recorded A, B, C replay. |
 | 7 | not started | | Production hardening |
 | 8 | not started | | Analytics |
 | 9 | not started | | Release and submission |
@@ -67,6 +67,17 @@
 | Lighthouse desktop ≥ 90 (performance, accessibility) | pass, signed in: worklist 93 / 100, claim workspace 100 / 99, appeal editor 100 / 98; best practices 100; CLS ≤ 0.055 |
 | Screenshots in `docs/screens/` | pass: 8 screens at 1600×1000 from a clean demo load |
 | `make check` green | pass (recipes run directly): 614 API tests, 99.16% coverage; rules gate 100%; ESLint strict, Prettier, tsc, 30 Vitest tests |
+
+### Phase 6 gate
+| Check | Result |
+|---|---|
+| Case C share link opens on a phone viewport, Gujarati audio plays, Hindi and English switch instantly | pass: Playwright at 390×844 (`gu-IN` locale) creates the link from the desk, opens it, asserts a Gujarati headline, plays the narration until `currentTime` > 0.3 s, switches to Hindi and English with no request wait, and checks nothing scrolls sideways; axe clean. Gujarati audio was also transcribed back and matches the text |
+| Amount guard tests pass for gu/hi | pass: the Phase 4 guard tests (Gujarati and Hindi words, native digits, રૂ./रु.) plus family-explainer tests that reject a Gujarati and a Hindi section with a stray amount, and an outcome promise (ચોક્કસ…/ज़रूर/पक्का); the false positives "જરૂર" (needed) and "जरूरत" (need) are allowed |
+| `/check` works end to end in replay mode | pass: Playwright uploads case C's letter, policy, bill and discharge summary on a phone, gives consent, watches the audit stream, reads the explanation, drafts the GRO appeal, signs it with a name and downloads `appeal-v1.pdf`; an API integration test does the same for B and C |
+| Rate limit and budget guard tested | pass: per-IP (5/day) and global (200/day) limits return 429 `rate-limited`; TTS calls go through the cost ledger and are refused over the daily cap (`BudgetedSpeech` tests); share links that are unknown, expired or revoked all return the same 404 |
+| Recordings | pass: `record_demo.py case_a case_b case_c --replay` exits 0 offline: three languages and three audio clips per case, both public checks with their appeals; 19 unused recordings pruned |
+| Screenshots | `docs/screens/09-share-dialog.png` to `13-free-check.png` (phone, 390 px, 2× scale) |
+| `make check` green | pass (recipes run directly): 645 API tests, 98.04% coverage; rules gate 100%; ruff, mypy strict, ESLint strict, Prettier, tsc, 30 Vitest tests; 7 Playwright journeys with axe |
 
 ## Decisions
 - 2026-11-20 — Record architecture decisions as ADRs (ADR-0001).
@@ -247,13 +258,38 @@
   the rows.
 - 2026-11-20 — SPA served by FastAPI with client-route fallback and cache headers (ADR-0007). The image
   now ships the synthetic documents and sets `ARZI_REPLAY_DIR` (replay previously resolved inside the venv).
+- 2026-11-21 — Phase 6: sign-in stays demo-workspace only; Google sign-in is dropped from the product
+  (owner decision), so Firebase Auth is not planned for the event build.
+- 2026-11-21 — Family prompt is `family_explain.v2`: v1 recordings promised outcomes in Gujarati
+  ("we will surely be able to change this") and repeated the review note. v2 forbids promises, and a
+  promise guard rejects them (`outcome_promise`, retried once like other guardrail failures). The
+  closing review note is fixed text appended by the server, never written by the model.
+- 2026-11-21 — Two closing notes: hospital links say a qualified person at the hospital signs every
+  appeal; the free check says the family reads and signs it themselves. Either way a named human signs.
+- 2026-11-21 — Narration: Gemini TTS (voice Kore) for all three languages, encoded to 32 kbps mono MP3
+  (lameenc, pure wheel) so a 1-minute clip is about 250 KB on a phone connection. Older TTS models
+  return raw PCM; the adapter wraps it as WAV using the rate in the MIME type. Replay audio lives in
+  `demo_cases/*/audio_cache/`, keyed by the hash of language, voice and text.
+- 2026-11-21 — Share links: `secrets.token_urlsafe(32)`; only the SHA-256 is stored (Firestore
+  `share_tokens/{sha}`), 7-day expiry, revocable from the desk. Unknown, expired and revoked links get
+  one identical 404 so a link cannot be probed.
+- 2026-11-21 — The free check requires the letter, policy and bill (discharge summary optional): without
+  the bill the engine cannot compute any amount, and the appeal would have no figures. Pre-submission
+  is not offered (nothing to appeal yet).
+- 2026-11-21 — Public checks run under a separate `public` tenant, rate-limited by an HMAC of the IP
+  (no raw IPs stored) plus a global daily cap, and go through the same budget guard.
+- 2026-11-21 — Family copy uses a typed per-language dictionary (`features/family/strings.ts`) instead
+  of i18next: three languages, two pages, and the compiler checks every key. Indic fonts (Noto Sans
+  Gujarati, IBM Plex Sans Devanagari) are self-hosted and load only on the family pages.
 
 ## Model choices
 Checked 2026-11-20 with `make models` (listing only; first real call is in Phase 3). Rule: newest of
 each tier, `asia-south1` if served there, otherwise `global`.
 - Flash: `gemini-3.8-flash` (global) · regional fallback `gemini-3.5-flash` (asia-south1)
 - Pro: `gemini-3.1-pro-preview` (global) · GA fallback `gemini-2.5-pro`; Pro only where an eval needs it
-- TTS: `gemini-3.8-flash-tts` (global) · Gujarati/Hindi support to confirm in Phase 6
+- TTS: `gemini-3.8-flash-tts` (global) · Gujarati and Hindi confirmed in Phase 6 (clips transcribed
+  back). Recordings mix `gemini-3.8-flash-tts`, `gemini-3.8-flash-lite-tts` and
+  `gemini-2.5-flash-preview-tts` (free-tier quota); the model is recorded beside each clip
 - Live: `gemini-3.8-live` (asia-south1)
 - Not chosen: `gemini-4-*` IDs (codenames with no tier in the name; revisit with docs).
 
@@ -326,6 +362,18 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 5: the IRDAI discharge clock counts from claim creation (no discharge-request time is captured yet).
 - Phase 5: Lighthouse was run with the Node API against a signed-in Chrome profile (the CLI's fresh
   profile lands on sign-in), from a scratch install so it is not a project dependency.
+- Phase 6: Live Q&A (a "Should" item) is not built; the family page has narration and the desk
+  contact instead. Moved to follow-ups.
+- Phase 6: no Cloud Text-to-Speech fallback. If narration fails, the explanation still shows and the
+  player is hidden; the adapter and model are recorded on each clip.
+- Phase 6: audio is stored in the blob store (GCS in the cloud) and streamed through
+  `GET /family/{token}/audio/{lang}` rather than a signed URL, so the token stays the only credential.
+- Phase 6: the share endpoints are `POST/GET /claims/{cid}/shares` and
+  `POST /claims/{cid}/shares/{sha}/revoke`; the family API is under `/family/{token}` (view, prepare,
+  audio, events, and the public appeal draft/sign/PDF).
+- Phase 6: the free check can draft, sign and download the appeal (the family is the signer), beyond
+  the plan's "download a draft appeal".
+- Phase 6: the desk contact comes from config (`ARZI_DESK_CONTACT`), not the hospital profile.
 
 ## Follow-ups
 - Phase 3: models live in different locations (Flash/Pro/TTS global, Live asia-south1), but
@@ -386,6 +434,16 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 5: CI job for `make test-e2e` (needs uv and Chromium on the runner).
 - Phase 7/9: a hybrid LLM mode for the live link (replay for the demo cases, live Vertex AI for anything
   else behind the budget guard), so a judge's own document does not fail with `replay-miss`.
+- Phase 6: Gemini Live Q&A on the family page through a FastAPI WebSocket proxy, grounded in the
+  explanation, with narration and text fallback.
+- Phase 6: GCS lifecycle and a Firestore TTL for the `public` tenant so free checks are deleted after
+  7 days (today the 30-day upload rule applies and claim records are not swept).
+- Phase 6: rate limits are per instance (in memory); with up to 3 Cloud Run instances the real limit
+  is up to 3×. Move the counters to Firestore if abuse appears.
+- Phase 6: the share token appears in request paths, so access logs contain it; redact `/f/` and
+  `/family/` paths in the logging filter (Phase 7).
+- Phase 6: re-record family explanations and narration on Vertex AI with the demo-day TTS model.
+- Phase 6: the hospital desk contact belongs on the hospital profile (settings page).
 
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.
