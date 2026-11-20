@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Sequence
 
 import httpx
 import pytest
@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from arzi.config import Settings
 from arzi.main import create_app
+from arzi.services.readiness import ReadinessProbe
 
 AppFactory = Callable[..., FastAPI]
 
@@ -18,8 +19,10 @@ def settings() -> Settings:
 
 @pytest.fixture
 def make_app(settings: Settings) -> AppFactory:
-    def factory(app_settings: Settings | None = None) -> FastAPI:
-        return create_app(app_settings or settings)
+    def factory(
+        probes: Sequence[ReadinessProbe] = (), app_settings: Settings | None = None
+    ) -> FastAPI:
+        return create_app(app_settings or settings, readiness_probes=probes)
 
     return factory
 
