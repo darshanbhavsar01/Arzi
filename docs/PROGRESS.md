@@ -233,9 +233,14 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Rules: `CategoryCap` whose category is missing from the hospital tariff is traced and skipped;
   Phase 3 should surface it as "Needs confirmation" in the UI.
 
-- Owner, for the Phase 3 gate: approve a live run of `scripts/record_demo.py case_a` (and B, C for
-  replayable demos), set `ARZI_PRICE_TABLE_JSON` from the current Vertex AI pricing page, and
-  commit the recordings.
+- Owner, for the Phase 3 gate (deferred by the owner on 2026-11-20): approve the live run, then from
+  `api/`:
+  `GOOGLE_CLOUD_PROJECT=<project-id> ARZI_MODEL_FLASH=gemini-3.8-flash ARZI_VERTEX_LOCATION=global`
+  `ARZI_PRICE_TABLE_JSON='{"gemini-3.8-flash": {"input_inr_per_1m": 135, "output_inr_per_1m": 675}}'`
+  `uv run python ../scripts/record_demo.py case_a case_b case_c`, then `... --replay`, and commit
+  `demo_cases/*/llm_cache/`. Prices: Vertex AI global standard rate from 1 Jan 2027, $1.50 input /
+  $7.50 output per 1M tokens (today's introductory rate is half that), at an assumed ₹90/USD, so
+  the guard over-estimates. Rough case A estimate: about 25k input / 8k output tokens, ₹4-9.
 - Owner, cloud (no cost beyond pennies): deploy `infra/firestore.indexes.json`, run
   `scripts/seed.py` for the demo hospital profile, set `ARZI_PSEUDONYM_SALT` from Secret Manager on
   Cloud Run, and grant the runtime identity `iam.serviceAccountTokenCreator` on itself if signed
