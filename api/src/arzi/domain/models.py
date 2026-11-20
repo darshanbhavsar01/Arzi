@@ -463,6 +463,61 @@ class AppealVersion(_Value):
     exported_at: dt.datetime | None = None
 
 
+# --------------------------------------------------------------------------- family
+
+Language = Literal["en", "hi", "gu"]
+LANGUAGES: tuple[Language, ...] = ("gu", "hi", "en")
+
+
+class FamilyExplanation(_Value):
+    """What happened, why and what to do next, for the patient's family, in one language.
+    Amounts are engine placeholders, as everywhere else."""
+
+    lang: Language
+    status: ReasoningStatus
+    prompt_ref: Name | None = None
+    violations: tuple[Text, ...] = ()
+    headline: Prose
+    what_happened: tuple[Prose, ...] = ()
+    why: tuple[Prose, ...] = ()
+    next_steps: tuple[Prose, ...] = ()
+    reassurance: Prose
+
+
+class FamilyAudio(_Value):
+    """A narrated explanation, synthesised once per language."""
+
+    lang: Language
+    uri: Text
+    content_type: Literal["audio/mpeg", "audio/wav"]
+    seconds: Annotated[float, Field(ge=0)]
+    model: Name
+    adapter: Literal["gemini_tts", "replay", "fake"]
+    text_sha256: Sha256
+
+
+class FamilyPack(_Value):
+    explanations: tuple[FamilyExplanation, ...] = ()
+    audio: tuple[FamilyAudio, ...] = ()
+    generated_at: dt.datetime | None = None
+
+
+class ShareLink(_Value):
+    """A family link. Only the SHA-256 of the token is stored; the token is shown once."""
+
+    token_sha256: Sha256
+    hospital_id: Name
+    claim_id: Name
+    purpose: Literal["family", "public_check"] = "family"
+    created_by: Name
+    created_at: dt.datetime
+    expires_at: dt.datetime
+    revoked_at: dt.datetime | None = None
+
+    def active(self, now: dt.datetime) -> bool:
+        return self.revoked_at is None and now < self.expires_at
+
+
 class FlagReview(_Value):
     """A person's decision on one flag: accepted as a real risk, or dismissed with a reason."""
 
@@ -543,6 +598,8 @@ class ClaimRecord(_Value):
     document_types: dict[str, Name] = Field(default_factory=dict)
     """Document ID → type, as chosen at upload or classified by the last run."""
     flag_reviews: tuple[FlagReview, ...] = ()
+    family: FamilyPack | None = None
+    """Family explanations and narrated audio, generated when the desk first shares the claim."""
     runs: tuple[AuditRun, ...] = ()
     appeals: tuple[AppealSummary, ...] = ()
     audit_refs: tuple[str, ...] = ()

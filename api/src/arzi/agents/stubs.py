@@ -12,7 +12,12 @@ from typing import Any
 from pydantic import BaseModel
 
 from arzi.agents.guardrails import FEEDBACK_HEADER
-from arzi.agents.schemas import AppealDraftOutput, FlagNarrativesDraft, PolicyTermsDraft
+from arzi.agents.schemas import (
+    AppealDraftOutput,
+    FamilyExplanationDraft,
+    FlagNarrativesDraft,
+    PolicyTermsDraft,
+)
 from arzi.domain.models import LlmCall
 from arzi.services.ports import LlmClient, LlmRequest, LlmResult, LlmUnavailableError
 
@@ -68,7 +73,45 @@ def _appeal(payload: Payload) -> Payload:
     }
 
 
+_FAMILY = {
+    "en": (
+        "Here is what the insurer decided.",
+        "The rules engine checked every bill item.",
+        "Talk to the hospital desk about the next step.",
+        "Your case is being looked after.",
+    ),
+    "hi": (
+        "बीमा कंपनी के फ़ैसले के बारे में जानकारी।",
+        "नियमों से बिल की हर चीज़ जाँची गई।",
+        "अगले कदम के लिए अस्पताल डेस्क से बात करें।",
+        "आपके मामले पर ध्यान दिया जा रहा है।",
+    ),
+    "gu": (
+        "વીમા કંપનીના નિર્ણય વિશે માહિતી.",
+        "નિયમો પ્રમાણે બિલની દરેક વસ્તુ તપાસી.",
+        "આગળના પગલા માટે હોસ્પિટલ ડેસ્ક સાથે વાત કરો.",
+        "તમારા કેસ પર ધ્યાન આપવામાં આવે છે.",
+    ),
+}
+
+
+def _family(payload: Payload) -> Payload:
+    headline, why, step, calm = _FAMILY[payload["lang"]]
+    amounts = [
+        f"{{{{{f['placeholders'][1 if f['kind'] == 'dispute' else 0]}}}}}" for f in payload["flags"]
+    ]
+    return {
+        "headline": headline,
+        "what_happened": [f"{headline} {amount}" for amount in amounts[:2]] or [headline],
+        "why": [why],
+        "next_steps": [step],
+        "reassurance": calm,
+        "citations": sorted({c for f in payload["flags"] for c in f["citations"]}),
+    }
+
+
 _BUILDERS: dict[type[BaseModel], Callable[[Payload], Payload]] = {
+    FamilyExplanationDraft: _family,
     PolicyTermsDraft: _policy_terms,
     FlagNarrativesDraft: _narratives,
     AppealDraftOutput: _appeal,

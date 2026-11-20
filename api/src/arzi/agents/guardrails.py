@@ -80,6 +80,7 @@ MESSAGES = {
     "missing_flag": "left out a flag that needs an entry",
     "unexpected_flag": "wrote an entry for a flag that is not in the input",
     "missing_relief": "did not state the relief with its placeholder",
+    "outcome_promise": "promised an outcome; say what can be done instead",
 }
 
 

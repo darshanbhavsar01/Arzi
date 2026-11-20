@@ -52,3 +52,12 @@ class AppealDraftOutput(_Schema):
     items: list[AppealArgumentDraft]
     relief: str = Field(description="The relief sought; must contain {{totals.recoverable}}.")
     citations: list[str]
+
+
+class FamilyExplanationDraft(_Schema):
+    headline: str = Field(description="One short sentence: what this means for the family.")
+    what_happened: list[str] = Field(description="Two to four short sentences.")
+    why: list[str] = Field(description="Two to four short sentences, no jargon.")
+    next_steps: list[str] = Field(description="Two to four concrete steps for the family.")
+    reassurance: str = Field(description="One or two sentences; ends with the human-review note.")
+    citations: list[str]
