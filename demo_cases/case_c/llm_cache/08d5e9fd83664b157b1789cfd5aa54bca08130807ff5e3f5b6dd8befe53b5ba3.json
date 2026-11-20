@@ -1,0 +1,32 @@
+{
+  "prompt_ref": "appeal_insurer_gro@v1",
+  "schema": "AppealDraftOutput",
+  "call": {
+    "prompt_ref": "appeal_insurer_gro@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 2190,
+    "output_tokens": 319,
+    "thinking_tokens": 1261,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "subject": "Request to review the rejection of claim based on pre-existing disease waiting period",
+    "facts": "The patient was admitted on 2026-10-20 and discharged on 2026-10-24, undergoing a right total knee replacement for primary osteoarthritis of the right knee. The insurer rejected the claim citing the pre-existing disease waiting period. We request a careful review of this decision as the policy requirements have been fully met.",
+    "items": [
+      {
+        "flag_id": "WAITING_REJECTION_INVALID",
+        "argument": "The insurer incorrectly rejected the claim under the pre-existing disease waiting period. According to policy clause 5.1 and IRDAI_PED_36M, the maximum waiting period is capped at 36 months. Since the patient has completed 40 months of continuous coverage, which exceeds the required waiting period, this rejection is invalid. Therefore, the amount of {{flag.WAITING_REJECTION_INVALID.recoverable}} should be processed and paid accordingly.",
+        "citations": [
+          "IRDAI_PED_36M",
+          "policy:5.1"
+        ]
+      }
+    ],
+    "relief": "We request you to review this case and disburse the eligible amount of {{totals.recoverable}} at the earliest. Kindly provide a written response within the standard grievance resolution period of approximately 15 days as per INSURER_GRIEVANCE_15D.",
+    "citations": [
+      "INSURER_GRIEVANCE_15D",
+      "IRDAI_PED_36M",
+      "policy:5.1"
+    ]
+  }
+}

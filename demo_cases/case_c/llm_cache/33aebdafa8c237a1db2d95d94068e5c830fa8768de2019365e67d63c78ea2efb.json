@@ -1,0 +1,87 @@
+{
+  "prompt_ref": "interpret_policy@v1",
+  "schema": "PolicyTermsDraft",
+  "call": {
+    "prompt_ref": "interpret_policy@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 1318,
+    "output_tokens": 781,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "terms": [
+      {
+        "term": "room_rent_cap",
+        "clause_id": "4.2",
+        "summary": "Room, boarding, and nursing charges are covered up to the specified limit per day of hospitalisation. Any charges exceeding this limit must be borne by the insured.",
+        "confidence": 1.0
+      },
+      {
+        "term": "proportionate_deduction",
+        "clause_id": "4.3",
+        "summary": "If a room above the eligible limit is occupied, associated medical expenses are scaled proportionally based on the eligible versus actually charged room rent. Pharmacy, consumables, implants, devices, and diagnostics are excluded from this proportionate reduction.",
+        "confidence": 1.0
+      },
+      {
+        "term": "icu_cap",
+        "clause_id": "4.4",
+        "summary": "Intensive care unit charges are covered up to the maximum limit stated in the policy schedule, if applicable.",
+        "confidence": 1.0
+      },
+      {
+        "term": "copay",
+        "clause_id": "7.4",
+        "summary": "Every admissible claim is subject to the co-payment percentage specified in the policy schedule, which is applied directly to the admissible amount.",
+        "confidence": 1.0
+      },
+      {
+        "term": "sub_limit",
+        "clause_id": "6.1",
+        "summary": "Reimbursements for specific procedures mentioned in the policy schedule are restricted to the exact amounts stated against them.",
+        "confidence": 1.0
+      },
+      {
+        "term": "ped_waiting",
+        "clause_id": "5.1",
+        "summary": "Pre-existing diseases declared during proposal are covered only after a specified waiting period of continuous coverage.",
+        "confidence": 1.0
+      },
+      {
+        "term": "specific_waiting",
+        "clause_id": "5.2",
+        "summary": "Certain listed medical conditions are covered only after a defined waiting period of continuous coverage has passed.",
+        "confidence": 1.0
+      },
+      {
+        "term": "associated_expenses",
+        "clause_id": "4.3",
+        "summary": "Associated medical expenses are scaled proportionally when a room above the eligible limit is occupied.",
+        "confidence": 0.85
+      },
+      {
+        "term": "non_payable_cover",
+        "clause_id": "8.1",
+        "summary": "Items designated as non-payable in the annexure are not covered unless an optional cover is active.",
+        "confidence": 1.0
+      },
+      {
+        "term": "claim_documents",
+        "clause_id": "9.2",
+        "summary": "All claims require supporting documents such as discharge summaries, final itemised bills, investigation reports, and implant stickers/invoices where applicable.",
+        "confidence": 1.0
+      }
+    ],
+    "citations": [
+      "policy:4.2",
+      "policy:4.3",
+      "policy:4.4",
+      "policy:5.1",
+      "policy:5.2",
+      "policy:6.1",
+      "policy:7.4",
+      "policy:8.1",
+      "policy:9.2"
+    ]
+  }
+}

@@ -1,5 +1,8 @@
 """Run demo cases through the real pipeline and record the Gemini responses for replay.
 
+Covers the whole demo: extraction, the policy interpreter and flag explainer (ADK workflow),
+and, for cases B and C, a GRO appeal drafted by the AppealDrafter.
+
     # AI Studio (free tier; synthetic data only), key in the git-ignored api/.env.local:
     ARZI_MODEL_FLASH=<model> uv run python ../scripts/record_demo.py case_a --env-file .env.local
 
@@ -11,7 +14,8 @@
 Live mode spends money: every call goes through the budget guard and is priced from its token
 usage. Storage is in memory, so nothing is written to Firestore or Cloud Storage. Responses are
 saved to ``demo_cases/<case>/llm_cache/``. ``--replay`` re-runs from those recordings offline.
-Exit status is 1 if any case does not audit to its ``expected.json``.
+Exit status is 1 if any case does not audit to its ``expected.json``, a reasoning step did not
+pass its guardrails, or an appeal's disputed items, citations or relief differ from it.
 """
 
 import argparse
@@ -21,6 +25,7 @@ import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from gen_demo_cases import expected
 from pydantic import BaseModel
@@ -28,9 +33,9 @@ from pydantic import BaseModel
 from arzi.adapters.auth import DEMO_PRINCIPAL
 from arzi.adapters.genai_client import ReplayLlmClient
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
-from arzi.bootstrap import build_llm, build_services, utc_now
+from arzi.bootstrap import Services, build_llm, build_services, utc_now
 from arzi.config import LlmMode, Settings
-from arzi.domain.enums import ClaimMode
+from arzi.domain.enums import AppealForum, ClaimMode, ReasoningStatus
 from arzi.services.ports import LlmClient, LlmRequest, LlmResult, LlmUnavailableError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +50,8 @@ DOCUMENTS = {
     "case_b": ("itemised_bill.pdf", "insurer_deduction_letter.pdf"),
     "case_c": ("itemised_bill.pdf", "insurer_rejection_letter.pdf"),
 }
+APPEALS = ("case_b", "case_c")
+CHECKED = {ReasoningStatus.PASSED, ReasoningStatus.RETRIED}
 COMMON = (
     "policy_schedule.pdf",
     "policy_wording_excerpt.pdf",
@@ -122,7 +129,36 @@ async def run_case(case: str, *, replay: bool, env_file: Path | None) -> bool:
                 print(f"   MISMATCH {key}:\n     got  {got[key]}\n     want {want[key]}")
         return False
     print("   matches expected.json")
-    return True
+    ok = True
+    steps = (("policy reading", record.policy_review), ("explanations", record.narratives))
+    for label, step in steps:
+        status = step.status if step else None
+        print(f"   {label}: {status} {list(step.violations) if step else ''}")
+        ok &= status in CHECKED
+    if case in APPEALS:
+        ok &= await check_appeal(services, claim.claim_id, want)
+    return ok
+
+
+async def check_appeal(services: Services, claim_id: str, want: dict[str, Any]) -> bool:
+    """Draft the GRO appeal and compare it with the engine's appealable disputes."""
+    appeal = await services.appeals.draft(
+        DEMO_PRINCIPAL, claim_id, AppealForum.INSURER_GRO, None, None
+    )
+    disputes = [f for f in want["flags"] if f["kind"] == "dispute" and f["appealable"]]
+    items = appeal.content.items
+    print(f"   appeal v{appeal.version} ({appeal.prompt_ref}): {appeal.drafting}")
+    for violation in appeal.violations:
+        print(f"     {violation}")
+    same_items = [(i.flag_id, i.amount) for i in items] == [
+        (f["flag_id"], f["recoverable"]) for f in disputes
+    ]
+    cited = all(
+        set(f["citations"]) <= set(i.citations) for i, f in zip(items, disputes, strict=False)
+    )
+    relief = appeal.content.relief_amount == want["totals"]["recoverable_on_appeal"]
+    print(f"   appeal items {same_items} · citations {cited} · relief {relief}")
+    return appeal.drafting in CHECKED and same_items and cited and relief
 
 
 def main(argv: Sequence[str] | None = None) -> int:

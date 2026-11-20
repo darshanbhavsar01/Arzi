@@ -1,0 +1,72 @@
+{
+  "prompt_ref": "explain_flags@v1",
+  "schema": "FlagNarrativesDraft",
+  "call": {
+    "prompt_ref": "explain_flags@v1",
+    "model": "gemini-3.6-flash",
+    "input_tokens": 4105,
+    "output_tokens": 1001,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "items": [
+      {
+        "flag_id": "NON_PAYABLE",
+        "headline": "Deduction for non-payable laundry, crepe bandage, and thermal packs",
+        "explanation": "The insurer deducted {{flag.NON_PAYABLE.amount}} for laundry, cold/hot packs, and crepe bandages under non-payable guidelines. The applicability of standard non-payable lists under Annexure I should be confirmed. The affected line items are laundry charges, cold/hot pack, and crepe bandage.",
+        "fix": "Collect the non-payable amount directly from the patient.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I"
+        ]
+      },
+      {
+        "flag_id": "SUBSUMED_ITEM",
+        "headline": "Dispute registration charges deducted as a separate non-payable item",
+        "explanation": "The insurer deducted {{flag.SUBSUMED_ITEM.amount}} for registration charges as a non-payable item. Under Annexure I guidelines, which should be confirmed, administrative items like registration charges are subsumed into overall hospital costs rather than deducted separately. This affects the registration charges line item.",
+        "fix": "File an appeal with the insurer to recover {{flag.SUBSUMED_ITEM.recoverable}} for the disallowed registration fee.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I"
+        ]
+      },
+      {
+        "flag_id": "ROOM_RENT_EXCESS",
+        "headline": "Excess room rent charged beyond the eligible policy limit",
+        "explanation": "The patient occupied a Single Private AC room exceeding the room rent cap, resulting in a direct room rent deduction of {{flag.ROOM_RENT_EXCESS.amount}}. Under policy clause 4.2, room charges exceeding the policy daily limit are borne by the insured person. This directly affects the single private AC room line item.",
+        "fix": "Shift the patient to an eligible room category or obtain written consent from the patient to pay the room rent differential.",
+        "citations": [
+          "policy:4.2"
+        ]
+      },
+      {
+        "flag_id": "PROP_ROOM_RENT",
+        "headline": "Proportionate deductions applied to associated medical expenses",
+        "explanation": "Because an upgraded room category was chosen, the insurer applied a proportionate deduction of {{flag.PROP_ROOM_RENT.amount}} on associated medical expenses under policy clause 4.3, policy clause 4.2, and IRDAI rules. This deduction affects the surgeon fees, operation theatre charges, and nursing charges line items.",
+        "fix": "Transfer the patient to a standard room category matching policy limits or secure written agreement from the patient for proportionate charges.",
+        "citations": [
+          "IRDAI_PROP_DED_2020",
+          "policy:4.3",
+          "policy:4.2"
+        ]
+      },
+      {
+        "flag_id": "COPAY",
+        "headline": "Mandatory policy co-payment applied to the admissible claim",
+        "explanation": "A standard 10% co-payment amounting to {{flag.COPAY.amount}} was applied across all admissible hospital charges pursuant to policy clause 7.4. This co-payment affects room, ICU, surgeon fees, operation theatre, nursing, pharmacy, diagnostics, implant, and registration line items.",
+        "fix": "Inform the patient about the mandatory policy co-payment amount to be settled directly with the hospital.",
+        "citations": [
+          "policy:7.4"
+        ]
+      },
+      {
+        "flag_id": "PROP_WRONGLY_APPLIED",
+        "headline": "Dispute improper proportionate deductions on excluded bill categories",
+        "explanation": "The insurer incorrectly applied proportionate deductions of {{flag.PROP_WRONGLY_APPLIED.amount}} to ICU charges, pharmacy, and diagnostic services. Under IRDAI norms, proportionate deductions cannot be levied against ICU fees, pharmacy, consumables, or diagnostic tests. This impacts the ICU charges, pharmacy and medicines, and laboratory and radiology line items.",
+        "fix": "File an appeal with the insurer to recover {{flag.PROP_WRONGLY_APPLIED.recoverable}} incorrectly deducted from ICU, pharmacy, and diagnostic lines.",
+        "citations": [
+          "IRDAI_PROP_DED_2020"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "prompt_ref": "explain_flags@v1",
+  "schema": "FlagNarrativesDraft",
+  "call": {
+    "prompt_ref": "explain_flags@v1",
+    "model": "gemini-3.6-flash",
+    "input_tokens": 3344,
+    "output_tokens": 644,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "items": [
+      {
+        "flag_id": "NON_PAYABLE",
+        "headline": "Deductions applied for non-payable items and consumables",
+        "explanation": "The bill includes charges for laundry, cold or hot packs, and crepe bandages. Under non-payable item guidelines, these items are excluded from claim settlement unless optional cover is selected. These non-medical expenses flag a total amount at risk of {{flag.NON_PAYABLE.amount}}.",
+        "fix": "Collect the non-payable expenses directly from the patient or check if an optional cover is active.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I"
+        ]
+      },
+      {
+        "flag_id": "ROOM_RENT_EXCESS",
+        "headline": "Room rent exceeds the eligible policy limit",
+        "explanation": "The patient occupied a Single private AC room which exceeds the daily cap allowed by the policy. Under policy:4.2, room rent charges exceeding the allowed limit must be borne by the insured person. This excess room rent puts {{flag.ROOM_RENT_EXCESS.amount}} at risk of deduction.",
+        "fix": "Move the patient to an eligible room category or obtain written upgrade consent from the patient.",
+        "citations": [
+          "policy:4.2"
+        ]
+      },
+      {
+        "flag_id": "PROP_ROOM_RENT",
+        "headline": "Proportionate deductions applied to associated medical expenses",
+        "explanation": "Because a room category higher than the eligible limit was chosen, proportionate deductions apply to associated medical expenses like surgeon, OT, and nursing fees. Under policy:4.3 and IRDAI guidelines, these associated fees are reduced proportionately, while items like pharmacy, implants, and diagnostics remain exempt. This results in an estimated deduction of {{flag.PROP_ROOM_RENT.amount}}.",
+        "fix": "Move the patient to an eligible room category or obtain written upgrade consent for the proportionate charges.",
+        "citations": [
+          "IRDAI_PROP_DED_2020",
+          "policy:4.3",
+          "policy:4.2"
+        ]
+      },
+      {
+        "flag_id": "COPAY",
+        "headline": "Mandatory co-payment applicable on admissible claim amount",
+        "explanation": "The policy terms mandate a 10% co-payment on all admissible claim expenses under policy:7.4. This co-payment percentage is calculated on the admissible amount after applying room rent and non-payable deductions. The estimated co-payment amount payable by the patient is {{flag.COPAY.amount}}.",
+        "fix": "Inform the patient about the mandatory co-payment deduction and collect this portion directly from them.",
+        "citations": [
+          "policy:7.4"
+        ]
+      }
+    ]
+  }
+}

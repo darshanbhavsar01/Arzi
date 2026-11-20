@@ -245,7 +245,9 @@ async def test_another_hospital_cannot_see_the_claim(
 async def test_recorded_gemini_responses_replay_to_expected_values(
     case: str, settings: Settings, client_for: Callable[[FastAPI], httpx.AsyncClient]
 ) -> None:
-    """The committed llm_cache recordings (real Gemini output) still audit to expected.json."""
+    """The committed llm_cache recordings (real Gemini output) replay the whole demo offline:
+    the audit equals expected.json, every agent's answer passes its guardrails, and cases B and
+    C draft a GRO appeal over exactly the engine's appealable disputes."""
     replay = settings.model_copy(update={"llm_mode": LlmMode.REPLAY, "replay_dir": DEMO_CASES})
     app = create_app(replay, readiness_probes=[], services=build_services(replay))
     async with client_for(app) as client:
@@ -253,6 +255,40 @@ async def test_recorded_gemini_responses_replay_to_expected_values(
         _, events = await run_to_end(client, claim_id)
         assert events[-1].event == "run.completed", events[-1].data
         record = await _claim(client, claim_id)
+        drafted = await client.post(
+            f"/api/v1/claims/{claim_id}/appeals", json={"forum": "insurer_gro"}
+        )
     assert record.audit is not None
     committed = json.loads((DEMO_CASES / case / "expected.json").read_text(encoding="utf-8"))
     assert expected(record.audit) == committed
+    passed = {ReasoningStatus.PASSED, ReasoningStatus.RETRIED}
+    assert record.narratives is not None
+    assert record.narratives.status in passed
+    assert {n.flag_id for n in record.narratives.items} == {
+        f["flag_id"] for f in committed["flags"]
+    }
+    assert all(n.explanation.text for n in record.narratives.items)
+    assert record.policy_review is not None
+    assert record.policy_review.status in passed
+    assert not [i for i in record.issues if i.code == "policy_term_unconfirmed"]
+
+    if case == "case_a":
+        assert drafted.status_code == 409  # nothing to appeal before submission
+        return
+    assert drafted.status_code == 201, drafted.text
+    appeal = drafted.json()
+    assert appeal["drafting"] in {"passed", "retried"}
+    disputes = [f for f in committed["flags"] if f["kind"] == "dispute" and f["appealable"]]
+    items = appeal["content"]["items"]
+    assert [(i["flag_id"], i["amount"]) for i in items] == [
+        (f["flag_id"], f["recoverable"]) for f in disputes
+    ]
+    for item, flag in zip(items, disputes, strict=True):
+        assert set(flag["citations"]) <= set(item["citations"])
+        assert item["argument"]["text"]
+        assert "_" not in item["argument"]["text"].replace("{{", "")  # no raw reference IDs
+    assert appeal["content"]["relief_amount"] == committed["totals"]["recoverable_on_appeal"]
+    shown = committed["totals_display"]["recoverable_on_appeal"].removesuffix(".00")
+    assert shown in appeal["content"]["relief"]["text"]
+    if case == "case_c":
+        assert "IRDAI_PED_36M" in items[0]["citations"]

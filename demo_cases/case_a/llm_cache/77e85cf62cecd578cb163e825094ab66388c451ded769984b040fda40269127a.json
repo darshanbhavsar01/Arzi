@@ -1,0 +1,81 @@
+{
+  "prompt_ref": "interpret_policy@v1",
+  "schema": "PolicyTermsDraft",
+  "call": {
+    "prompt_ref": "interpret_policy@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 1314,
+    "output_tokens": 682,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "terms": [
+      {
+        "term": "room_rent_cap",
+        "clause_id": "4.2",
+        "summary": "Room, boarding, and nursing charges are covered up to the limit stated in the schedule per day. Any excess charges must be borne by the insured.",
+        "confidence": 1.0
+      },
+      {
+        "term": "proportionate_deduction",
+        "clause_id": "4.3",
+        "summary": "If a room above the eligible limit is occupied, associated medical expenses are paid proportionately. Pharmacy, consumables, implants, and diagnostics are excluded from proportionate deduction.",
+        "confidence": 1.0
+      },
+      {
+        "term": "icu_cap",
+        "clause_id": "4.4",
+        "summary": "Intensive care unit charges are payable up to the ICU limit specified in the Policy Schedule.",
+        "confidence": 1.0
+      },
+      {
+        "term": "copay",
+        "clause_id": "7.4",
+        "summary": "Admissible claims are subject to the co-payment percentage specified in the Policy Schedule.",
+        "confidence": 1.0
+      },
+      {
+        "term": "sub_limit",
+        "clause_id": "6.1",
+        "summary": "Payments for procedures listed in the Policy Schedule are restricted to the amounts stated against each.",
+        "confidence": 1.0
+      },
+      {
+        "term": "ped_waiting",
+        "clause_id": "5.1",
+        "summary": "Pre-existing diseases are covered after the waiting period stated in the Policy Schedule following continuous coverage.",
+        "confidence": 1.0
+      },
+      {
+        "term": "specific_waiting",
+        "clause_id": "5.2",
+        "summary": "Specific conditions listed in the Policy Schedule are covered after the stated waiting period.",
+        "confidence": 1.0
+      },
+      {
+        "term": "non_payable_cover",
+        "clause_id": "8.1",
+        "summary": "Items listed as non-medical expenses are not payable unless an optional cover for them applies.",
+        "confidence": 1.0
+      },
+      {
+        "term": "claim_documents",
+        "clause_id": "9.2",
+        "summary": "Claims must be supported by the discharge summary, final itemised bill, investigation reports, and implant invoices where applicable.",
+        "confidence": 1.0
+      }
+    ],
+    "citations": [
+      "policy:4.2",
+      "policy:4.3",
+      "policy:4.4",
+      "policy:5.1",
+      "policy:5.2",
+      "policy:6.1",
+      "policy:7.4",
+      "policy:8.1",
+      "policy:9.2"
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "prompt_ref": "interpret_policy@v1",
+  "schema": "PolicyTermsDraft",
+  "call": {
+    "prompt_ref": "interpret_policy@v1",
+    "model": "gemini-3.6-flash",
+    "input_tokens": 1328,
+    "output_tokens": 552,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "terms": [
+      {
+        "term": "room_rent_cap",
+        "clause_id": "4.2",
+        "summary": "Room, boarding, and nursing charges are covered up to the daily room rent limit set in the Policy Schedule. Expenses exceeding this limit must be paid by the insured.",
+        "confidence": 0.95
+      },
+      {
+        "term": "proportionate_deduction",
+        "clause_id": "4.3",
+        "summary": "If a higher room category is chosen, associated medical expenses are reduced proportionately based on the eligible vs actual room rent. Proportionate deduction does not apply to pharmacy, consumables, implants, diagnostics, or ICU charges.",
+        "confidence": 0.95
+      },
+      {
+        "term": "icu_cap",
+        "clause_id": "4.4",
+        "summary": "Intensive Care Unit charges are covered up to the ICU limit specified in the Policy Schedule.",
+        "confidence": 0.95
+      },
+      {
+        "term": "copay",
+        "clause_id": "7.4",
+        "summary": "A co-payment percentage, as specified in the Policy Schedule, applies to every admissible claim amount.",
+        "confidence": 0.95
+      },
+      {
+        "term": "sub_limit",
+        "clause_id": "6.1",
+        "summary": "Reimbursement for specified procedures is capped at the particular amount indicated in the Policy Schedule.",
+        "confidence": 0.95
+      },
+      {
+        "term": "ped_waiting",
+        "clause_id": "5.1",
+        "summary": "Expenses for declared pre-existing diseases are covered after the waiting period specified in the Policy Schedule of continuous coverage.",
+        "confidence": 0.95
+      },
+      {
+        "term": "specific_waiting",
+        "clause_id": "5.2",
+        "summary": "Treatment for listed specific conditions is covered only after completing the specified waiting period of continuous coverage.",
+        "confidence": 0.95
+      },
+      {
+        "term": "associated_expenses",
+        "clause_id": "4.3",
+        "summary": "Associated medical expenses are scaled down proportionately if room rent exceeds the eligible limit, excluding items like diagnostics, pharmacy, implants, and ICU.",
+        "confidence": 0.9
+      },
+      {
+        "term": "non_payable_cover",
+        "clause_id": "8.1",
+        "summary": "Non-medical expenses listed in the policy annexure are not payable unless an optional cover for non-medical items is active.",
+        "confidence": 0.95
+      },
+      {
+        "term": "claim_documents",
+        "clause_id": "9.2",
+        "summary": "Claims require supporting documents including discharge summary, final itemised bill, investigation reports, and implant stickers/invoices where applicable.",
+        "confidence": 0.95
+      }
+    ],
+    "citations": [
+      "policy:4.2",
+      "policy:4.3",
+      "policy:4.4",
+      "policy:5.1",
+      "policy:5.2",
+      "policy:6.1",
+      "policy:7.4",
+      "policy:8.1",
+      "policy:9.2"
+    ]
+  }
+}

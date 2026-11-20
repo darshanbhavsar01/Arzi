@@ -1,0 +1,40 @@
+{
+  "prompt_ref": "appeal_insurer_gro@v1",
+  "schema": "AppealDraftOutput",
+  "call": {
+    "prompt_ref": "appeal_insurer_gro@v1",
+    "model": "gemini-2.5-flash",
+    "input_tokens": 2966,
+    "output_tokens": 576,
+    "thinking_tokens": 1122,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "subject": "Request to review the deductions on claim settlement",
+    "facts": "The patient was admitted on 2026-10-03 and discharged on 2026-10-08, for a fracture of the neck of the right femur, undergoing a right hip hemiarthroplasty. Suraksha Health Insurance Co. processed the claim, applying various deductions, and approved an amount of {{letter.approved}} against the claimed amount of {{letter.claimed}}.",
+    "items": [
+      {
+        "flag_id": "SUBSUMED_ITEM",
+        "argument": "The insurer has incorrectly deducted registration charges (line 12) as a non-payable item, amounting to {{flag.SUBSUMED_ITEM.recoverable}}. According to \"Non-payable items: Annexure I, Lists I to IV\" (IRDAI_NON_PAYABLE_ANNEX_I), items such as registration charges are subsumed into the overall treatment cost and should not be deducted separately. Therefore, this deduction is contrary to the guidelines.",
+        "citations": [
+          "IRDAI_NON_PAYABLE_ANNEX_I"
+        ]
+      },
+      {
+        "flag_id": "PROP_WRONGLY_APPLIED",
+        "argument": "A proportionate deduction of {{flag.PROP_WRONGLY_APPLIED.recoverable}} has been applied to ICU charges (line 2), pharmacy and medicines (line 6), and laboratory and radiology expenses (line 7). This application of proportionate deduction is contrary to the \"Norms on proportionate deductions\" (IRDAI_PROP_DED_2020) and policy clause \"Proportionate deduction\" (policy:4.3). Both explicitly state that proportionate deduction does not apply to ICU charges, pharmacy and consumables, or diagnostics. Therefore, these deductions are invalid and should be reversed.",
+        "citations": [
+          "IRDAI_PROP_DED_2020",
+          "policy:4.3"
+        ]
+      }
+    ],
+    "relief": "We request Suraksha Health Insurance Co. to review the claim decision and reimburse the incorrectly deducted amount of {{totals.recoverable}}. We anticipate a written response and resolution of this grievance within 15 days, as per the insurer grievance resolution timeline.",
+    "citations": [
+      "IRDAI_NON_PAYABLE_ANNEX_I",
+      "IRDAI_PROP_DED_2020",
+      "policy:4.3",
+      "INSURER_GRIEVANCE_15D"
+    ]
+  }
+}

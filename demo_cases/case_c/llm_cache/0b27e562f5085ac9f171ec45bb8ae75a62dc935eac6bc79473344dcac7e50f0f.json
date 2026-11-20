@@ -1,0 +1,26 @@
+{
+  "prompt_ref": "explain_flags@v1",
+  "schema": "FlagNarrativesDraft",
+  "call": {
+    "prompt_ref": "explain_flags@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 1990,
+    "output_tokens": 143,
+    "thinking_tokens": 1195,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "items": [
+      {
+        "flag_id": "WAITING_REJECTION_INVALID",
+        "headline": "Insurer incorrectly rejected the claim citing pre-existing disease waiting period.",
+        "explanation": "The insurer rejected this claim on pre-existing disease grounds, but the patient has completed 40 months of continuous coverage, which exceeds the required waiting period. Therefore, this rejection is invalid and an appeal can recover {{flag.WAITING_REJECTION_INVALID.recoverable}}.",
+        "fix": "File an appeal with the insurer attaching proof of continuous coverage exceeding the waiting period to overturn the rejection.",
+        "citations": [
+          "IRDAI_PED_36M",
+          "policy:5.1"
+        ]
+      }
+    ]
+  }
+}
