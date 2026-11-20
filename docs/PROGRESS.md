@@ -5,7 +5,7 @@
 |---|---|---|---|
 | 0 | done | 2026-11-20 | Repo, tooling, hook, CI, GCP bootstrap, budget, model choice, Cloud Run deploy (replay mode). |
 | 1 | done | 2026-11-20 | Paise money, claim models, state machine, 12-rule engine with trace, citation whitelist, matcher, CLI; goldens A/B/C exact. |
-| 2 | not started | | Synthetic demo cases |
+| 2 | done | 2026-11-20 | Generator for 3 cases: 20 PDFs + scanned JPG, facts/expected/identifiers JSON, README; byte-stable. |
 | 3 | not started | | Ingestion, extraction, redaction, pipeline |
 | 4 | not started | | ADK agents, guardrails, appeals |
 | 5 | not started | | Desk web app |
@@ -31,6 +31,14 @@
 | Golden tests A, B, C | pass: A billed ₹2,25,500 / payable ₹1,57,612.50 / at risk ₹67,887.50 / fix ₹46,875, exactly 4 flags; B payable ₹1,58,512.50, recoverable ₹20,137.50 (₹19,237.50 + ₹900); C `WAITING_REJECTION_INVALID`, relief ₹3,10,000 |
 | `python -m arzi.rules.cli demo_cases/case_a/facts.json` | pass (`make rules-demo CASE=case_a`; from the root: `uv run --project api python -m arzi.rules.cli demo_cases/case_a/facts.json`) |
 | `make check` green | pass (recipes run directly: `make` is not on this machine's PATH) |
+
+### Phase 2 gate
+| Check | Result |
+|---|---|
+| `make demo-cases` regenerates byte-stable PDFs | pass: a test regenerates all cases and byte-compares every PDF and JSON; the scan JPG is compared within a pixel tolerance |
+| PDFs open and look like real documents | pass: reviewed rendered pages (bill, policy schedule, deduction letter, discharge summary, scan) |
+| Engine on each `facts.json` equals `expected.json` | pass; hand-checked against the plan: A ₹67,887.50 / fix ₹46,875, B ₹20,137.50, C ₹3,10,000, letter B ₹2,26,500 - ₹88,125 = ₹1,38,375 |
+| `make check` green | pass (373 API tests, 100% coverage; rules gate 100%; web lint/types/tests) |
 
 ## Decisions
 - 2026-11-20 — Record architecture decisions as ADRs (ADR-0001).
@@ -84,6 +92,15 @@
   A human's confirmed `irdai_list` (including "none") always wins over the matcher.
 - 2026-11-20 — Policy clause citations use the form `policy:<clause_id>`, next to whitelist IDs
   such as `IRDAI_PROP_DED_2020`, so the Phase 4 guardrail can tell the two sources apart.
+- 2026-11-20 — `scripts/demo_data.py` is the single source for each demo case: `facts.json`,
+  `expected.json`, `identifiers.json` and every document are generated from it, so they cannot drift.
+- 2026-11-20 — Byte stability: reportlab invariant mode, Bitstream Vera TTFs from the reportlab
+  package embedded (no font files in the repo), uncompressed page streams (zlib output differs across
+  builds), fixed seed for scan noise. Cost: about 100 KB per PDF, about 2.3 MB in total.
+- 2026-11-20 — Documents print "Rs." rather than "₹": Vera has no rupee glyph, and "Rs." is common on
+  Indian bills. `to_paise` already parses both.
+- 2026-11-20 — `expected.json` holds flags, totals, fix savings and citation statuses, not trace
+  wording, so copy edits do not churn fixtures. Citation status values: `verified`, `verify`, `policy`.
 - 2026-11-20 — Case C in post-rejection mode relies on the statutory 36-month cap even when the
   rejected condition does not match a declared PED (`min(policy waiting or 36, 36)`).
 
@@ -122,6 +139,14 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Non-payable seed skips "service charges where nursing is also charged" (conditional on another
   line, so a plain alias would cut "ambulance service charges"), and gloves, masks, admission kits
   and attendant charges (the brief names them without saying which list they are on).
+- Phase 2: `pypdfium2` (Google's PDFium) is a third dev dependency next to reportlab and Pillow. It
+  rasterises the real bill PDF for the scan instead of re-drawing the layout in Pillow, and it reads
+  PDF text in tests.
+- Phase 2: added `investigation_reports.pdf` and `implant_invoice.pdf` per case so `documents_present`
+  in `facts.json` is true. Clause numbers follow the plan (5.1 PED, 7.4 co-pay, 9.2 documents; 8.1
+  non-medical expenses added for the deduction letter), and the hospital is in Ahmedabad.
+- Phase 2: no GST lines on the bills. Room rent above ₹5,000/day attracts GST, which would change the
+  golden totals; the cases stay as specified.
 - Commits: one per rule family rather than one per rule, so every commit stays green under the
   100% rules coverage gate.
 
@@ -138,8 +163,9 @@ each tier, `asia-south1` if served there, otherwise `global`.
   eslint-plugin-jsx-a11y support them.
 - Phase 5: self-host IBM Plex fonts (the placeholder page uses system fallbacks).
 - Phase 7: structured JSON logging with trace correlation and a PII-scrubbing filter.
-- Rules: load the official IRDAI Annexure I PDF into `docs/context/irdai/`, write
-  `scripts/parse_non_payable.py`, and flip item statuses to verified (owner to supply the PDF).
+- Rules: `docs/context/irdai/IRDA-Non-Medical-Expenses.pdf` has arrived (untracked). Write
+  `scripts/parse_non_payable.py`, load the full Lists I-IV and flip statuses to verified. Needs the
+  owner's go-ahead because it changes regulatory data.
 - Rules: claim insurer over-cuts on lines the engine also prorates (needs a rounding tolerance).
 - Rules: policy deductible, initial 30-day waiting period, and conditional List I items.
 - Rules: `CategoryCap` whose category is missing from the hospital tariff is traced and skipped;
