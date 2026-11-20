@@ -6,7 +6,7 @@
 | 0 | done | 2026-11-20 | Repo, tooling, hook, CI, GCP bootstrap, budget, model choice, Cloud Run deploy (replay mode). |
 | 1 | done | 2026-11-20 | Paise money, claim models, state machine, 12-rule engine with trace, citation whitelist, matcher, CLI; goldens A/B/C exact. |
 | 2 | done | 2026-11-20 | Generator for 3 cases: 20 PDFs + scanned JPG, facts/expected/identifiers JSON, README; byte-stable. |
-| 3 | not started | | Ingestion, extraction, redaction, pipeline |
+| 3 | code complete; live gate pending owner | partial | Upload → SSE-streamed audit → persisted claim; Vertex/replay/fake LLM modes; redaction; reconcile; cost ledger + budget guard; Firestore/GCS adapters. |
 | 4 | not started | | ADK agents, guardrails, appeals |
 | 5 | not started | | Desk web app |
 | 6 | not started | | Family experience |
@@ -39,6 +39,15 @@
 | PDFs open and look like real documents | pass: reviewed rendered pages (bill, policy schedule, deduction letter, discharge summary, scan) |
 | Engine on each `facts.json` equals `expected.json` | pass; hand-checked against the plan: A ₹67,887.50 / fix ₹46,875, B ₹20,137.50, C ₹3,10,000, letter B ₹2,26,500 - ₹88,125 = ₹1,38,375 |
 | `make check` green | pass (373 API tests, 100% coverage; rules gate 100%; web lint/types/tests) |
+
+### Phase 3 gate
+| Check | Result |
+|---|---|
+| Live: case A (scanned bill + policy + discharge summary + reports + implant invoice) extracts and audits to `expected.json`, recorded into `llm_cache` | pending owner approval (spends money; `scripts/record_demo.py case_a`) |
+| Replay reproduces it offline | pending the recording (`scripts/record_demo.py case_a --replay`) |
+| Cost per claim for case A recorded here | pending the live run |
+| Coverage ≥ 85% | pass: 99% (505 API tests); rules gate still 100% |
+| Offline end to end | pass: cases A, B, C go upload → extract (fixture LLM) → redact → reconcile → audit → SSE → persisted record equal to `expected.json`, with no identifier left in `facts` |
 
 ## Decisions
 - 2026-11-20 — Record architecture decisions as ADRs (ADR-0001).
@@ -113,6 +122,32 @@
   lines classify exactly as before, so the goldens are unchanged.
 - 2026-11-20 — `match_non_payable` is memoised per description and scores tokens inside rapidfuzz.
   With about 240 aliases, the property tests had hit Hypothesis's 200 ms deadline under coverage.
+- 2026-11-20 — Audit runs stream over SSE from the instance that runs them; no queue (ADR-0003).
+- 2026-11-20 — Pipeline order is extract → redact → reconcile → audit. The plan put redaction after
+  reconcile; redacting first means `ClaimFacts` is never built from raw identifiers.
+- 2026-11-20 — Gemini transcribes and classifies only. Amounts are printed strings and enums are
+  used for document type, service head and the insurer's reason. Parsing to paise, months of cover,
+  cap interpretation and letter-row → bill-line mapping are deterministic code (`reconcile.py`);
+  anything unsettled becomes a "needs confirmation" `ReviewIssue`.
+- 2026-11-20 — Redaction removes every Aadhaar-shaped number whatever its Verhoeff check digit
+  (a mistyped real number is still personal data). The plan used Verhoeff to detect them, but the
+  synthetic numbers deliberately fail it. Pseudonyms are HMAC-SHA256 of the value; surname-only
+  mentions map to the full name's pseudonym. The original values go to a restricted
+  `restricted/identity` document.
+- 2026-11-20 — LLM modes: `replay` (real recordings under `demo_cases/*/llm_cache`, keyed by prompt
+  version + input hashes, not model ID), `fake` (generator-written ideal extractions keyed by file
+  SHA-256), `live` (Vertex AI → budget guard → optional recorder). A replay miss is an error, never a
+  silent live call.
+- 2026-11-20 — Costs are integer micro-rupees from `ARZI_PRICE_TABLE_JSON`; a live call for an
+  unpriced model is refused. The budget day is IST (fixed UTC+05:30; Windows and slim images may
+  lack tzdata).
+- 2026-11-20 — Claim writes compare `revision` and then `update()` with a `last_update_time`
+  precondition (Firestore `set()` takes no precondition).
+- 2026-11-20 — Consent is required before a run starts (409 `consent-required`). Audit-log entries
+  carry IDs and types only, never file names, which can contain patient names. Failed runs log the
+  exception type and frames, never the message: a test caught `logger.exception` leaking it.
+- 2026-11-20 — Letter rows map to bill lines by exact normalised text, else a one-way fuzzy match
+  accepted only when exactly one line fits; ambiguous rows ("Charges") become `unmapped_deduction`.
 - 2026-11-20 — Case C in post-rejection mode relies on the statutory 36-month cap even when the
   rejected condition does not match a declared PED (`min(policy waiting or 36, 36)`).
 
@@ -159,6 +194,15 @@ each tier, `asia-south1` if served there, otherwise `global`.
   non-medical expenses added for the deduction letter), and the hospital is in Ahmedabad.
 - Phase 2: no GST lines on the bills. Room rent above ₹5,000/day attracts GST, which would change the
   golden totals; the cases stay as specified.
+- Phase 3: Secret Manager for the pseudonym key is deferred. `ARZI_PSEUDONYM_SALT` (SecretStr) is
+  read from the environment, with a local-only default; Cloud Run must set it from Secret Manager.
+- Phase 3: `pypdfium2` became a runtime dependency (upload page counts). `python-multipart` added
+  for uploads.
+- Phase 3: fixed a Phase 2 bug found by the end-to-end test. The case A/B policy schedule printed
+  "Co-payment 1E+1%" (`str(Decimal(10).normalize())`); all decimal displays now use fixed-point
+  formatting, and a regression test checks the printed text.
+- Phase 3: added `GET /claims/{cid}/documents`, `.../documents/{did}/content` (streaming fallback
+  when GCS cannot sign URLs) and `GET /claims/{cid}/audit-log` beyond the plan's list.
 - Commits: one per rule family rather than one per rule, so every commit stays green under the
   100% rules coverage gate.
 
@@ -188,6 +232,19 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Rules: policy deductible, initial 30-day waiting period, and conditional List I items.
 - Rules: `CategoryCap` whose category is missing from the hospital tariff is traced and skipped;
   Phase 3 should surface it as "Needs confirmation" in the UI.
+
+- Owner, for the Phase 3 gate: approve a live run of `scripts/record_demo.py case_a` (and B, C for
+  replayable demos), set `ARZI_PRICE_TABLE_JSON` from the current Vertex AI pricing page, and
+  commit the recordings.
+- Owner, cloud (no cost beyond pennies): deploy `infra/firestore.indexes.json`, run
+  `scripts/seed.py` for the demo hospital profile, set `ARZI_PSEUDONYM_SALT` from Secret Manager on
+  Cloud Run, and grant the runtime identity `iam.serviceAccountTokenCreator` on itself if signed
+  URLs are wanted (otherwise documents stream through the API).
+- Phase 3: Docker image now copies `demo_cases/*/llm_cache` and `extraction` (replay/fake in the
+  cloud); first built on the next `make deploy`.
+- Phase 3: stale-run sweeper for runs left `running` by a dead instance (ADR-0003).
+- Phase 3: Firestore worklist search (`q`) scans a bounded window client-side; move to a search
+  field or prefix index if volumes grow.
 
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.
