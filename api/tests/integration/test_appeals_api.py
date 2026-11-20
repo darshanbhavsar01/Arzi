@@ -15,6 +15,7 @@ import pytest
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from arzi.adapters.auth import DEMO_PRINCIPAL, DemoAuthVerifier
 from arzi.adapters.fixture_llm import FixtureLlmClient
 from arzi.agents.schemas import AppealDraftOutput
 from arzi.agents.stubs import FakeLlmClient, StubReasoner
@@ -339,6 +340,31 @@ async def test_appeals_are_scoped_to_the_hospital(
         await services.appeals.get(other, claim_id, 1)
     with pytest.raises(ClaimNotFoundError):
         await services.appeals.versions(other, claim_id)
+
+
+async def test_only_a_reviewer_or_admin_can_sign_or_export(
+    fake_settings: Settings, client_for: Callable[[FastAPI], httpx.AsyncClient]
+) -> None:
+    services, client = _api(fake_settings, client_for, None)
+    desk = Principal(
+        user_id="u3",
+        display_name="Desk",
+        hospital_id=DEMO_PRINCIPAL.hospital_id,
+        role="billing_executive",
+    )
+    async with client as api:
+        claim_id = await _audited(api, "case_b")
+        await _draft(api, claim_id)
+        base = f"/api/v1/claims/{claim_id}/appeals"
+        assert (await api.post(f"{base}/1/submit")).status_code == 200
+        services.auth = DemoAuthVerifier(desk)
+        signer = {"reviewer_name": "A. Mehta", "reviewer_role": "Desk", "declaration": True}
+        denied = await api.post(f"{base}/1/sign", json=signer)
+        assert denied.status_code == 403
+        assert denied.json()["type"].endswith("/role-forbidden")
+        assert (await api.get(f"{base}/1/export.pdf")).status_code == 403
+        services.auth = DemoAuthVerifier()
+        assert (await api.post(f"{base}/1/sign", json=signer)).status_code == 200
 
 
 def _pdf_text(data: bytes) -> str:

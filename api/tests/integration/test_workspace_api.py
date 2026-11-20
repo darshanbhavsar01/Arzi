@@ -117,7 +117,7 @@ async def test_workspace_describes_hospital_user_and_ai_configuration(
 ) -> None:
     info = (await api.get("/api/v1/meta/workspace")).json()
     assert info["hospital"]["name"] == "Sanjeevani Multispeciality Hospital"
-    assert info["user_role"] == "billing_executive"
+    assert info["user_role"] == "reviewer"
     assert info["llm_mode"] == "replay"
     assert info["region"] == "asia-south1"
     assert "appeal_insurer_gro@v1" in info["prompt_versions"]

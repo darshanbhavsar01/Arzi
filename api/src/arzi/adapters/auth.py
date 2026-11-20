@@ -6,9 +6,9 @@ from arzi.services.ports import Principal
 
 DEMO_PRINCIPAL = Principal(
     user_id="demo-desk-01",
-    display_name="Demo billing desk",
+    display_name="Demo reviewer desk",
     hospital_id=DEMO_HOSPITAL_ID,
-    role="billing_executive",
+    role="reviewer",
 )
 
 

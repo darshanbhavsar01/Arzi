@@ -54,7 +54,7 @@ test-e2e: ## Playwright against a local production build (installs Chromium on f
 	cd $(WEB) && npx playwright install chromium && $(NPM) run --silent test:e2e
 
 eval: ## Extraction and flag accuracy report -> evals/report.md
-	@echo "make eval: not yet implemented (Phase 7)"
+	cd $(API) && $(UV) run python ../evals/run.py
 
 models: ## List Gemini models visible to GOOGLE_CLOUD_PROJECT (read-only)
 	cd $(API) && $(UV) run python ../scripts/list_models.py $(MODELS_ARGS)

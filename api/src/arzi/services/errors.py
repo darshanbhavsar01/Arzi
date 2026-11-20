@@ -108,6 +108,10 @@ class NotAuthenticatedError(AppError):
     status, slug, detail = 401, "unauthenticated", "Sign in to continue."
 
 
+class RoleForbiddenError(AppError):
+    status, slug, detail = 403, "role-forbidden", "Your role cannot do this."
+
+
 class AppealNotFoundError(AppError):
     status, slug, detail = 404, "appeal-not-found", "No such appeal version on this claim."
 
