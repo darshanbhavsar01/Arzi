@@ -462,5 +462,13 @@ each tier, `asia-south1` if served there, otherwise `global`.
   runbook). Skipped: Playwright smoke against prod, demo video (owner), `v0.1.0-buildathon` tag
   only if the owner confirms.
 
+## Billing (2026-11-21)
+- Project `<project-id>` re-linked to billing account `<event-credit-account-2>` ("GDP Event
+  Credit: Buildathon day 2", USD 5 credit), away from the owner's personal account. Budget
+  `arzi-cap-event` (USD 5, alerts at 25/50/90/100%) created on it. The first event account
+  (`012742-...`) is closed. Budgets alert only; the kill switches in the runbook still apply.
+- Everything else in the project (Cloud Run, Firestore, Storage, Artifact Registry) bills through
+  the project, so nothing else moved. Service runs in replay mode (no model spend).
+
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.
