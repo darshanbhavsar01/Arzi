@@ -40,6 +40,8 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "ASYNC", "S", "PT", "N", "ANN"]
+# Computation traces print the multiplication sign, as on an insurer's settlement sheet.
+allowed-confusables = ["×"]
 
 [tool.ruff.lint.per-file-ignores]
 # Tests assert by design and use throwaway literals.
@@ -79,4 +81,9 @@ branch = true
 fail_under = 85
 show_missing = true
 skip_covered = true
-exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "\\.\\.\\."]
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+    "if __name__ == .__main__.:",
+]
