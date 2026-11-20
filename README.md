@@ -16,6 +16,11 @@ More screens in [`docs/screens/`](docs/screens/): worklist, deduction workspace,
 
 **Try it:** open the app, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
 
+**Live link:** https://arzi-<hash>.a.run.app (demo workspace, no account needed).
+
+**Measured (replay eval, `make eval`):** 11/11 deductions caught, 11/11 exact rupee amounts,
+totals exact on all three demo cases. See [`evals/report.md`](evals/report.md). Desk analytics are at `/analytics`.
+
 ## Quick start
 
 Prerequisites: [uv](https://docs.astral.sh/uv/), Node.js ≥ 22, GNU Make and bash (Git Bash on
@@ -39,7 +44,7 @@ reconcile → policy interpreter → rules engine → flag explainer); every mod
 passes an amount guard and a citation whitelist, and appeals are exported only after a named
 reviewer signs them.
 
-- Architecture and the **Live vs roadmap** table: [`docs/architecture.md`](docs/architecture.md) (Phase 9)
+- Architecture and the **Live vs roadmap** table: [`docs/architecture.md`](docs/architecture.md) 
 - Build plan and status: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md), [`docs/PROGRESS.md`](docs/PROGRESS.md)
 - Decisions: [`docs/adr/`](docs/adr/)
 - Operations, kill switches and billing: [`docs/runbook.md`](docs/runbook.md)

@@ -453,5 +453,14 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Deliberately skipped by owner decision (time, no code submission): Firebase Auth, tenancy test
   sweep, security headers/rate limits, DLP/privacy endpoints, tracing, Document AI/DLP flags.
 
+## Phase 8 and 9 (shipped, scoped to the live link)
+- Phase 8: `/analytics` page computed client-side from worklist summaries (KPIs, ₹ at risk by
+  insurer / stage / week, recovery funnel); accessible SVG bars, no chart dependency; unit-tested
+  aggregation. Skipped: Firestore aggregate docs, per-rule chart, cost-per-claim chart, BigQuery.
+- Phase 9: `docs/architecture.md` (live vs roadmap), `docs/demo-script.md`, runbook additions,
+  README numbers. Deployed with `ARZI_LLM_MODE=replay` (no spend; live is a one-line flip in the
+  runbook). Skipped: Playwright smoke against prod, demo video (owner), `v0.1.0-buildathon` tag
+  only if the owner confirms.
+
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.

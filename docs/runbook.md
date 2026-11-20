@@ -64,6 +64,25 @@ gcloud run services update arzi --region asia-south1 --min-instances=1   # warm,
 gcloud run services update arzi --region asia-south1 --min-instances=0   # revert right after
 ```
 
+## LLM mode flip
+
+The live link defaults to `replay` (recorded Gemini responses, no spend). To use Vertex AI for
+documents outside the demo cases (spend is bounded by `ARZI_DAILY_BUDGET_INR`):
+
+```bash
+gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_MODE=live
+gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_MODE=replay  # back
+```
+
+## Smoke test after a deploy
+
+```bash
+curl -fsS https://arzi-<hash>.a.run.app/health
+curl -fsS https://arzi-<hash>.a.run.app/readyz
+```
+
+Then run the demo script in `docs/demo-script.md` once on a laptop and once on a phone.
+
 ## Health
 
 - `GET /healthz` — liveness for Cloud Run probes; no dependencies. On the public `*.run.app` URL
