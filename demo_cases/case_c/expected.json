@@ -1,0 +1,34 @@
+{
+  "engine_version": "rules-2026.11.1",
+  "mode": "post_rejection",
+  "totals": {
+    "billed": 31000000,
+    "predicted_payable": 31000000,
+    "at_risk": 0,
+    "recoverable_on_appeal": 31000000
+  },
+  "totals_display": {
+    "billed": "₹3,10,000.00",
+    "predicted_payable": "₹3,10,000.00",
+    "at_risk": "₹0.00",
+    "recoverable_on_appeal": "₹3,10,000.00"
+  },
+  "fix_savings": 0,
+  "flags": [
+    {
+      "flag_id": "WAITING_REJECTION_INVALID",
+      "rule_id": "WAITING_REJECTION_INVALID",
+      "kind": "dispute",
+      "severity": "high",
+      "amount_at_risk": 31000000,
+      "recoverable": 31000000,
+      "lines": [],
+      "appealable": true,
+      "fix_code": "file_appeal",
+      "citations": {
+        "IRDAI_PED_36M": "verified",
+        "policy:5.1": "policy"
+      }
+    }
+  ]
+}

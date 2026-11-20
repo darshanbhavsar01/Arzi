@@ -1,0 +1,96 @@
+{
+  "engine_version": "rules-2026.11.1",
+  "mode": "pre_submission",
+  "totals": {
+    "billed": 22550000,
+    "predicted_payable": 15761250,
+    "at_risk": 6788750,
+    "recoverable_on_appeal": 0
+  },
+  "totals_display": {
+    "billed": "₹2,25,500.00",
+    "predicted_payable": "₹1,57,612.50",
+    "at_risk": "₹67,887.50",
+    "recoverable_on_appeal": "₹0.00"
+  },
+  "fix_savings": 4687500,
+  "flags": [
+    {
+      "flag_id": "NON_PAYABLE",
+      "rule_id": "NON_PAYABLE",
+      "kind": "deduction",
+      "severity": "medium",
+      "amount_at_risk": 350000,
+      "recoverable": 0,
+      "lines": [
+        9,
+        10,
+        11
+      ],
+      "appealable": false,
+      "fix_code": "collect_from_patient",
+      "citations": {
+        "IRDAI_NON_PAYABLE_ANNEX_I": "verify"
+      }
+    },
+    {
+      "flag_id": "ROOM_RENT_EXCESS",
+      "rule_id": "ROOM_RENT_EXCESS",
+      "kind": "deduction",
+      "severity": "high",
+      "amount_at_risk": 1200000,
+      "recoverable": 0,
+      "lines": [
+        1
+      ],
+      "appealable": false,
+      "fix_code": "room_downgrade_or_consent",
+      "citations": {
+        "policy:4.2": "policy"
+      }
+    },
+    {
+      "flag_id": "PROP_ROOM_RENT",
+      "rule_id": "PROP_ROOM_RENT",
+      "kind": "deduction",
+      "severity": "high",
+      "amount_at_risk": 3487500,
+      "recoverable": 0,
+      "lines": [
+        3,
+        4,
+        5
+      ],
+      "appealable": false,
+      "fix_code": "room_downgrade_or_consent",
+      "citations": {
+        "IRDAI_PROP_DED_2020": "verified",
+        "policy:4.3": "policy",
+        "policy:4.2": "policy"
+      }
+    },
+    {
+      "flag_id": "COPAY",
+      "rule_id": "COPAY",
+      "kind": "deduction",
+      "severity": "info",
+      "amount_at_risk": 1751250,
+      "recoverable": 0,
+      "lines": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "appealable": false,
+      "fix_code": "inform_patient",
+      "citations": {
+        "policy:7.4": "policy"
+      }
+    }
+  ]
+}
