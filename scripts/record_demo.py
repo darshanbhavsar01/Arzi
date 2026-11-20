@@ -23,12 +23,15 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from gen_demo_cases import expected
+from pydantic import BaseModel
 
 from arzi.adapters.auth import DEMO_PRINCIPAL
+from arzi.adapters.genai_client import ReplayLlmClient
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
-from arzi.bootstrap import build_services
+from arzi.bootstrap import build_llm, build_services, utc_now
 from arzi.config import LlmMode, Settings
 from arzi.domain.enums import ClaimMode
+from arzi.services.ports import LlmClient, LlmRequest, LlmResult, LlmUnavailableError
 
 ROOT = Path(__file__).resolve().parents[1]
 DEMO = ROOT / "demo_cases"
@@ -51,6 +54,23 @@ COMMON = (
 )
 
 
+class RecordingsFirst:
+    """Serve a call from an existing recording; only missing responses go to the live model.
+
+    Re-running after a quota error therefore costs only the calls that are still missing.
+    """
+
+    def __init__(self, recorded: LlmClient, live: LlmClient) -> None:
+        self._recorded = recorded
+        self._live = live
+
+    async def generate_structured[T: BaseModel](self, request: LlmRequest[T]) -> LlmResult[T]:
+        try:
+            return await self._recorded.generate_structured(request)
+        except LlmUnavailableError:
+            return await self._live.generate_structured(request)
+
+
 async def run_case(case: str, *, replay: bool, env_file: Path | None) -> bool:
     mode = LlmMode.REPLAY if replay else LlmMode.LIVE
     settings = Settings(
@@ -59,11 +79,16 @@ async def run_case(case: str, *, replay: bool, env_file: Path | None) -> bool:
         replay_dir=DEMO,
         llm_record_dir=None if replay else DEMO / case / "llm_cache",
     )
+    ledger = InMemoryCostLedger()
+    llm: LlmClient | None = None
+    if not replay:
+        llm = RecordingsFirst(ReplayLlmClient(DEMO), build_llm(settings, ledger, utc_now))
     services = build_services(
         settings,
+        llm=llm,
         repo=InMemoryClaimRepository(),
         blobs=InMemoryBlobStore(),
-        ledger=InMemoryCostLedger(),
+        ledger=ledger,
     )
     claim = await services.claims.create(DEMO_PRINCIPAL, MODES[case], None)
     await services.claims.record_consent(DEMO_PRINCIPAL, claim.claim_id, "patient (synthetic demo)")

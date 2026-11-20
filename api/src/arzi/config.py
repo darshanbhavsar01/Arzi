@@ -83,7 +83,8 @@ class Settings(BaseSettings):
     llm_timeout_s: float = Field(default=90.0, gt=0)
     llm_max_retries: int = Field(default=2, ge=0, le=5)
     llm_thinking_budget: int = Field(default=0, ge=-1)
-    """Thinking tokens for extraction (0 = off). Transcription needs little reasoning."""
+    """Thinking tokens for extraction (0 = off, -1 = the model's default). Transcription needs
+    little reasoning; models that cannot switch thinking off need -1."""
     extraction_concurrency: int = Field(default=3, ge=1, le=10)
 
     max_upload_mb: int = Field(default=20, ge=1, le=32)

@@ -77,7 +77,11 @@ class GeminiLlmClient:
             response_schema=request.schema,
             temperature=request.temperature,
             max_output_tokens=request.max_output_tokens,
-            thinking_config=types.ThinkingConfig(thinking_budget=request.thinking_budget),
+            # A negative budget leaves thinking at the model's default (some models cannot turn
+            # it off and reject a zero budget).
+            thinking_config=types.ThinkingConfig(thinking_budget=request.thinking_budget)
+            if request.thinking_budget >= 0
+            else None,
         )
         parts = _parts(types, request.files, gcs_uris=self._gcs_uris)
         contents = [*parts, request.text or "Extract the document."]
@@ -155,7 +159,9 @@ def ai_studio_models(api_key: str, timeout_s: float) -> _AsyncModels:
     from google.genai import types
 
     client = genai.Client(
-        api_key=api_key, http_options=types.HttpOptions(timeout=int(timeout_s * 1000))
+        api_key=api_key,
+        # JSON mode (structured output) is only enabled on v1beta for some AI Studio models.
+        http_options=types.HttpOptions(timeout=int(timeout_s * 1000), api_version="v1beta"),
     )
     models: _AsyncModels = client.aio.models
     return models

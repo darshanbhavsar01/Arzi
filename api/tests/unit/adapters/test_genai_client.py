@@ -171,3 +171,10 @@ async def test_replay_miss_is_an_error_not_a_live_call(tmp_path: Path) -> None:
     with pytest.raises(LlmUnavailableError) as info:
         await ReplayLlmClient(tmp_path).generate_structured(_request())
     assert info.value.slug == "replay-miss"
+
+
+async def test_negative_thinking_budget_leaves_the_model_default() -> None:
+    models = ScriptedModels(_response())
+    client, _ = _client(models)
+    await client.generate_structured(_request(thinking_budget=-1))
+    assert models.calls[0]["config"].thinking_config is None
