@@ -15,6 +15,9 @@ BUILD_SHA="$(git -C "$REPO_DIR" rev-parse --short HEAD 2>/dev/null || echo unkno
 
 env_vars="ARZI_ENV=cloud,GOOGLE_CLOUD_PROJECT=$PROJECT_ID,ARZI_GCP_REGION=$REGION"
 env_vars+=",ARZI_BUCKET=$BUCKET,ARZI_LLM_MODE=$LLM_MODE,ARZI_BUILD_SHA=$BUILD_SHA"
+# The deployed app always uses Vertex AI; AI Studio (free tier) is for local testing only and
+# the app refuses it when ARZI_ENV=cloud.
+env_vars+=",ARZI_LLM_PROVIDER=vertex"
 for name in ARZI_MODEL_FLASH ARZI_MODEL_PRO ARZI_MODEL_TTS ARZI_MODEL_LIVE ARZI_VERTEX_LOCATION; do
   if [ -n "${!name:-}" ]; then env_vars+=",$name=${!name}"; fi
 done
