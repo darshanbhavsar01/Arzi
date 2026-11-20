@@ -97,6 +97,15 @@ class Settings(BaseSettings):
     max_pages: int = Field(default=30, ge=1)
     demo_hospital_id: str = "sanjeevani-ahd"
     demo_cases_enabled: bool = True
+    tts_voice: str = "Kore"
+    """Gemini TTS prebuilt voice for the family narration."""
+    share_link_days: int = Field(default=7, ge=1, le=30)
+    desk_contact: str = "TPA desk, ground floor · 9 am to 7 pm, every day"
+    """Shown to families on shared links."""
+    public_tenant_id: str = "public"
+    """Tenant for the free "Check my rejection" flow; its data is kept for 7 days."""
+    public_checks_per_ip_per_day: int = Field(default=5, ge=0)
+    public_checks_per_day: int = Field(default=200, ge=0)
     """Offer "Load demo cases" (synthetic documents from ``replay_dir``) on the worklist."""
     sse_heartbeat_s: float = Field(default=15.0, gt=0)
 

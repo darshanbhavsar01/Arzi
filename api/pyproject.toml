@@ -10,6 +10,7 @@ dependencies = [
     "google-cloud-firestore>=2.34.1",
     "google-cloud-storage>=3.17.1",
     "google-genai>=2.34,<3",
+    "lameenc>=1.9.0",
     "pydantic>=2.14.4",
     "pydantic-settings>=2.16.3",
     "pypdfium2>=5.15.2",
@@ -67,8 +68,8 @@ plugins = ["pydantic.mypy"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-# pypdfium2 ships no type information (upload page counting, demo generator, tests).
-module = ["pypdfium2", "pypdfium2.*"]
+# pypdfium2 (page counts, demo generator, tests) and lameenc (MP3 narration) ship no type information.
+module = ["pypdfium2", "pypdfium2.*", "lameenc"]
 ignore_missing_imports = true
 
 [tool.pydantic-mypy]

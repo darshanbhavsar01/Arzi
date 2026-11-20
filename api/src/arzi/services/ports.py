@@ -13,7 +13,15 @@ from typing import Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AppealVersion, AuditRun, ClaimRecord, Hospital, LlmCall, RunEvent
+from arzi.domain.models import (
+    AppealVersion,
+    AuditRun,
+    ClaimRecord,
+    Hospital,
+    LlmCall,
+    RunEvent,
+    ShareLink,
+)
 from arzi.services.extraction_schemas import DocType
 
 
@@ -139,6 +147,14 @@ class ClaimRepository(Protocol):
         """All versions, oldest first."""
         ...
 
+    async def save_share(self, share: ShareLink) -> None: ...
+
+    async def get_share(self, token_sha256: str) -> ShareLink | None: ...
+
+    async def list_shares(self, hospital_id: str, claim_id: str) -> list[ShareLink]:
+        """Every family link of a claim, oldest first."""
+        ...
+
 
 class ConcurrentUpdateError(Exception):
     """Someone else changed the claim since it was read."""
@@ -212,3 +228,22 @@ class CostLedgerStore(Protocol):
 
 class EventSink(Protocol):
     async def publish(self, event: RunEvent) -> None: ...
+
+
+# --------------------------------------------------------------------------- speech
+
+
+@dataclass(frozen=True)
+class SpeechResult:
+    audio: bytes
+    content_type: Literal["audio/mpeg", "audio/wav"]
+    seconds: float
+    model: str
+    adapter: Literal["gemini_tts", "replay", "fake"]
+    call: LlmCall | None = None
+
+
+class SpeechClient(Protocol):
+    async def synthesize(self, text: str, lang: str) -> SpeechResult:
+        """Narrate ``text`` (already rendered, amounts included) in ``lang``."""
+        ...
