@@ -35,7 +35,7 @@ lint: ## ruff (lint + format check), eslint, prettier
 	cd $(WEB) && $(NPM) run --silent lint && $(NPM) run --silent format:check
 
 typecheck: ## mypy --strict and tsc
-	cd $(API) && $(UV) run mypy src tests ../scripts/list_models.py
+	cd $(API) && $(UV) run mypy src tests ../scripts
 	cd $(WEB) && $(NPM) run --silent typecheck
 
 test: test-api test-rules test-web ## All unit and integration tests
@@ -62,8 +62,8 @@ models: ## List Gemini models visible to GOOGLE_CLOUD_PROJECT (read-only)
 rules-demo: ## Print flags, totals and trace for a demo case (CASE=case_a|case_b|case_c)
 	cd $(API) && $(UV) run python -m arzi.rules.cli ../demo_cases/$(CASE)/facts.json
 
-demo-cases: ## Regenerate synthetic demo PDFs and expected outputs
-	@echo "make demo-cases: not yet implemented (Phase 2)"
+demo-cases: ## Regenerate synthetic demo PDFs, facts and expected outputs (byte-stable)
+	cd $(API) && $(UV) run python ../scripts/gen_demo_cases.py
 
 openapi: ## Regenerate web/src/api/schema.d.ts from the FastAPI schema
 	cd $(API) && $(UV) run python -c "import json, pathlib; from arzi.main import create_app; \

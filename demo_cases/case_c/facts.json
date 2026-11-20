@@ -3,7 +3,7 @@
   "mode": "post_rejection",
   "hospital": {
     "name": "Sanjeevani Multispeciality Hospital",
-    "city": "Vadodara",
+    "city": "Ahmedabad",
     "room_categories": [
       {
         "name": "General ward",
@@ -38,40 +38,83 @@
       {
         "condition": "Osteoarthritis of knee",
         "waiting_months": 36,
+        "clause_id": "5.1"
+      }
+    ],
+    "specific_waiting": [
+      {
+        "condition": "Cataract",
+        "waiting_months": 24,
+        "clause_id": "5.2"
+      },
+      {
+        "condition": "Hernia",
+        "waiting_months": 24,
         "clause_id": "5.2"
       }
     ],
-    "claims_clause_id": "9.1",
+    "sub_limits": [
+      {
+        "item": "Cataract",
+        "limit": 4000000,
+        "clause_id": "6.1"
+      }
+    ],
+    "claims_clause_id": "9.2",
     "clauses": [
       {
         "id": "4.2",
-        "title": "Room rent limit",
-        "text": "Room, boarding and nursing expenses are payable up to the per-day limit shown in the schedule. (Synthetic wording for the demo.)",
-        "page": 6
+        "title": "Room rent",
+        "text": "Room, boarding and nursing charges are payable up to the room-rent limit shown in the Policy Schedule for each day of hospitalisation. Charges above the limit are borne by the insured person.",
+        "page": 1
       },
       {
         "id": "4.3",
         "title": "Proportionate deduction",
-        "text": "If the insured person occupies a room above the eligible limit, associated medical expenses are payable in the proportion that the eligible room rent bears to the room rent actually incurred. (Synthetic wording for the demo.)",
-        "page": 6
+        "text": "If the insured person occupies a room above the eligible limit, associated medical expenses are payable in the proportion that the eligible room rent bears to the room rent actually charged. Associated medical expenses do not include pharmacy and consumables, implants and medical devices, and diagnostics, and no proportionate deduction applies to ICU charges.",
+        "page": 1
+      },
+      {
+        "id": "4.4",
+        "title": "ICU charges",
+        "text": "Intensive care unit charges are payable up to the ICU limit shown in the Policy Schedule, if any.",
+        "page": 1
+      },
+      {
+        "id": "5.1",
+        "title": "Pre-existing diseases",
+        "text": "Expenses related to a pre-existing disease declared in the proposal are covered after the waiting period stated in the Policy Schedule of continuous coverage since the first policy with the Company.",
+        "page": 2
       },
       {
         "id": "5.2",
-        "title": "Pre-existing diseases",
-        "text": "Expenses for a declared pre-existing disease are covered after the waiting period shown in the schedule of continuous cover. (Synthetic wording for the demo.)",
-        "page": 8
+        "title": "Specific waiting periods",
+        "text": "Treatment of the conditions listed in the Policy Schedule is covered after the stated waiting period of continuous coverage.",
+        "page": 2
       },
       {
-        "id": "7.1",
+        "id": "6.1",
+        "title": "Sub-limits",
+        "text": "Payment for the procedures listed in the Policy Schedule is limited to the amount stated against each procedure.",
+        "page": 2
+      },
+      {
+        "id": "7.4",
         "title": "Co-payment",
-        "text": "Each admissible claim is subject to the co-payment percentage shown in the schedule, applied on the admissible claim amount. (Synthetic wording for the demo.)",
-        "page": 11
+        "text": "Each admissible claim is subject to the co-payment percentage stated in the Policy Schedule, applied on the admissible claim amount.",
+        "page": 3
       },
       {
-        "id": "9.1",
+        "id": "8.1",
+        "title": "Non-medical expenses",
+        "text": "Items listed as not payable in the list of non-medical expenses annexed to this policy are not payable unless an optional cover for them is in force.",
+        "page": 3
+      },
+      {
+        "id": "9.2",
         "title": "Claim documents",
-        "text": "Claims must be supported by the discharge summary, investigation reports and, where an implant is used, the implant invoice and sticker. (Synthetic wording for the demo.)",
-        "page": 14
+        "text": "Claims must be supported by the discharge summary, the final itemised bill, investigation reports and, where an implant is used, the implant invoice and sticker.",
+        "page": 3
       }
     ]
   },
@@ -86,76 +129,67 @@
   "bill_lines": [
     {
       "line_id": 1,
-      "description": "Twin sharing room, 4 days @ 4,500/day",
+      "description": "Twin sharing room",
       "category": "room",
       "amount": 1800000,
       "qty": "4",
-      "source_page": 2,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 2,
       "description": "Surgeon fees",
       "category": "surgeon",
       "amount": 9000000,
-      "source_page": 2,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 3,
       "description": "Anaesthetist fees",
       "category": "anaesthetist",
       "amount": 2000000,
-      "source_page": 2,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 4,
       "description": "Operation theatre charges",
       "category": "ot",
       "amount": 3000000,
-      "source_page": 2,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 5,
       "description": "Nursing charges",
       "category": "nursing",
       "amount": 600000,
-      "source_page": 2,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 6,
       "description": "Pharmacy and medicines",
       "category": "pharmacy",
       "amount": 2200000,
-      "source_page": 3,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 7,
       "description": "Laboratory and radiology",
       "category": "diagnostics",
       "amount": 900000,
-      "source_page": 3,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 8,
       "description": "Total knee prosthesis (implant)",
       "category": "implant",
       "amount": 11000000,
-      "source_page": 3,
-      "confidence": 0.97
+      "source_page": 1
     },
     {
       "line_id": 9,
       "description": "Physiotherapy sessions",
       "category": "other",
       "amount": 500000,
-      "source_page": 3,
-      "confidence": 0.97
+      "source_page": 1
     }
   ],
   "insurer_letter": {

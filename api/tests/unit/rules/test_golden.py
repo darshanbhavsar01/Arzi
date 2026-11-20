@@ -74,7 +74,7 @@ def test_case_c_rejection_appeal() -> None:
     assert flag.appealable
     assert flag.kind is FlagKind.DISPUTE
     assert flag.recoverable == result.totals.predicted_payable == inr("₹3,10,000")
-    assert flag.citation_refs == ("IRDAI_PED_36M", "policy:5.2")
+    assert flag.citation_refs == ("IRDAI_PED_36M", "policy:5.1")
     assert result.totals.recoverable_on_appeal == inr("₹3,10,000")
 
 

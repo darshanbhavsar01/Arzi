@@ -32,7 +32,7 @@ jobs:
       - run: uv sync --locked
       - run: uv run ruff check . ../scripts
       - run: uv run ruff format --check . ../scripts
-      - run: uv run mypy src tests ../scripts/list_models.py
+      - run: uv run mypy src tests ../scripts
       - run: uv run pytest --cov --cov-report=term-missing:skip-covered
       - name: Rules engine coverage gate (100% line + branch)
         run: >
