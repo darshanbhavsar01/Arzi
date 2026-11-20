@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from arzi.api.request_id import REQUEST_ID_HEADER, get_request_id
+from arzi.services.errors import AppError
 
 PROBLEM_MEDIA_TYPE = "application/problem+json"
 _TYPE_BASE = "https://arzi.app/problems/"
@@ -72,6 +73,11 @@ async def _validation_error(request: Request, exc: Exception) -> JSONResponse:
     )
 
 
+async def _app_error(request: Request, exc: Exception) -> JSONResponse:
+    assert isinstance(exc, AppError)  # noqa: S101 - registered for this type only
+    return problem_response(request, exc.status, exc.slug, exc.detail)
+
+
 async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
     # Log the type and stack frames but not the message: exception text can quote patient data.
     logger.error(
@@ -84,6 +90,7 @@ async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
 
 
 def register_error_handlers(app: FastAPI) -> None:
+    app.add_exception_handler(AppError, _app_error)
     app.add_exception_handler(StarletteHTTPException, _http_exception)
     app.add_exception_handler(RequestValidationError, _validation_error)
     app.add_exception_handler(Exception, _unhandled)

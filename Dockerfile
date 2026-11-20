@@ -25,6 +25,8 @@ RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin arzi
 WORKDIR /app
 COPY --from=api /app/.venv /app/.venv
 COPY --from=web /web/dist /app/static
+# Recorded model responses (replay mode) and ideal extractions (fake mode); no documents.
+COPY demo_cases /app/demo_cases
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

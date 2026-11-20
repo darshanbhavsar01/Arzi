@@ -5,6 +5,8 @@
 !api/uv.lock
 !api/src/
 !web/
+!demo_cases/*/llm_cache/
+!demo_cases/*/extraction/
 web/node_modules/
 web/dist/
 web/coverage/

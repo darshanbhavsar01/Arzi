@@ -61,10 +61,401 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Claims */
+        get: operations["list_claims_api_v1_claims_get"];
+        put?: never;
+        /** Create Claim */
+        post: operations["create_claim_api_v1_claims_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Claim */
+        get: operations["get_claim_api_v1_claims__claim_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Documents */
+        get: operations["list_documents_api_v1_claims__claim_id__documents_get"];
+        put?: never;
+        /** Upload Document */
+        post: operations["upload_document_api_v1_claims__claim_id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/documents/{document_id}/url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Url */
+        get: operations["document_url_api_v1_claims__claim_id__documents__document_id__url_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/documents/{document_id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Content */
+        get: operations["document_content_api_v1_claims__claim_id__documents__document_id__content_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Consent */
+        post: operations["record_consent_api_v1_claims__claim_id__consent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/lines/{line_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Correct Line */
+        patch: operations["correct_line_api_v1_claims__claim_id__lines__line_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Audit Log */
+        get: operations["audit_log_api_v1_claims__claim_id__audit_log_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Run
+         * @description Start an audit. Repeating the request with the same ``Idempotency-Key`` returns the
+         *     same run instead of starting another (and paying for another).
+         */
+        post: operations["start_run_api_v1_claims__claim_id__runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/runs/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Run */
+        get: operations["get_run_api_v1_claims__claim_id__runs__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/runs/{run_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Run Events
+         * @description ``stage.started`` · ``stage.completed`` · ``flag.created`` · ``run.completed`` ·
+         *     ``run.failed``. Reconnect with ``Last-Event-ID`` to resume.
+         */
+        get: operations["run_events_api_v1_claims__claim_id__runs__run_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/meta/citations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Citations */
+        get: operations["list_citations_api_v1_meta_citations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Admission */
+        Admission: {
+            /** Date In */
+            date_in?: string | null;
+            /** Date Out */
+            date_out?: string | null;
+            /**
+             * Diagnosis
+             * @default
+             */
+            diagnosis: string;
+            /**
+             * Procedure
+             * @default
+             */
+            procedure: string;
+            /** Icd10 */
+            icd10?: string | null;
+            /** Room Category Used */
+            room_category_used?: string | null;
+        };
+        /**
+         * AppealForum
+         * @enum {string}
+         */
+        AppealForum: "insurer_gro" | "bima_bharosa" | "ombudsman";
+        /**
+         * AppealStatus
+         * @enum {string}
+         */
+        AppealStatus: "draft" | "in_review" | "signed" | "exported";
+        /** AppealSummary */
+        AppealSummary: {
+            /** Appeal Id */
+            appeal_id: string;
+            forum: components["schemas"]["AppealForum"];
+            /**
+             * Version
+             * @default 1
+             */
+            version: number;
+            /** @default draft */
+            status: components["schemas"]["AppealStatus"];
+            /** Content Sha256 */
+            content_sha256?: string | null;
+        };
+        /**
+         * AuditLogEntry
+         * @description Append-only record of who did what to a claim (DPDP accountability).
+         */
+        AuditLogEntry: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Actor */
+            actor: string;
+            /** Action */
+            action: string;
+            /** Detail */
+            detail?: {
+                [key: string]: string | number | null;
+            };
+        };
+        /** AuditResult */
+        AuditResult: {
+            /** Engine Version */
+            engine_version: string;
+            mode: components["schemas"]["ClaimMode"];
+            /** Flags */
+            flags: components["schemas"]["Flag"][];
+            totals: components["schemas"]["Totals"];
+            /** Trace */
+            trace: components["schemas"]["TraceStep"][];
+            /** Lines */
+            lines: components["schemas"]["LineOutcome"][];
+            /**
+             * Fix Savings
+             * @default 0
+             */
+            fix_savings: number;
+        };
+        /**
+         * AuditRun
+         * @description One pipeline execution. Persisted as its own document; the claim keeps a summary.
+         */
+        AuditRun: {
+            /** Run Id */
+            run_id: string;
+            /** Engine Version */
+            engine_version: string;
+            /**
+             * Status
+             * @default queued
+             * @enum {string}
+             */
+            status: "queued" | "running" | "completed" | "failed";
+            /** Idempotency Key */
+            idempotency_key?: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Finished At */
+            finished_at?: string | null;
+            /**
+             * Events
+             * @default []
+             */
+            events: components["schemas"]["RunEvent"][];
+            /**
+             * Calls
+             * @default []
+             */
+            calls: components["schemas"]["LlmCall"][];
+            /**
+             * Prompt Versions
+             * @default []
+             */
+            prompt_versions: string[];
+            /** Error */
+            error?: string | null;
+        };
+        /** BillLine */
+        BillLine: {
+            /** Line Id */
+            line_id: number;
+            /** Description */
+            description: string;
+            category: components["schemas"]["LineCategory"];
+            /** Amount */
+            amount: number;
+            /**
+             * Qty
+             * @default 1
+             */
+            qty: string;
+            /** Source Page */
+            source_page?: number | null;
+            /**
+             * Confidence
+             * @default 1
+             */
+            confidence: number;
+            irdai_list?: components["schemas"]["IrdaiList"] | null;
+            /**
+             * Confirmed By Human
+             * @default false
+             */
+            confirmed_by_human: boolean;
+        };
+        /** Body_upload_document_api_v1_claims__claim_id__documents_post */
+        Body_upload_document_api_v1_claims__claim_id__documents_post: {
+            /**
+             * File
+             * @description PDF, JPEG or PNG
+             */
+            file: string;
+            document_type?: components["schemas"]["DocType"] | null;
+        };
+        /**
+         * CategoryCap
+         * @description Cap expressed as a room category ("single private AC"); the hospital tariff prices it.
+         */
+        CategoryCap: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "category";
+            /** Category */
+            category: string;
+            /** Clause Id */
+            clause_id?: string | null;
+        };
         /** CheckResult */
         CheckResult: {
             /** Name */
@@ -80,6 +471,399 @@ export interface components {
          * @enum {string}
          */
         CheckState: "ok" | "failed";
+        /**
+         * CitationStatus
+         * @description ``verify`` is rendered as an amber "Verify before filing" badge.
+         * @enum {string}
+         */
+        CitationStatus: "verified" | "verify";
+        /**
+         * ClaimFacts
+         * @description Everything the rules engine needs, already extracted, confirmed and redacted.
+         */
+        ClaimFacts: {
+            /** Claim Id */
+            claim_id: string;
+            mode: components["schemas"]["ClaimMode"];
+            hospital: components["schemas"]["Hospital"];
+            patient: components["schemas"]["Patient"];
+            policy: components["schemas"]["Policy"];
+            /**
+             * @default {
+             *       "diagnosis": "",
+             *       "procedure": ""
+             *     }
+             */
+            admission: components["schemas"]["Admission"];
+            /** Bill Lines */
+            bill_lines: components["schemas"]["BillLine"][];
+            insurer_letter?: components["schemas"]["InsurerLetter"] | null;
+            /**
+             * Documents Present
+             * @default []
+             */
+            documents_present: components["schemas"]["DocumentKind"][];
+        };
+        /** ClaimList */
+        ClaimList: {
+            /** Items */
+            items: components["schemas"]["ClaimSummary"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /**
+         * ClaimMode
+         * @description Where the claim is in its life, which decides which rules can fire.
+         * @enum {string}
+         */
+        ClaimMode: "pre_submission" | "post_deduction" | "post_rejection";
+        /**
+         * ClaimRecord
+         * @description The persisted claim, scoped to one hospital (tenant). Evolve it with ``model_copy``.
+         *
+         *     ``revision`` is the optimistic-concurrency token: a write succeeds only if the stored
+         *     revision still equals the one the writer read.
+         */
+        ClaimRecord: {
+            /** Hospital Id */
+            hospital_id: string;
+            /** Claim Id */
+            claim_id: string;
+            /** @default pre_submission */
+            mode: components["schemas"]["ClaimMode"];
+            /** Insurer Hint */
+            insurer_hint?: string | null;
+            /** @default draft */
+            status: components["schemas"]["ClaimStatus"];
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            /**
+             * Revision
+             * @default 0
+             */
+            revision: number;
+            /** Created At */
+            created_at?: string | null;
+            /** Updated At */
+            updated_at?: string | null;
+            consent?: components["schemas"]["Consent"] | null;
+            facts?: components["schemas"]["ClaimFacts"] | null;
+            audit?: components["schemas"]["AuditResult"] | null;
+            /**
+             * Issues
+             * @default []
+             */
+            issues: components["schemas"]["ReviewIssue"][];
+            redaction?: components["schemas"]["RedactionSummary"] | null;
+            /**
+             * Runs
+             * @default []
+             */
+            runs: components["schemas"]["AuditRun"][];
+            /**
+             * Appeals
+             * @default []
+             */
+            appeals: components["schemas"]["AppealSummary"][];
+            /**
+             * Audit Refs
+             * @default []
+             */
+            audit_refs: string[];
+        };
+        /**
+         * ClaimStatus
+         * @enum {string}
+         */
+        ClaimStatus: "draft" | "documents_uploaded" | "processing" | "audited" | "appeal_drafted" | "in_review" | "signed" | "exported" | "failed";
+        /**
+         * ClaimSummary
+         * @description One worklist row: no patient data, no document content.
+         */
+        ClaimSummary: {
+            /** Claim Id */
+            claim_id: string;
+            mode: components["schemas"]["ClaimMode"];
+            status: components["schemas"]["ClaimStatus"];
+            /** Insurer Hint */
+            insurer_hint: string | null;
+            /** Updated At */
+            updated_at: string | null;
+            totals: components["schemas"]["Totals"] | null;
+            /** Flag Count */
+            flag_count: number;
+            /** Needs Confirmation */
+            needs_confirmation: number;
+        };
+        /**
+         * Consent
+         * @description DPDP consent for processing this claim's documents, recorded before any extraction.
+         */
+        Consent: {
+            /** Given By */
+            given_by: string;
+            /**
+             * Purpose
+             * @default claim_audit
+             * @constant
+             */
+            purpose: "claim_audit";
+            /** Recorded By */
+            recorded_by: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+        };
+        /** ConsentIn */
+        ConsentIn: {
+            /**
+             * Given By
+             * @description Who consented, e.g. 'patient'
+             */
+            given_by: string;
+        };
+        /** Copay */
+        Copay: {
+            /** Pct */
+            pct: string;
+            /** @default admissible */
+            base: components["schemas"]["CopayBase"];
+            /** Clause Id */
+            clause_id?: string | null;
+        };
+        /**
+         * CopayBase
+         * @description What the co-pay percentage applies to; policies differ, so it is read from the clause.
+         * @enum {string}
+         */
+        CopayBase: "admissible" | "claimed";
+        /** CreateClaim */
+        CreateClaim: {
+            mode: components["schemas"]["ClaimMode"];
+            /** Insurer Hint */
+            insurer_hint?: string | null;
+        };
+        /**
+         * DeductionReason
+         * @description The insurer's stated reason for a cut, normalised from the letter's wording.
+         * @enum {string}
+         */
+        DeductionReason: "proportionate" | "room_rent_excess" | "icu_cap" | "non_payable" | "sub_limit" | "copay" | "other";
+        /**
+         * DocType
+         * @enum {string}
+         */
+        DocType: "policy_schedule" | "policy_wording" | "itemised_bill" | "discharge_summary" | "investigation_report" | "implant_invoice" | "insurer_letter" | "other";
+        /**
+         * DocumentKind
+         * @enum {string}
+         */
+        DocumentKind: "policy" | "itemised_bill" | "discharge_summary" | "investigation_reports" | "implant_invoice" | "insurer_letter";
+        /** DocumentOut */
+        DocumentOut: {
+            /** Document Id */
+            document_id: string;
+            /** Filename */
+            filename: string;
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Pages */
+            pages: number;
+            /** Sha256 */
+            sha256: string;
+            document_type: components["schemas"]["DocType"] | null;
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+        };
+        /**
+         * FixCode
+         * @enum {string}
+         */
+        FixCode: "room_downgrade_or_consent" | "icu_tariff_review" | "collect_from_patient" | "bill_within_package" | "inform_patient" | "check_waiting_period" | "attach_document" | "file_appeal";
+        /**
+         * Flag
+         * @description One finding. Narrative text is added later, by the explainer, in a separate model.
+         */
+        Flag: {
+            /** Flag Id */
+            flag_id: string;
+            /** Rule Id */
+            rule_id: string;
+            kind: components["schemas"]["FlagKind"];
+            severity: components["schemas"]["Severity"];
+            /** Amount At Risk */
+            amount_at_risk: number;
+            /**
+             * Recoverable
+             * @default 0
+             */
+            recoverable: number;
+            /**
+             * Lines
+             * @default []
+             */
+            lines: number[];
+            /**
+             * Citation Refs
+             * @default []
+             */
+            citation_refs: string[];
+            fix_code?: components["schemas"]["FixCode"] | null;
+            /**
+             * Fix Savings
+             * @default 0
+             */
+            fix_savings: number;
+            /**
+             * Appealable
+             * @default false
+             */
+            appealable: boolean;
+            /** Trace Ref */
+            trace_ref: string;
+            missing_document?: components["schemas"]["DocumentKind"] | null;
+        };
+        /**
+         * FlagKind
+         * @description How a flag's amount relates to the totals.
+         *
+         *     ``deduction``: the engine expects the insurer to cut this amount; summed into ``at_risk``.
+         *     ``advisory``: a risk with no computed cut; the amount is the exposure, not a deduction.
+         *     ``dispute``: the insurer cut or rejected something it should not have; ``recoverable`` is
+         *     summed into ``recoverable_on_appeal``.
+         * @enum {string}
+         */
+        FlagKind: "deduction" | "advisory" | "dispute";
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** Hospital */
+        Hospital: {
+            /** Name */
+            name: string;
+            /**
+             * City
+             * @default
+             */
+            city: string;
+            /**
+             * Room Categories
+             * @default []
+             */
+            room_categories: components["schemas"]["RoomCategory"][];
+        };
+        /** IcuCap */
+        IcuCap: {
+            /** Amount Per Day */
+            amount_per_day: number;
+            /** Clause Id */
+            clause_id?: string | null;
+        };
+        /**
+         * InsurerDeduction
+         * @description One cut from the insurer's settlement letter; ``line_id`` is None for claim-level cuts.
+         */
+        InsurerDeduction: {
+            /** Line Id */
+            line_id?: number | null;
+            /** Amount */
+            amount: number;
+            reason: components["schemas"]["DeductionReason"];
+            /**
+             * Reason Text
+             * @default
+             */
+            reason_text: string;
+            /** Clause Cited */
+            clause_cited?: string | null;
+        };
+        /** InsurerLetter */
+        InsurerLetter: {
+            type: components["schemas"]["InsurerLetterType"];
+            /** Date */
+            date?: string | null;
+            /** Amount Claimed */
+            amount_claimed: number;
+            /**
+             * Amount Approved
+             * @default 0
+             */
+            amount_approved: number;
+            /**
+             * Deductions
+             * @default []
+             */
+            deductions: components["schemas"]["InsurerDeduction"][];
+            rejection_ground?: components["schemas"]["RejectionGround"] | null;
+            /**
+             * Fraud Alleged
+             * @default false
+             */
+            fraud_alleged: boolean;
+        };
+        /**
+         * InsurerLetterType
+         * @enum {string}
+         */
+        InsurerLetterType: "deduction" | "rejection" | "query";
+        /**
+         * IrdaiList
+         * @description IRDAI Annexure I lists: I is not payable; II-IV are subsumed into room, procedure or
+         *     treatment cost and must not be deducted separately.
+         * @enum {string}
+         */
+        IrdaiList: "I" | "II" | "III" | "IV";
+        /**
+         * LineCategory
+         * @enum {string}
+         */
+        LineCategory: "room" | "icu" | "surgeon" | "anaesthetist" | "ot" | "nursing" | "consultation" | "pharmacy" | "consumable" | "implant" | "diagnostics" | "non_payable" | "other";
+        /**
+         * LineCorrection
+         * @description A person's correction to one bill line. Omitted fields are left as they are.
+         */
+        LineCorrection: {
+            category?: components["schemas"]["LineCategory"] | null;
+            /**
+             * Amount
+             * @description Rupees, e.g. '8,000.00'
+             */
+            amount?: string | null;
+            irdai_list?: components["schemas"]["IrdaiList"] | null;
+        };
+        /** LineDeduction */
+        LineDeduction: {
+            /** Rule Id */
+            rule_id: string;
+            /** Amount */
+            amount: number;
+        };
+        /** LineOutcome */
+        LineOutcome: {
+            /** Line Id */
+            line_id: number;
+            /** Billed */
+            billed: number;
+            /** Admissible */
+            admissible: number;
+            /**
+             * Deductions
+             * @default []
+             */
+            deductions: components["schemas"]["LineDeduction"][];
+        };
         /** Liveness */
         Liveness: {
             /**
@@ -91,12 +875,328 @@ export interface components {
             /** Build Sha */
             build_sha: string;
         };
+        /**
+         * LlmCall
+         * @description Token usage and estimated cost of one model call, for the run record and the ledger.
+         */
+        LlmCall: {
+            /** Prompt Ref */
+            prompt_ref: string;
+            /** Model */
+            model: string;
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /**
+             * Thinking Tokens
+             * @default 0
+             */
+            thinking_tokens: number;
+            /**
+             * Cost Micro Inr
+             * @default 0
+             */
+            cost_micro_inr: number;
+            /**
+             * Replayed
+             * @default false
+             */
+            replayed: boolean;
+        };
+        /**
+         * Patient
+         * @description Only the pseudonym reaches the engine; raw identifiers stay in a restricted field.
+         */
+        Patient: {
+            /** Redacted Id */
+            redacted_id: string;
+            /** Age */
+            age?: number | null;
+        };
+        /** PctOfSumInsuredCap */
+        PctOfSumInsuredCap: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "pct_of_si";
+            /** Pct */
+            pct: string;
+            /** Clause Id */
+            clause_id?: string | null;
+        };
+        /** PerDayAmountCap */
+        PerDayAmountCap: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "per_day_amount";
+            /** Amount */
+            amount: number;
+            /** Clause Id */
+            clause_id?: string | null;
+        };
+        /** Policy */
+        Policy: {
+            /** Insurer */
+            insurer: string;
+            /**
+             * Product
+             * @default
+             */
+            product: string;
+            /** Sum Insured */
+            sum_insured: number;
+            /** Continuous Cover Months */
+            continuous_cover_months: number;
+            /** Room Rent Cap */
+            room_rent_cap?: (components["schemas"]["PerDayAmountCap"] | components["schemas"]["PctOfSumInsuredCap"] | components["schemas"]["CategoryCap"]) | null;
+            /** Proportionate Clause Id */
+            proportionate_clause_id?: string | null;
+            icu_cap?: components["schemas"]["IcuCap"] | null;
+            copay?: components["schemas"]["Copay"] | null;
+            /**
+             * Associated Expense Categories
+             * @default [
+             *       "surgeon",
+             *       "anaesthetist",
+             *       "ot",
+             *       "nursing",
+             *       "consultation"
+             *     ]
+             */
+            associated_expense_categories: components["schemas"]["LineCategory"][];
+            /**
+             * Ped Declared
+             * @default []
+             */
+            ped_declared: components["schemas"]["WaitingCondition"][];
+            /**
+             * Specific Waiting
+             * @default []
+             */
+            specific_waiting: components["schemas"]["WaitingCondition"][];
+            /**
+             * Sub Limits
+             * @default []
+             */
+            sub_limits: components["schemas"]["SubLimit"][];
+            /**
+             * Non Payable Addon
+             * @default false
+             */
+            non_payable_addon: boolean;
+            /** Claims Clause Id */
+            claims_clause_id?: string | null;
+            /**
+             * Clauses
+             * @default []
+             */
+            clauses: components["schemas"]["PolicyClause"][];
+        };
+        /** PolicyClause */
+        PolicyClause: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+            /** Page */
+            page?: number | null;
+        };
         /** ReadinessReport */
         ReadinessReport: {
             /** Ready */
             ready: boolean;
             /** Checks */
             checks: components["schemas"]["CheckResult"][];
+        };
+        /**
+         * RedactionSummary
+         * @description What redaction replaced, by identifier kind (counts only; never the values).
+         */
+        RedactionSummary: {
+            /** Counts */
+            counts?: {
+                [key: string]: number;
+            };
+        };
+        /**
+         * RejectionGround
+         * @enum {string}
+         */
+        RejectionGround: "ped_waiting" | "specific_waiting" | "non_disclosure" | "other";
+        /**
+         * ReviewIssue
+         * @description Something a person must confirm before the numbers can be trusted.
+         */
+        ReviewIssue: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "low_confidence_line" | "total_mismatch" | "unreadable_amount" | "unmapped_deduction" | "cap_unresolved" | "missing_document" | "missing_field";
+            /** Message */
+            message: string;
+            /** Line Id */
+            line_id?: number | null;
+        };
+        /** RoomCategory */
+        RoomCategory: {
+            /** Name */
+            name: string;
+            /** Rate Per Day */
+            rate_per_day: number;
+        };
+        /** RuleCitation */
+        RuleCitation: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Source Doc */
+            source_doc: string;
+            /** Ref */
+            ref: string;
+            /** Summary En */
+            summary_en: string;
+            status: components["schemas"]["CitationStatus"];
+            /** Url */
+            url?: string | null;
+        };
+        /**
+         * RunEvent
+         * @description One streamed pipeline event; ``seq`` doubles as the SSE event id for resumption.
+         */
+        RunEvent: {
+            /** Seq */
+            seq: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "stage.started" | "stage.completed" | "flag.created" | "run.completed" | "run.failed";
+            /** Stage */
+            stage?: string | null;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Data */
+            data?: {
+                [key: string]: number | string | boolean | null;
+            };
+        };
+        /** RunStarted */
+        RunStarted: {
+            /** Run Id */
+            run_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "queued" | "running" | "completed" | "failed";
+            /** Events Url */
+            events_url: string;
+        };
+        /**
+         * Severity
+         * @enum {string}
+         */
+        Severity: "info" | "low" | "medium" | "high" | "critical";
+        /**
+         * SubLimit
+         * @description A cap on what is payable for a named procedure or condition.
+         *
+         *     ``categories`` narrows the cap to some bill-line categories (e.g. the lens in cataract);
+         *     empty means the whole claim.
+         */
+        SubLimit: {
+            /** Item */
+            item: string;
+            /** Limit */
+            limit: number;
+            /**
+             * Categories
+             * @default []
+             */
+            categories: components["schemas"]["LineCategory"][];
+            /** Clause Id */
+            clause_id?: string | null;
+        };
+        /**
+         * Totals
+         * @description ``billed = predicted_payable + at_risk``; recoverable is what an appeal can win back.
+         */
+        Totals: {
+            /** Billed */
+            billed: number;
+            /** Predicted Payable */
+            predicted_payable: number;
+            /** At Risk */
+            at_risk: number;
+            /** Recoverable On Appeal */
+            recoverable_on_appeal: number;
+        };
+        /**
+         * TraceStep
+         * @description One human-readable computation, e.g. ``₹93,000 × 5,000 / 8,000 = ₹58,125``.
+         */
+        TraceStep: {
+            /** Step Id */
+            step_id: string;
+            /** Rule Id */
+            rule_id: string;
+            /** Formula */
+            formula: string;
+            /** Inputs */
+            inputs?: {
+                [key: string]: number | string;
+            };
+            /** Result */
+            result?: number | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /** ViewUrl */
+        ViewUrl: {
+            /** Url */
+            url: string;
+            /** Expires In S */
+            expires_in_s: number | null;
+        };
+        /** WaitingCondition */
+        WaitingCondition: {
+            /** Condition */
+            condition: string;
+            /** Waiting Months */
+            waiting_months: number;
+            /** Clause Id */
+            clause_id?: string | null;
         };
     };
     responses: never;
@@ -172,6 +1272,480 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReadinessReport"];
+                };
+            };
+        };
+    };
+    list_claims_api_v1_claims_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ClaimStatus"] | null;
+                mode?: components["schemas"]["ClaimMode"] | null;
+                q?: string | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimList"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_claim_api_v1_claims_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateClaim"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_claim_api_v1_claims__claim_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_documents_api_v1_claims__claim_id__documents_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_document_api_v1_claims__claim_id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_document_api_v1_claims__claim_id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_url_api_v1_claims__claim_id__documents__document_id__url_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ViewUrl"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_content_api_v1_claims__claim_id__documents__document_id__content_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_consent_api_v1_claims__claim_id__consent_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    correct_line_api_v1_claims__claim_id__lines__line_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                line_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LineCorrection"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    audit_log_api_v1_claims__claim_id__audit_log_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditLogEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_run_api_v1_claims__claim_id__runs_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "idempotency-key"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_run_api_v1_claims__claim_id__runs__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditRun"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_events_api_v1_claims__claim_id__runs__run_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "last-event-id"?: number | null;
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_citations_api_v1_meta_citations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleCitation"][];
                 };
             };
         };

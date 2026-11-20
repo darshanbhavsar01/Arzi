@@ -4,6 +4,10 @@
 !/.dockerignore
 !/api/
 !/web/
+!/demo_cases/
+demo_cases/**/*.pdf
+demo_cases/**/*.jpg
+demo_cases/**/*.md
 api/.venv/
 api/tests/
 api/.*_cache/

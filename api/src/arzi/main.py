@@ -12,7 +12,8 @@ from fastapi.staticfiles import StaticFiles
 from arzi.adapters.readiness_probes import build_readiness_probes
 from arzi.api.errors import register_error_handlers
 from arzi.api.request_id import request_id_middleware
-from arzi.api.routers import health
+from arzi.api.routers import claims, health, meta, runs
+from arzi.bootstrap import Services, build_services
 from arzi.config import Settings, get_settings
 from arzi.services.readiness import ReadinessProbe
 
@@ -21,8 +22,9 @@ def create_app(
     settings: Settings | None = None,
     *,
     readiness_probes: Sequence[ReadinessProbe] | None = None,
+    services: Services | None = None,
 ) -> FastAPI:
-    """Build the ASGI app; tests pass settings and fake probes, production passes neither."""
+    """Build the ASGI app; tests pass settings, fake probes and services, production none."""
     settings = settings or get_settings()
     app = FastAPI(
         title="Arzi API",
@@ -34,9 +36,14 @@ def create_app(
         list(readiness_probes) if readiness_probes is not None else build_readiness_probes(settings)
     )
 
+    app.state.services = services or build_services(settings)
+
     app.middleware("http")(request_id_middleware)
     register_error_handlers(app)
     app.include_router(health.router)
+    app.include_router(claims.router)
+    app.include_router(runs.router)
+    app.include_router(meta.router)
 
     if settings.static_dir is not None:
         # Mounted last so API and health routes always take precedence.
