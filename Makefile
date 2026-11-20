@@ -30,11 +30,11 @@ dev: ## Run API (reload) and web (Vite) locally in replay mode
 check: lint typecheck test ## Everything CI runs: lint, types, tests with coverage gates
 
 lint: ## ruff (lint + format check), eslint, prettier
-	cd $(API) && $(UV) run ruff check . && $(UV) run ruff format --check .
+	cd $(API) && $(UV) run ruff check . ../scripts && $(UV) run ruff format --check . ../scripts
 	cd $(WEB) && $(NPM) run --silent lint && $(NPM) run --silent format:check
 
 typecheck: ## mypy --strict and tsc
-	cd $(API) && $(UV) run mypy src tests
+	cd $(API) && $(UV) run mypy src tests ../scripts/list_models.py
 	cd $(WEB) && $(NPM) run --silent typecheck
 
 test: test-api test-rules test-web ## All unit and integration tests
@@ -56,7 +56,7 @@ eval: ## Extraction and flag accuracy report -> evals/report.md
 	@echo "make eval: not yet implemented (Phase 7)"
 
 models: ## List Gemini models visible to GOOGLE_CLOUD_PROJECT (read-only)
-	@echo "make models: not yet implemented (Phase 0.4)"
+	cd $(API) && $(UV) run python ../scripts/list_models.py $(MODELS_ARGS)
 
 demo-cases: ## Regenerate synthetic demo PDFs and expected outputs
 	@echo "make demo-cases: not yet implemented (Phase 2)"
@@ -64,7 +64,7 @@ demo-cases: ## Regenerate synthetic demo PDFs and expected outputs
 openapi: ## Regenerate web/src/api/schema.d.ts from the FastAPI schema
 	cd $(API) && $(UV) run python -c "import json, pathlib; from arzi.main import create_app; \
 	  pathlib.Path('../$(WEB)/src/api/openapi.json').write_text( \
-	  json.dumps(create_app().openapi(), indent=2) + '\n', newline='\n')"
+	  json.dumps(create_app(readiness_probes=[]).openapi(), indent=2) + '\n', newline='\n')"
 	cd $(WEB) && $(NPM) run --silent openapi
 
 deploy: ## Deploy to Cloud Run (asks for confirmation; spends money)
