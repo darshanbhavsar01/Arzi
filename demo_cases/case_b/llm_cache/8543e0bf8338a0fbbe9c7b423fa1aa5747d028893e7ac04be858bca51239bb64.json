@@ -1,0 +1,34 @@
+{
+  "prompt_ref": "extract_discharge@v1",
+  "schema": "DischargeExtraction",
+  "call": {
+    "prompt_ref": "extract_discharge@v1",
+    "model": "gemini-2.5-flash",
+    "input_tokens": 397,
+    "output_tokens": 235,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "identifiers": {
+      "patient_name": "Hemlata Dilip Joshi",
+      "phone": "+91 99999 02468",
+      "email": null,
+      "address": null,
+      "aadhaar": "8462 0175 3940",
+      "pan": null,
+      "uhid": "SMH-UHID-0388",
+      "ip_number": "IP/2026/10/0652",
+      "policy_number": "SHI/PSF/2026/003881",
+      "member_id": null,
+      "claim_number": null
+    },
+    "patient_age": 54,
+    "admission_date": "2026-10-03",
+    "discharge_date": "2026-10-08",
+    "diagnosis": "Fracture of neck of right femur",
+    "icd10": "S72.0",
+    "procedure": "Right hip hemiarthroplasty",
+    "room_category": "Single private AC"
+  }
+}

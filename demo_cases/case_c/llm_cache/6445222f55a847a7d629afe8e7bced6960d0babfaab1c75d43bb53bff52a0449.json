@@ -1,0 +1,35 @@
+{
+  "prompt_ref": "extract_insurer_letter@v1",
+  "schema": "InsurerLetterExtraction",
+  "call": {
+    "prompt_ref": "extract_insurer_letter@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 885,
+    "output_tokens": 305,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "identifiers": {
+      "patient_name": "Bhanuben Mahendra Patel",
+      "phone": null,
+      "email": null,
+      "address": null,
+      "aadhaar": null,
+      "pan": null,
+      "uhid": null,
+      "ip_number": "IP/2026/10/0802",
+      "policy_number": "SHI/PSF/2026/002236",
+      "member_id": "SHI-M-0223603",
+      "claim_number": "CL-2026-118957"
+    },
+    "kind": "rejection",
+    "letter_date": "2026-11-04",
+    "amount_claimed": "3,10,000.00",
+    "amount_approved": null,
+    "deductions": [],
+    "rejection_code": "ped_waiting",
+    "rejection_reason": "The ailment is a pre-existing disease declared at inception on 20-Jun-2023, and the treatment falls within the pre-existing disease waiting period under clause 5.1 of the policy.",
+    "fraud_alleged": false
+  }
+}

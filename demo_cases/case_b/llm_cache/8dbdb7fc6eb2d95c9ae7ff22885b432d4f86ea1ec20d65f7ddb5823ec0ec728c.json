@@ -1,0 +1,120 @@
+{
+  "prompt_ref": "extract_insurer_letter@v1",
+  "schema": "InsurerLetterExtraction",
+  "call": {
+    "prompt_ref": "extract_insurer_letter@v1",
+    "model": "gemini-2.5-flash",
+    "input_tokens": 611,
+    "output_tokens": 797,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "identifiers": {
+      "patient_name": "Hemlata Dilip Joshi",
+      "phone": null,
+      "email": null,
+      "address": null,
+      "aadhaar": null,
+      "pan": null,
+      "uhid": null,
+      "ip_number": "IP/2026/10/0652",
+      "policy_number": "SHI/PSF/2026/003881",
+      "member_id": "SHI-M-0388102",
+      "claim_number": "CL-2026-117655"
+    },
+    "kind": "deduction",
+    "letter_date": "2026-11-02",
+    "amount_claimed": "2,26,500.00",
+    "amount_approved": "1,38,375.00",
+    "deductions": [
+      {
+        "bill_item": "Single private AC room",
+        "deducted": "12,000.00",
+        "reason": "Room rent above eligible limit",
+        "reason_code": "room_rent_excess",
+        "clause": "4.2"
+      },
+      {
+        "bill_item": "ICU charges",
+        "deducted": "5,625.00",
+        "reason": "Proportionate deduction",
+        "reason_code": "proportionate",
+        "clause": "4.3"
+      },
+      {
+        "bill_item": "Surgeon fees",
+        "deducted": "22,500.00",
+        "reason": "Proportionate deduction",
+        "reason_code": "proportionate",
+        "clause": "4.3"
+      },
+      {
+        "bill_item": "Operation theatre charges",
+        "deducted": "9,375.00",
+        "reason": "Proportionate deduction",
+        "reason_code": "proportionate",
+        "clause": "4.3"
+      },
+      {
+        "bill_item": "Nursing charges",
+        "deducted": "3,000.00",
+        "reason": "Proportionate deduction",
+        "reason_code": "proportionate",
+        "clause": "4.3"
+      },
+      {
+        "bill_item": "Pharmacy and medicines",
+        "deducted": "11,250.00",
+        "reason": "Proportionate deduction",
+        "reason_code": "proportionate",
+        "clause": "4.3"
+      },
+      {
+        "bill_item": "Laboratory and radiology",
+        "deducted": "4,500.00",
+        "reason": "Proportionate deduction",
+        "reason_code": "proportionate",
+        "clause": "4.3"
+      },
+      {
+        "bill_item": "Laundry charges",
+        "deducted": "1,200.00",
+        "reason": "Non-medical expense",
+        "reason_code": "non_payable",
+        "clause": "8.1"
+      },
+      {
+        "bill_item": "Cold pack / hot pack",
+        "deducted": "800.00",
+        "reason": "Non-medical expense",
+        "reason_code": "non_payable",
+        "clause": "8.1"
+      },
+      {
+        "bill_item": "Crepe bandage",
+        "deducted": "1,500.00",
+        "reason": "Non-medical expense",
+        "reason_code": "non_payable",
+        "clause": "8.1"
+      },
+      {
+        "bill_item": "Registration charges",
+        "deducted": "1,000.00",
+        "reason": "Registration charges not payable",
+        "reason_code": "non_payable",
+        "clause": "8.1"
+      },
+      {
+        "bill_item": "Claim level",
+        "deducted": "15,375.00",
+        "reason": "Co-payment 10%",
+        "reason_code": "copay",
+        "clause": "7.4"
+      }
+    ],
+    "rejection_code": null,
+    "rejection_reason": null,
+    "fraud_alleged": false
+  }
+}

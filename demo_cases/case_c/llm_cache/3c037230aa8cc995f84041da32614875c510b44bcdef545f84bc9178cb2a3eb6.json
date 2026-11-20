@@ -1,0 +1,125 @@
+{
+  "prompt_ref": "extract_bill@v1",
+  "schema": "BillExtraction",
+  "call": {
+    "prompt_ref": "extract_bill@v1",
+    "model": "gemini-3.5-flash-lite",
+    "input_tokens": 836,
+    "output_tokens": 1100,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "identifiers": {
+      "patient_name": "Bhanuben Mahendra Patel",
+      "phone": "+91 99999 03579",
+      "email": null,
+      "address": "7, Ambika Nagar (fictional), Naranpura, Ahmedabad 380013",
+      "aadhaar": null,
+      "pan": null,
+      "uhid": "SMH-UHID-0459",
+      "ip_number": "IP/2026/10/0802",
+      "policy_number": "SHI/PSF/2026/002236",
+      "member_id": null,
+      "claim_number": null
+    },
+    "hospital_name": "Sanjeevani Multispeciality Hospital",
+    "patient_age": 63,
+    "admission_date": "2026-10-20",
+    "discharge_date": "2026-10-24",
+    "room_category": "Twin sharing",
+    "lines": [
+      {
+        "serial": 1,
+        "description": "Twin sharing room",
+        "category": "room",
+        "qty": "4",
+        "rate": "4,500.00",
+        "amount": "18,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 2,
+        "description": "Surgeon fees",
+        "category": "surgeon",
+        "qty": "1",
+        "rate": "90,000.00",
+        "amount": "90,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 3,
+        "description": "Anaesthetist fees",
+        "category": "anaesthetist",
+        "qty": "1",
+        "rate": "20,000.00",
+        "amount": "20,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 4,
+        "description": "Operation theatre charges",
+        "category": "ot",
+        "qty": "1",
+        "rate": "30,000.00",
+        "amount": "30,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 5,
+        "description": "Nursing charges",
+        "category": "nursing",
+        "qty": "1",
+        "rate": "6,000.00",
+        "amount": "6,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 6,
+        "description": "Pharmacy and medicines",
+        "category": "pharmacy",
+        "qty": "1",
+        "rate": "22,000.00",
+        "amount": "22,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 7,
+        "description": "Laboratory and radiology",
+        "category": "diagnostics",
+        "qty": "1",
+        "rate": "9,000.00",
+        "amount": "9,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 8,
+        "description": "Total knee prosthesis (implant)",
+        "category": "implant",
+        "qty": "1",
+        "rate": "1,10,000.00",
+        "amount": "1,10,000.00",
+        "page": 1,
+        "confidence": 1.0
+      },
+      {
+        "serial": 9,
+        "description": "Physiotherapy sessions",
+        "category": "other",
+        "qty": "1",
+        "rate": "5,000.00",
+        "amount": "5,000.00",
+        "page": 1,
+        "confidence": 1.0
+      }
+    ],
+    "printed_total": "3,10,000.00"
+  }
+}

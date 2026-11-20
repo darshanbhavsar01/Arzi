@@ -1,0 +1,34 @@
+{
+  "prompt_ref": "extract_discharge@v1",
+  "schema": "DischargeExtraction",
+  "call": {
+    "prompt_ref": "extract_discharge@v1",
+    "model": "gemini-3.6-flash",
+    "input_tokens": 671,
+    "output_tokens": 280,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "identifiers": {
+      "patient_name": "Ramesh Kantilal Parmar",
+      "phone": "+91 99999 01234",
+      "email": null,
+      "address": null,
+      "aadhaar": "7351 9284 0610",
+      "pan": null,
+      "uhid": "SMH-UHID-0417",
+      "ip_number": "IP/2026/10/0731",
+      "policy_number": "SHI/PSF/2026/004417",
+      "member_id": null,
+      "claim_number": null
+    },
+    "patient_age": 67,
+    "admission_date": "2026-10-12",
+    "discharge_date": "2026-10-17",
+    "diagnosis": "Fracture of neck of right femur",
+    "icd10": "S72.0",
+    "procedure": "Right hip hemiarthroplasty",
+    "room_category": "Single private AC"
+  }
+}

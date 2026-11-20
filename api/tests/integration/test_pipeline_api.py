@@ -99,7 +99,7 @@ async def test_case_audits_to_expected_values(
 
     run = (await api.get(f"/api/v1/claims/{claim_id}/runs/{run_id}")).json()
     assert run["status"] == "completed"
-    assert {"classify_document@v1", "extract_bill@v1", "extract_policy@v1"} <= set(
+    assert {"classify_document@v1", "extract_bill@v1", "extract_policy@v2"} <= set(
         run["prompt_versions"]
     )
 
@@ -216,3 +216,20 @@ async def test_another_hospital_cannot_see_the_claim(
             assert response.json()["type"].endswith("/claim-not-found")
         listed = await intruder.get("/api/v1/claims")
         assert listed.json()["items"] == []
+
+
+@pytest.mark.parametrize("case", ["case_a", "case_b", "case_c"])
+async def test_recorded_gemini_responses_replay_to_expected_values(
+    case: str, settings: Settings, client_for: Callable[[FastAPI], httpx.AsyncClient]
+) -> None:
+    """The committed llm_cache recordings (real Gemini output) still audit to expected.json."""
+    replay = settings.model_copy(update={"llm_mode": LlmMode.REPLAY, "replay_dir": DEMO_CASES})
+    app = create_app(replay, readiness_probes=[], services=build_services(replay))
+    async with client_for(app) as client:
+        claim_id = await prepare_case(client, case)
+        _, events = await run_to_end(client, claim_id)
+        assert events[-1].event == "run.completed", events[-1].data
+        record = await _claim(client, claim_id)
+    assert record.audit is not None
+    committed = json.loads((DEMO_CASES / case / "expected.json").read_text(encoding="utf-8"))
+    assert expected(record.audit) == committed

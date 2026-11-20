@@ -1,0 +1,16 @@
+{
+  "prompt_ref": "classify_document@v1",
+  "schema": "Classification",
+  "call": {
+    "prompt_ref": "classify_document@v1",
+    "model": "gemini-3.6-flash",
+    "input_tokens": 757,
+    "output_tokens": 19,
+    "thinking_tokens": 0,
+    "cost_micro_inr": 0
+  },
+  "output": {
+    "document_type": "implant_invoice",
+    "confidence": 1.0
+  }
+}
