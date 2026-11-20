@@ -6,7 +6,7 @@
 | 0 | done | 2026-11-20 | Repo, tooling, hook, CI, GCP bootstrap, budget, model choice, Cloud Run deploy (replay mode). |
 | 1 | done | 2026-11-20 | Paise money, claim models, state machine, 12-rule engine with trace, citation whitelist, matcher, CLI; goldens A/B/C exact. |
 | 2 | done | 2026-11-20 | Generator for 3 cases: 20 PDFs + scanned JPG, facts/expected/identifiers JSON, README; byte-stable. |
-| 3 | code complete; live gate pending owner | partial | Upload → SSE-streamed audit → persisted claim; Vertex/replay/fake LLM modes; redaction; reconcile; cost ledger + budget guard; Firestore/GCS adapters. |
+| 3 | done | 2026-11-20 | Upload → SSE-streamed audit → persisted claim; live (Vertex AI; AI Studio for testing) / replay / fake LLM modes; redaction; reconcile; cost ledger + budget guard; Firestore/GCS adapters. Recorded A, B, C replay. |
 | 4 | not started | | ADK agents, guardrails, appeals |
 | 5 | not started | | Desk web app |
 | 6 | not started | | Family experience |
@@ -43,11 +43,10 @@
 ### Phase 3 gate
 | Check | Result |
 |---|---|
-| Live: case A (scanned bill + policy + discharge summary + reports + implant invoice) extracts and audits to `expected.json`, recorded into `llm_cache` | pending owner approval (spends money; `scripts/record_demo.py case_a`) |
-| Replay reproduces it offline | pending the recording (`scripts/record_demo.py case_a --replay`) |
-| Cost per claim for case A recorded here | pending the live run |
-| Coverage ≥ 85% | pass: 99% (505 API tests); rules gate still 100% |
-| Offline end to end | pass: cases A, B, C go upload → extract (fixture LLM) → redact → reconcile → audit → SSE → persisted record equal to `expected.json`, with no identifier left in `facts` |
+| Live: case A (scanned bill + policy + discharge summary + reports + implant invoice) extracts and audits to `expected.json`, recorded into `llm_cache` | pass, with live Gemini via AI Studio (free tier, testing only, per owner): ₹67,887.50 at risk from the photographed bill. B (₹20,137.50 recoverable) and C (₹3,10,000) also pass live and are recorded |
+| Replay reproduces it offline | pass: `record_demo.py case_a case_b case_c --replay`, plus an API integration test in replay mode for all three cases |
+| Cost per claim for case A recorded here | ₹0 on the AI Studio free tier. Tokens: 8,765 input / 2,807 output over 10 calls, about ₹3.1 at the Vertex AI standard rate (₹135/₹675 per 1M, assumed ₹90/USD) and about ₹1.5 at today's introductory rate. See Measured numbers |
+| Coverage ≥ 85% | pass: 99% (513 API tests); rules gate still 100% |
 
 ## Decisions
 - 2026-11-20 — Record architecture decisions as ADRs (ADR-0001).
@@ -148,6 +147,26 @@
   exception type and frames, never the message: a test caught `logger.exception` leaking it.
 - 2026-11-20 — Letter rows map to bill lines by exact normalised text, else a one-way fuzzy match
   accepted only when exactly one line fits; ambiguous rows ("Charges") become `unmapped_deduction`.
+- 2026-11-20 — Per the owner, testing and recordings use the Gemini Developer API (AI Studio, free
+  tier, key in the git-ignored `api/.env.local`); the deployed app always uses Vertex AI. Enforced in
+  code (`ARZI_LLM_PROVIDER=ai_studio` is refused when `ARZI_ENV=cloud`) and in `infra/deploy.sh`
+  (pins `ARZI_LLM_PROVIDER=vertex`). The free tier may use prompts for product improvement, so it
+  is only ever fed synthetic documents.
+- 2026-11-20 — Free-tier availability decided the recording models: `gemini-3.8-flash` returned 503
+  (high demand), 3.7 timed out, and 3.6, 3.5 and 2.5 Flash ran out of daily quota partway. The
+  recordings mix `gemini-3.6-flash`, `gemini-2.5-flash` and `gemini-3.5-flash-lite`. Replay keys
+  exclude the model, so this is fine for replay; extraction quality on Vertex 3.8 Flash should be
+  re-checked with `make eval` (Phase 7).
+- 2026-11-20 — `extract_policy@v2`: `gemini-2.5-flash` read "10% of admissible claim" as co-pay on the
+  claimed amount through the `on_claimed_amount` boolean. The schema now has an explicit
+  `applies_to: admissible | claimed` enum, and the prompt says to take it from the policy's
+  wording. Superseded v1 recordings were deleted.
+- 2026-11-20 — AI Studio uses API version `v1beta` (JSON mode is not enabled on v1 for some models).
+  `ARZI_LLM_THINKING_BUDGET=-1` leaves thinking at the model default; flash-lite rejects a zero budget.
+- 2026-11-20 — Amounts inside words ("Rs. 40,000.00 per eye") are read only when marked as money
+  (₹, Rs, INR), so the "1" of "1% of sum insured" is never one rupee.
+- 2026-11-20 — `record_demo.py` serves existing recordings first and calls the model only for missing
+  responses, so a rerun after a quota error costs only what is still missing.
 - 2026-11-20 — Case C in post-rejection mode relies on the statutory 36-month cap even when the
   rejected condition does not match a declared PED (`min(policy waiting or 36, 36)`).
 
@@ -161,7 +180,7 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Not chosen: `gemini-4-*` IDs (codenames with no tier in the name; revisit with docs).
 
 ## Measured numbers (for the pitch)
-- Cost per claim (case A, live): ₹
+- Cost per claim (case A, live): 8,765 input + 2,807 output tokens over 10 Gemini calls; ₹0 on the AI Studio free tier, about ₹3.1 at the Vertex AI standard rate (₹1.5 at the introductory rate). Measured on free-tier Flash models; re-measure on Vertex `gemini-3.8-flash` before quoting it on stage.
 - Eval: extraction field accuracy %, flags caught X/Y, ₹ exact-match %
 - Median audit time: s
 
@@ -233,14 +252,10 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Rules: `CategoryCap` whose category is missing from the hospital tariff is traced and skipped;
   Phase 3 should surface it as "Needs confirmation" in the UI.
 
-- Owner, for the Phase 3 gate (deferred by the owner on 2026-11-20): approve the live run, then from
-  `api/`:
-  `GOOGLE_CLOUD_PROJECT=<project-id> ARZI_MODEL_FLASH=gemini-3.8-flash ARZI_VERTEX_LOCATION=global`
-  `ARZI_PRICE_TABLE_JSON='{"gemini-3.8-flash": {"input_inr_per_1m": 135, "output_inr_per_1m": 675}}'`
-  `uv run python ../scripts/record_demo.py case_a case_b case_c`, then `... --replay`, and commit
-  `demo_cases/*/llm_cache/`. Prices: Vertex AI global standard rate from 1 Jan 2027, $1.50 input /
-  $7.50 output per 1M tokens (today's introductory rate is half that), at an assumed ₹90/USD, so
-  the guard over-estimates. Rough case A estimate: about 25k input / 8k output tokens, ₹4-9.
+- Re-record the demo cases on Vertex AI `gemini-3.8-flash` before the pitch (run `record_demo.py`
+  with `ARZI_LLM_PROVIDER=vertex` and the price table in this file), so replay matches the live
+  model; then re-measure cost per claim.
+- Rotate the AI Studio key after the event (it was shared in chat).
 - Owner, cloud (no cost beyond pennies): deploy `infra/firestore.indexes.json`, run
   `scripts/seed.py` for the demo hospital profile, set `ARZI_PSEUDONYM_SALT` from Secret Manager on
   Cloud Run, and grant the runtime identity `iam.serviceAccountTokenCreator` on itself if signed
