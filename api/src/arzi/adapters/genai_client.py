@@ -204,6 +204,8 @@ class RecordingLlmClient:
         }
         path = self._directory / f"{cache_key(request)}.json"
         path.write_text(
-            json.dumps(recording, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+            json.dumps(recording, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+            newline="\n",  # identical bytes on every platform
         )
         return result
