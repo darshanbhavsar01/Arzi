@@ -170,3 +170,24 @@ def test_guardrail_error_lists_violations() -> None:
     error = GuardrailError([Violation("stray_amount", "facts")])
     assert str(error) == "stray_amount in facts"
     assert error.violations == (Violation("stray_amount", "facts"),)
+
+
+@pytest.mark.parametrize(
+    ("template", "shown"),
+    [
+        (
+            'Under "Norms on proportionate deductions" (IRDAI_PROP_DED_2020), ICU is excluded.',
+            'Under "Norms on proportionate deductions", ICU is excluded.',
+        ),
+        ("Policy clause 4.3 (policy:4.3) agrees.", "Policy clause 4.3 (clause 4.3) agrees."),
+        ("See policy:5.1.", "See clause 5.1."),
+        (
+            "IRDAI_PED_36M caps it.",
+            "Pre-existing disease: look-back and maximum waiting period caps it.",
+        ),
+        ("(see IRDAI_PED_36M)", "(see Pre-existing disease: look-back and maximum waiting period)"),
+        ("PROP_ROOM_RENT and NOT_A_REF stay.", "PROP_ROOM_RENT and NOT_A_REF stay."),
+    ],
+)
+def test_rendering_makes_reference_ids_readable(template: str, shown: str) -> None:
+    assert render(template, {}) == shown

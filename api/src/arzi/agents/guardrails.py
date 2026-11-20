@@ -48,6 +48,9 @@ _CURRENCY_BEFORE_PLACEHOLDER = re.compile(rf"{_CURRENCY}\s*\{{\{{", re.IGNORECAS
 _CIRCULAR_CODE = re.compile(r"\bIRDAI?/[A-Z0-9][A-Z0-9/.\-]*[A-Z0-9]", re.IGNORECASE)
 _CIRCULAR_NUMBER = re.compile(r"\bcircular\s+(?:no\.?|number)\s*[\w/.\-]+", re.IGNORECASE)
 _CLAUSE = re.compile(r"\b(?:clause|section)\s+([0-9]+(?:\.[0-9]+)*)", re.IGNORECASE)
+_REF_ID = re.compile(r"\(?\b(policy:[0-9]+(?:\.[0-9]+)*|[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b\)?")
+_SPACES = re.compile(r"[ \t]{2,}")
+_SPACE_BEFORE_PUNCTUATION = re.compile(r"[ \t]+([,.;:)])")
 _PARAGRAPH = re.compile(r"\bpara(?:graph)?\.?\s+[0-9]", re.IGNORECASE)
 
 _NATIVE_DIGITS = {
@@ -206,11 +209,32 @@ class UnknownPlaceholderError(KeyError):
     pass
 
 
+def humanise_refs(text: str) -> str:
+    """Reference IDs read as words: ``policy:4.3`` becomes "clause 4.3"; a registry ID becomes its
+    title, or disappears where it only repeats a title in parentheses ("Norms on proportionate
+    deductions (IRDAI_PROP_DED_2020)"). Unknown tokens are left alone."""
+    registry = citations()
+
+    def swap(match: re.Match[str]) -> str:
+        whole, ref = match.group(0), match.group(1)
+        lead = "(" if whole.startswith("(") else ""
+        trail = ")" if whole.endswith(")") else ""
+        if ref.startswith(POLICY_REF_PREFIX):
+            return f"{lead}clause {ref.removeprefix(POLICY_REF_PREFIX)}{trail}"
+        if ref in registry:
+            return "" if lead and trail else f"{lead}{registry[ref].title}{trail}"
+        return whole
+
+    shown = _REF_ID.sub(swap, text)
+    return _SPACE_BEFORE_PUNCTUATION.sub(r"\1", _SPACES.sub(" ", shown)).strip()
+
+
 def render(
     template: str, values: Mapping[str, Paise], *, locale: str = "en", native_digits: bool = False
 ) -> str:
-    """Fill placeholders with engine amounts. Hindi and Gujarati keep Latin digits unless
-    ``native_digits`` is set (bills and letters in India mostly print Latin digits)."""
+    """Fill placeholders with engine amounts and make reference IDs readable. Hindi and Gujarati
+    keep Latin digits unless ``native_digits`` is set (bills and letters in India mostly print
+    Latin digits)."""
 
     def fill(match: re.Match[str]) -> str:
         name = match.group(1)
@@ -220,7 +244,7 @@ def render(
         table = _NATIVE_DIGITS.get(locale) if native_digits else None
         return shown.translate(table) if table else shown
 
-    return PLACEHOLDER.sub(fill, template)
+    return humanise_refs(PLACEHOLDER.sub(fill, template))
 
 
 def try_render(template: str, values: Mapping[str, Paise]) -> str | None:
