@@ -182,6 +182,26 @@ export interface paths {
         patch: operations["correct_line_api_v1_claims__claim_id__lines__line_id__patch"];
         trace?: never;
     };
+    "/api/v1/claims/{claim_id}/flags/{flag_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Review Flag
+         * @description Accept a flag or dismiss it with a reason; the decision is audited.
+         */
+        post: operations["review_flag_api_v1_claims__claim_id__flags__flag_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/claims/{claim_id}/audit-log": {
         parameters: {
             query?: never;
@@ -206,7 +226,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Runs
+         * @description Every audit run of the claim, newest first: stages, timings, models, prompts, cost.
+         */
+        get: operations["list_runs_api_v1_claims__claim_id__runs_get"];
         put?: never;
         /**
          * Start Run
@@ -389,6 +413,43 @@ export interface paths {
         get: operations["list_citations_api_v1_meta_citations_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/meta/workspace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Workspace */
+        get: operations["workspace_api_v1_meta_workspace_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/demo/cases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Load Demo Cases
+         * @description Create the three synthetic demo claims and start their audits (synthetic data only).
+         */
+        post: operations["load_demo_cases_api_v1_demo_cases_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -813,6 +874,15 @@ export interface components {
             redaction?: components["schemas"]["RedactionSummary"] | null;
             policy_review?: components["schemas"]["PolicyReview"] | null;
             narratives?: components["schemas"]["ClaimNarratives"] | null;
+            /** Document Types */
+            document_types?: {
+                [key: string]: string;
+            };
+            /**
+             * Flag Reviews
+             * @default []
+             */
+            flag_reviews: components["schemas"]["FlagReview"][];
             /**
              * Runs
              * @default []
@@ -836,22 +906,35 @@ export interface components {
         ClaimStatus: "draft" | "documents_uploaded" | "processing" | "audited" | "appeal_drafted" | "in_review" | "signed" | "exported" | "failed";
         /**
          * ClaimSummary
-         * @description One worklist row: no patient data, no document content.
+         * @description One worklist row: pseudonymised patient, no document content.
          */
         ClaimSummary: {
             /** Claim Id */
             claim_id: string;
             mode: components["schemas"]["ClaimMode"];
             status: components["schemas"]["ClaimStatus"];
-            /** Insurer Hint */
-            insurer_hint: string | null;
+            /** Insurer */
+            insurer: string | null;
+            /** Patient */
+            patient: string | null;
+            /** Admitted On */
+            admitted_on: string | null;
+            /** Discharged On */
+            discharged_on: string | null;
+            /** Created At */
+            created_at: string | null;
             /** Updated At */
             updated_at: string | null;
             totals: components["schemas"]["Totals"] | null;
             /** Flag Count */
             flag_count: number;
+            /** Severities */
+            severities: components["schemas"]["Severity"][];
             /** Needs Confirmation */
             needs_confirmation: number;
+            /** Audit Seconds */
+            audit_seconds: number | null;
+            latest_appeal: components["schemas"]["AppealSummary"] | null;
         };
         /**
          * Consent
@@ -909,6 +992,17 @@ export interface components {
          * @enum {string}
          */
         DeductionReason: "proportionate" | "room_rent_excess" | "icu_cap" | "non_payable" | "sub_limit" | "copay" | "other";
+        /** DemoClaim */
+        DemoClaim: {
+            /** Case */
+            case: string;
+            /** Title */
+            title: string;
+            /** Claim Id */
+            claim_id: string;
+            /** Run Id */
+            run_id: string;
+        };
         /**
          * DocType
          * @enum {string}
@@ -994,6 +1088,22 @@ export interface components {
             missing_document?: components["schemas"]["DocumentKind"] | null;
         };
         /**
+         * FlagDecision
+         * @description Accept a flag as a real risk, or dismiss it with a reason (both are audited).
+         */
+        FlagDecision: {
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "accepted" | "dismissed";
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+        };
+        /**
          * FlagKind
          * @description How a flag's amount relates to the totals.
          *
@@ -1016,6 +1126,31 @@ export interface components {
              * @default []
              */
             citations: string[];
+        };
+        /**
+         * FlagReview
+         * @description A person's decision on one flag: accepted as a real risk, or dismissed with a reason.
+         */
+        FlagReview: {
+            /** Flag Id */
+            flag_id: string;
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "accepted" | "dismissed";
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+            /** By */
+            by: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
         };
         /** ForumCheck */
         ForumCheck: {
@@ -1231,6 +1366,17 @@ export interface components {
              * @default false
              */
             replayed: boolean;
+        };
+        /** ModelIds */
+        ModelIds: {
+            /** Flash */
+            flash: string | null;
+            /** Pro */
+            pro: string | null;
+            /** Tts */
+            tts: string | null;
+            /** Live */
+            live: string | null;
         };
         /**
          * Patient
@@ -1598,6 +1744,38 @@ export interface components {
             waiting_months: number;
             /** Clause Id */
             clause_id?: string | null;
+        };
+        /**
+         * Workspace
+         * @description Who is signed in, for which hospital, and how the AI is configured right now.
+         */
+        Workspace: {
+            /** Hospital Id */
+            hospital_id: string;
+            hospital: components["schemas"]["Hospital"] | null;
+            /** User Name */
+            user_name: string;
+            /** User Role */
+            user_role: string;
+            /** Environment */
+            environment: string;
+            /** Region */
+            region: string;
+            /** Llm Mode */
+            llm_mode: string;
+            /** Llm Provider */
+            llm_provider: string;
+            models: components["schemas"]["ModelIds"];
+            /** Prompt Versions */
+            prompt_versions: string[];
+            /** Daily Budget Inr */
+            daily_budget_inr: number;
+            /** Spent Today Inr */
+            spent_today_inr: number;
+            /** Demo Cases Available */
+            demo_cases_available: boolean;
+            /** Build Sha */
+            build_sha: string;
         };
     };
     responses: never;
@@ -1995,6 +2173,44 @@ export interface operations {
             };
         };
     };
+    review_flag_api_v1_claims__claim_id__flags__flag_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                flag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlagDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     audit_log_api_v1_claims__claim_id__audit_log_get: {
         parameters: {
             query?: never;
@@ -2015,6 +2231,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuditLogEntry"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_runs_api_v1_claims__claim_id__runs_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditRun"][];
                 };
             };
             /** @description Validation Error */
@@ -2435,6 +2684,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RuleCitation"][];
+                };
+            };
+        };
+    };
+    workspace_api_v1_meta_workspace_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Workspace"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    load_demo_cases_api_v1_demo_cases_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemoClaim"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

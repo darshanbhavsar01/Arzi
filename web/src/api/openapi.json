@@ -728,6 +728,84 @@
         }
       }
     },
+    "/api/v1/claims/{claim_id}/flags/{flag_id}/review": {
+      "post": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Review Flag",
+        "description": "Accept a flag or dismiss it with a reason; the decision is audited.",
+        "operationId": "review_flag_api_v1_claims__claim_id__flags__flag_id__review_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "flag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Flag Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlagDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/claims/{claim_id}/audit-log": {
       "get": {
         "tags": [
@@ -849,6 +927,67 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RunStarted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "runs"
+        ],
+        "summary": "List Runs",
+        "description": "Every audit run of the claim, newest first: stages, timings, models, prompts, cost.",
+        "operationId": "list_runs_api_v1_claims__claim_id__runs_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditRun"
+                  },
+                  "title": "Response List Runs Api V1 Claims  Claim Id  Runs Get"
                 }
               }
             }
@@ -1653,6 +1792,109 @@
                   },
                   "type": "array",
                   "title": "Response List Citations Api V1 Meta Citations Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meta/workspace": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Workspace",
+        "operationId": "workspace_api_v1_meta_workspace_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/cases": {
+      "post": {
+        "tags": [
+          "demo"
+        ],
+        "summary": "Load Demo Cases",
+        "description": "Create the three synthetic demo claims and start their audits (synthetic data only).",
+        "operationId": "load_demo_cases_api_v1_demo_cases_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DemoClaim"
+                  },
+                  "title": "Response Load Demo Cases Api V1 Demo Cases Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -2801,6 +3043,23 @@
               }
             ]
           },
+          "document_types": {
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1
+            },
+            "type": "object",
+            "title": "Document Types"
+          },
+          "flag_reviews": {
+            "items": {
+              "$ref": "#/components/schemas/FlagReview"
+            },
+            "type": "array",
+            "title": "Flag Reviews",
+            "default": []
+          },
           "runs": {
             "items": {
               "$ref": "#/components/schemas/AuditRun"
@@ -2862,7 +3121,7 @@
           "status": {
             "$ref": "#/components/schemas/ClaimStatus"
           },
-          "insurer_hint": {
+          "insurer": {
             "anyOf": [
               {
                 "type": "string"
@@ -2871,7 +3130,54 @@
                 "type": "null"
               }
             ],
-            "title": "Insurer Hint"
+            "title": "Insurer"
+          },
+          "patient": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patient"
+          },
+          "admitted_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Admitted On"
+          },
+          "discharged_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discharged On"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
           },
           "updated_at": {
             "anyOf": [
@@ -2899,9 +3205,37 @@
             "type": "integer",
             "title": "Flag Count"
           },
+          "severities": {
+            "items": {
+              "$ref": "#/components/schemas/Severity"
+            },
+            "type": "array",
+            "title": "Severities"
+          },
           "needs_confirmation": {
             "type": "integer",
             "title": "Needs Confirmation"
+          },
+          "audit_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Seconds"
+          },
+          "latest_appeal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppealSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -2909,14 +3243,21 @@
           "claim_id",
           "mode",
           "status",
-          "insurer_hint",
+          "insurer",
+          "patient",
+          "admitted_on",
+          "discharged_on",
+          "created_at",
           "updated_at",
           "totals",
           "flag_count",
-          "needs_confirmation"
+          "severities",
+          "needs_confirmation",
+          "audit_seconds",
+          "latest_appeal"
         ],
         "title": "ClaimSummary",
-        "description": "One worklist row: no patient data, no document content."
+        "description": "One worklist row: pseudonymised patient, no document content."
       },
       "Consent": {
         "properties": {
@@ -3049,6 +3390,34 @@
         ],
         "title": "DeductionReason",
         "description": "The insurer's stated reason for a cut, normalised from the letter's wording."
+      },
+      "DemoClaim": {
+        "properties": {
+          "case": {
+            "type": "string",
+            "title": "Case"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "run_id": {
+            "type": "string",
+            "title": "Run Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case",
+          "title",
+          "claim_id",
+          "run_id"
+        ],
+        "title": "DemoClaim"
       },
       "DocType": {
         "type": "string",
@@ -3265,6 +3634,31 @@
         "title": "Flag",
         "description": "One finding. Narrative text is added later, by the explainer, in a separate model."
       },
+      "FlagDecision": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "dismissed"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "FlagDecision",
+        "description": "Accept a flag as a real risk, or dismiss it with a reason (both are audited)."
+      },
       "FlagKind": {
         "type": "string",
         "enum": [
@@ -3312,6 +3706,51 @@
           "fix"
         ],
         "title": "FlagNarrative"
+      },
+      "FlagReview": {
+        "properties": {
+          "flag_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Flag Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "dismissed"
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Reason",
+            "default": ""
+          },
+          "by": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "By"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "flag_id",
+          "decision",
+          "by",
+          "at"
+        ],
+        "title": "FlagReview",
+        "description": "A person's decision on one flag: accepted as a real risk, or dismissed with a reason."
       },
       "ForumCheck": {
         "properties": {
@@ -3828,6 +4267,62 @@
         ],
         "title": "LlmCall",
         "description": "Token usage and estimated cost of one model call, for the run record and the ledger."
+      },
+      "ModelIds": {
+        "properties": {
+          "flash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flash"
+          },
+          "pro": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pro"
+          },
+          "tts": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tts"
+          },
+          "live": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Live"
+          }
+        },
+        "type": "object",
+        "required": [
+          "flash",
+          "pro",
+          "tts",
+          "live"
+        ],
+        "title": "ModelIds"
       },
       "Patient": {
         "properties": {
@@ -4803,6 +5298,93 @@
           "waiting_months"
         ],
         "title": "WaitingCondition"
+      },
+      "Workspace": {
+        "properties": {
+          "hospital_id": {
+            "type": "string",
+            "title": "Hospital Id"
+          },
+          "hospital": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Hospital"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user_name": {
+            "type": "string",
+            "title": "User Name"
+          },
+          "user_role": {
+            "type": "string",
+            "title": "User Role"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "llm_mode": {
+            "type": "string",
+            "title": "Llm Mode"
+          },
+          "llm_provider": {
+            "type": "string",
+            "title": "Llm Provider"
+          },
+          "models": {
+            "$ref": "#/components/schemas/ModelIds"
+          },
+          "prompt_versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prompt Versions"
+          },
+          "daily_budget_inr": {
+            "type": "integer",
+            "title": "Daily Budget Inr"
+          },
+          "spent_today_inr": {
+            "type": "number",
+            "title": "Spent Today Inr"
+          },
+          "demo_cases_available": {
+            "type": "boolean",
+            "title": "Demo Cases Available"
+          },
+          "build_sha": {
+            "type": "string",
+            "title": "Build Sha"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hospital_id",
+          "hospital",
+          "user_name",
+          "user_role",
+          "environment",
+          "region",
+          "llm_mode",
+          "llm_provider",
+          "models",
+          "prompt_versions",
+          "daily_budget_inr",
+          "spent_today_inr",
+          "demo_cases_available",
+          "build_sha"
+        ],
+        "title": "Workspace",
+        "description": "Who is signed in, for which hospital, and how the AI is configured right now."
       }
     }
   }
