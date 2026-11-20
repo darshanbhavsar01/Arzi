@@ -15,6 +15,7 @@ const NewAuditPage = lazy(() => import('@/features/claims/new-audit/NewAuditPage
 const WorkspacePage = lazy(() => import('@/features/claims/workspace/WorkspacePage'));
 const AppealEditorPage = lazy(() => import('@/features/appeal/AppealEditorPage'));
 const AppealsPage = lazy(() => import('@/features/appeal/AppealsPage'));
+const AnalyticsPage = lazy(() => import('@/features/analytics/AnalyticsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
 const FamilyPage = lazy(() => import('@/features/family/FamilyPage'));
 const CheckPage = lazy(() => import('@/features/family/CheckPage'));
@@ -94,6 +95,7 @@ export const router = createBrowserRouter([
       { path: 'claims/:claimId', element: page(<WorkspacePage />) },
       { path: 'claims/:claimId/appeal', element: page(<AppealEditorPage />) },
       { path: 'appeals', element: page(<AppealsPage />) },
+      { path: 'analytics', element: page(<AnalyticsPage />) },
       { path: 'settings', element: page(<SettingsPage />) },
       { path: '*', element: <NotFound /> },
     ],

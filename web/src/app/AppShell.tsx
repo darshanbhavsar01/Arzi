@@ -3,6 +3,7 @@
  * menu) and the persistent human-review footer. Pages render into the outlet.
  */
 import {
+  BarChart3,
   ChevronsLeft,
   ChevronsRight,
   FilePlus2,
@@ -36,6 +37,7 @@ const NAV = [
   { to: '/worklist', label: 'Worklist', icon: ListChecks },
   { to: '/audits/new', label: 'New audit', icon: FilePlus2 },
   { to: '/appeals', label: 'Appeals', icon: Scale },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/settings', label: 'Settings', icon: Settings2 },
 ] as const;
 
