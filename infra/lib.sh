@@ -1,13 +1,18 @@
 # Shared helpers for infra scripts. Source it; do not execute it.
 #
-# DRY_RUN=1 prints every mutating command instead of running it (existence checks are skipped,
-# so the full sequence is shown). Use it to review exactly what a script will do.
+# DRY_RUN=1 prints every mutating command instead of running it. Read-only lookups (does it
+# exist, which billing account, project number) still run, so the printed sequence is exactly
+# what a real run would execute against the current project state.
 
 REGION="${REGION:-asia-south1}"
 SA_NAME="${SA_NAME:-arzi-run}"
 SERVICE="${SERVICE:-arzi}"
 INFRA_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$INFRA_DIR/.." && pwd)"
+
+# gcloud on Windows ends lines with CRLF, which silently breaks string comparisons on captured
+# values (e.g. "True\r" != "True"). Normalise its stdout everywhere; pipefail keeps exit codes.
+gcloud() { command gcloud "$@" | tr -d '\r'; }
 
 require_vars() {
   local missing=()
@@ -28,11 +33,8 @@ run() {
   if ! is_dry_run; then "$@"; fi
 }
 
-# True when a read-only probe succeeds. In DRY_RUN it reports "absent" so creates are printed.
-exists() {
-  if is_dry_run; then return 1; fi
-  "$@" >/dev/null 2>&1
-}
+# True when a read-only probe succeeds (also in DRY_RUN).
+exists() { "$@" >/dev/null 2>&1; }
 
 # Ask the operator to type an exact word before anything that spends money or changes billing.
 confirm() {

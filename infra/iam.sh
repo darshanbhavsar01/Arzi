@@ -28,11 +28,8 @@ run gcloud storage buckets add-iam-policy-binding "gs://$BUCKET" \
 run gcloud iam service-accounts add-iam-policy-binding "$SA" \
   --member="serviceAccount:$SA" --role="roles/iam.serviceAccountTokenCreator" --format=none
 
-if is_dry_run; then
-  PROJECT_NUMBER="<PROJECT_NUMBER>"
-else
-  PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
-fi
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)' 2>/dev/null || true)"
+PROJECT_NUMBER="${PROJECT_NUMBER:-<PROJECT_NUMBER>}"   # unknown only when the project is new
 run gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
   --role="roles/run.builder" --condition=None --quiet --format=none
