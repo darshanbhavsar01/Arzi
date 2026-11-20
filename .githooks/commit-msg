@@ -1,0 +1,35 @@
+#!/bin/sh
+# Reject commit messages that carry co-author trailers or tool-generated footers.
+# The repository owner is the sole author of every commit (see AGENTS.md section 0).
+set -eu
+
+msg_file="$1"
+# Lines git strips before committing (comments, and everything below the scissors line in
+# verbose mode) are ignored, so the template text cannot trip the check.
+body=$(sed -e '/^# -\{24\} >8 -\{24\}$/,$d' -e '/^#/d' "$msg_file")
+
+robot=$(printf '\360\237\244\226')
+problems=""
+
+if printf '%s\n' "$body" | grep -qiE '^[[:space:]]*co-authored-by[[:space:]]*:'; then
+  problems="${problems}  - a 'Co-Authored-By:' trailer
+"
+fi
+if printf '%s\n' "$body" | grep -qiE '^[[:space:]]*generated with'; then
+  problems="${problems}  - a line starting with 'Generated with'
+"
+fi
+if printf '%s\n' "$body" | LC_ALL=C grep -qF "$robot"; then
+  problems="${problems}  - the robot emoji
+"
+fi
+
+if [ -n "$problems" ]; then
+  {
+    echo "commit-msg: rejected. The message contains:"
+    printf '%s' "$problems"
+    echo "Remove those lines and commit again. Every commit has a single author: the repo owner."
+    echo "Your message was kept in .git/COMMIT_EDITMSG; reuse it with: git commit -e -F .git/COMMIT_EDITMSG"
+  } >&2
+  exit 1
+fi
