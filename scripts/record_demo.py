@@ -1,5 +1,9 @@
 """Run demo cases through the real pipeline and record the Gemini responses for replay.
 
+    # AI Studio (free tier; synthetic data only), key in the git-ignored api/.env.local:
+    ARZI_MODEL_FLASH=<model> uv run python ../scripts/record_demo.py case_a --env-file .env.local
+
+    # Vertex AI (billed):
     GOOGLE_CLOUD_PROJECT=... ARZI_MODEL_FLASH=... ARZI_VERTEX_LOCATION=global \\
     ARZI_PRICE_TABLE_JSON='{"<model>": {"input_inr_per_1m": ..., "output_inr_per_1m": ...}}' \\
     uv run python ../scripts/record_demo.py case_a [case_b case_c] [--replay]
@@ -47,9 +51,10 @@ COMMON = (
 )
 
 
-async def run_case(case: str, *, replay: bool) -> bool:
+async def run_case(case: str, *, replay: bool, env_file: Path | None) -> bool:
     mode = LlmMode.REPLAY if replay else LlmMode.LIVE
     settings = Settings(
+        _env_file=env_file,
         llm_mode=mode,
         replay_dir=DEMO,
         llm_record_dir=None if replay else DEMO / case / "llm_cache",
@@ -103,10 +108,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--replay", action="store_true", help="use recordings instead of live calls"
     )
+    parser.add_argument(
+        "--env-file", type=Path, help="read settings (e.g. the API key) from this file"
+    )
     args = parser.parse_args(argv)
     if isinstance(sys.stdout, io.TextIOWrapper):
         sys.stdout.reconfigure(encoding="utf-8")  # ₹ on Windows consoles
-    results = [asyncio.run(run_case(case, replay=args.replay)) for case in args.cases]
+    results = [
+        asyncio.run(run_case(case, replay=args.replay, env_file=args.env_file))
+        for case in args.cases
+    ]
     return 0 if all(results) else 1
 
 

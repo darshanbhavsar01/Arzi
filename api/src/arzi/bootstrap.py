@@ -10,19 +10,21 @@ import datetime as dt
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
+from decimal import Decimal
 
 from arzi.adapters.auth import DemoAuthVerifier
 from arzi.adapters.fixture_llm import FixtureLlmClient
 from arzi.adapters.genai_client import (
+    GeminiLlmClient,
     RecordingLlmClient,
     ReplayLlmClient,
-    VertexLlmClient,
+    ai_studio_models,
     vertex_models,
 )
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
-from arzi.config import AuthMode, LlmMode, Settings
+from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
 from arzi.services.claims import ClaimService
-from arzi.services.cost_ledger import BudgetedLlmClient, parse_price_table
+from arzi.services.cost_ledger import BudgetedLlmClient, ModelPrice, parse_price_table
 from arzi.services.extraction import ExtractionService
 from arzi.services.pipeline import (
     AuditStep,
@@ -73,21 +75,38 @@ def build_llm(
         return ReplayLlmClient(settings.replay_dir)
     if settings.llm_mode is LlmMode.FAKE:
         return FixtureLlmClient(settings.replay_dir)
-    if not settings.google_cloud_project or not settings.model_flash:
-        raise ConfigurationError("live mode needs GOOGLE_CLOUD_PROJECT and ARZI_MODEL_FLASH")
-    vertex = VertexLlmClient(
-        vertex_models(
+    if not settings.model_flash:
+        raise ConfigurationError("live mode needs ARZI_MODEL_FLASH")
+    prices = parse_price_table(settings.price_table_json)
+    if settings.llm_provider is LlmProvider.AI_STUDIO:
+        if settings.env is Environment.CLOUD:
+            raise ConfigurationError("AI Studio is for local testing with synthetic data only")
+        if settings.gemini_api_key is None:
+            raise ConfigurationError("AI Studio needs ARZI_GEMINI_API_KEY")
+        models = ai_studio_models(
+            settings.gemini_api_key.get_secret_value(), settings.llm_timeout_s
+        )
+        # The free tier costs nothing; the guard still counts calls and tokens.
+        prices.setdefault(
+            settings.model_flash,
+            ModelPrice(input_inr_per_1m=Decimal(0), output_inr_per_1m=Decimal(0)),
+        )
+        gcs_uris = False
+    else:
+        if not settings.google_cloud_project:
+            raise ConfigurationError("Vertex AI needs GOOGLE_CLOUD_PROJECT")
+        models = vertex_models(
             settings.google_cloud_project, settings.vertex_location, settings.llm_timeout_s
-        ),
+        )
+        gcs_uris = True
+    gemini = GeminiLlmClient(
+        models,
         timeout_s=settings.llm_timeout_s,
         max_retries=settings.llm_max_retries,
+        gcs_uris=gcs_uris,
     )
     budgeted: LlmClient = BudgetedLlmClient(
-        vertex,
-        ledger,
-        parse_price_table(settings.price_table_json),
-        daily_cap_inr=settings.daily_budget_inr,
-        clock=clock,
+        gemini, ledger, prices, daily_cap_inr=settings.daily_budget_inr, clock=clock
     )
     if settings.llm_record_dir is not None:
         return RecordingLlmClient(budgeted, settings.llm_record_dir)

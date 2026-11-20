@@ -46,8 +46,12 @@ class _AsyncModels(Protocol):
 Sleep = Callable[[float], Awaitable[None]]
 
 
-class VertexLlmClient:
-    """``google-genai`` against Vertex AI with structured output, timeout and bounded retries."""
+class GeminiLlmClient:
+    """``google-genai`` (Vertex AI or AI Studio) with structured output, timeout and retries.
+
+    ``gcs_uris`` lets Vertex AI read uploaded files straight from Cloud Storage; AI Studio cannot,
+    so it always receives the bytes inline.
+    """
 
     def __init__(
         self,
@@ -55,9 +59,11 @@ class VertexLlmClient:
         *,
         timeout_s: float,
         max_retries: int,
+        gcs_uris: bool = True,
         sleep: Sleep = anyio.sleep,
     ) -> None:
         self._models = models
+        self._gcs_uris = gcs_uris
         self._timeout_s = timeout_s
         self._max_retries = max_retries
         self._sleep = sleep
@@ -73,7 +79,8 @@ class VertexLlmClient:
             max_output_tokens=request.max_output_tokens,
             thinking_config=types.ThinkingConfig(thinking_budget=request.thinking_budget),
         )
-        contents = [*_parts(types, request.files), request.text or "Extract the document."]
+        parts = _parts(types, request.files, gcs_uris=self._gcs_uris)
+        contents = [*parts, request.text or "Extract the document."]
         for attempt in range(self._max_retries + 1):
             try:
                 with anyio.fail_after(self._timeout_s):
@@ -100,10 +107,10 @@ class VertexLlmClient:
         raise LlmUnavailableError("llm-error")  # pragma: no cover - loop always returns or raises
 
 
-def _parts(types: Any, files: Sequence[FilePart]) -> list[Any]:  # noqa: ANN401 - SDK module
+def _parts(types: Any, files: Sequence[FilePart], *, gcs_uris: bool) -> list[Any]:  # noqa: ANN401
     return [
         types.Part.from_uri(file_uri=f.uri, mime_type=f.mime_type)
-        if f.uri and f.uri.startswith("gs://")
+        if gcs_uris and f.uri and f.uri.startswith("gs://")
         else types.Part.from_bytes(data=f.data, mime_type=f.mime_type)
         for f in files
     ]
@@ -137,6 +144,18 @@ def vertex_models(project: str, location: str, timeout_s: float) -> _AsyncModels
         project=project,
         location=location,
         http_options=types.HttpOptions(timeout=int(timeout_s * 1000)),
+    )
+    models: _AsyncModels = client.aio.models
+    return models
+
+
+def ai_studio_models(api_key: str, timeout_s: float) -> _AsyncModels:
+    """The Gemini Developer API (AI Studio). Free tier: synthetic test data only."""
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(
+        api_key=api_key, http_options=types.HttpOptions(timeout=int(timeout_s * 1000))
     )
     models: _AsyncModels = client.aio.models
     return models

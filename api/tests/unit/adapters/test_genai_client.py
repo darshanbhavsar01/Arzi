@@ -9,9 +9,9 @@ from google.genai import errors
 from pydantic import BaseModel
 
 from arzi.adapters.genai_client import (
+    GeminiLlmClient,
     RecordingLlmClient,
     ReplayLlmClient,
-    VertexLlmClient,
     cache_key,
 )
 from arzi.services.ports import FilePart, LlmRequest, LlmUnavailableError
@@ -57,13 +57,13 @@ class ScriptedModels:
         return outcome
 
 
-def _client(models: ScriptedModels, *, retries: int = 2) -> tuple[VertexLlmClient, list[float]]:
+def _client(models: ScriptedModels, *, retries: int = 2) -> tuple[GeminiLlmClient, list[float]]:
     sleeps: list[float] = []
 
     async def fake_sleep(seconds: float) -> None:
         sleeps.append(seconds)
 
-    return VertexLlmClient(models, timeout_s=0.05, max_retries=retries, sleep=fake_sleep), sleeps
+    return GeminiLlmClient(models, timeout_s=0.05, max_retries=retries, sleep=fake_sleep), sleeps
 
 
 def _api_error(code: int) -> errors.APIError:
@@ -87,6 +87,14 @@ async def test_structured_output_and_usage() -> None:
     assert config.temperature == 0.1
     assert config.thinking_config.thinking_budget == 0
     assert models.calls[0]["model"] == "flash-model"
+
+
+async def test_ai_studio_gets_gcs_files_inline() -> None:
+    models = ScriptedModels(_response())
+    client = GeminiLlmClient(models, timeout_s=1, max_retries=0, gcs_uris=False)
+    part = FilePart(data=b"%PDF-", mime_type="application/pdf", sha256="x", uri="gs://bucket/doc")
+    await client.generate_structured(_request(files=(part,)))
+    assert models.calls[0]["contents"][0].inline_data.data == b"%PDF-"
 
 
 async def test_parsed_instance_is_used_directly_and_gcs_files_go_by_uri() -> None:

@@ -8,7 +8,7 @@ from arzi.adapters.gcs import GcsBlobStore
 from arzi.adapters.genai_client import RecordingLlmClient, ReplayLlmClient
 from arzi.adapters.memory import InMemoryCostLedger
 from arzi.bootstrap import ConfigurationError, build_llm, build_services, utc_now
-from arzi.config import AuthMode, LlmMode, Settings
+from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
 from arzi.services.cost_ledger import BudgetedLlmClient
 
 
@@ -81,6 +81,41 @@ def test_llm_mode_selects_the_client(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert isinstance(build_llm(live, ledger, utc_now), BudgetedLlmClient)
     recording = live.model_copy(update={"llm_record_dir": tmp_path})
     assert isinstance(build_llm(recording, ledger, utc_now), RecordingLlmClient)
+
+
+def test_ai_studio_is_free_local_and_needs_a_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    import arzi.bootstrap
+
+    seen: dict[str, Any] = {}
+
+    def fake_models(api_key: str, timeout_s: float) -> object:
+        seen["key"] = api_key
+        return object()
+
+    monkeypatch.setattr(arzi.bootstrap, "ai_studio_models", fake_models)
+    base = {
+        "llm_mode": LlmMode.LIVE,
+        "llm_provider": LlmProvider.AI_STUDIO,
+        "model_flash": "flash-x",
+    }
+    ledger = InMemoryCostLedger()
+    with pytest.raises(ConfigurationError, match="ARZI_GEMINI_API_KEY"):
+        build_llm(_settings(**base), ledger, utc_now)
+    with pytest.raises(ConfigurationError, match="synthetic data only"):
+        build_llm(_settings(**base, env=Environment.CLOUD, gemini_api_key="k"), ledger, utc_now)
+
+    client = build_llm(_settings(**base, gemini_api_key="k"), ledger, utc_now)
+    assert isinstance(client, BudgetedLlmClient)
+    assert seen["key"] == "k"
+    assert client._prices["flash-x"].input_inr_per_1m == 0  # free tier
+    assert client._inner._gcs_uris is False  # type: ignore[attr-defined]  # files go inline
+
+
+def test_vertex_needs_a_project() -> None:
+    with pytest.raises(ConfigurationError, match="GOOGLE_CLOUD_PROJECT"):
+        build_llm(
+            _settings(llm_mode=LlmMode.LIVE, model_flash="flash-x"), InMemoryCostLedger(), utc_now
+        )
 
 
 def test_only_demo_auth_until_phase_7() -> None:

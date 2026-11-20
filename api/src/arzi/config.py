@@ -24,6 +24,15 @@ class LlmMode(StrEnum):
     FAKE = "fake"
 
 
+class LlmProvider(StrEnum):
+    """Where live Gemini calls go. ``ai_studio`` (Gemini Developer API, free tier) is for local
+    testing with synthetic documents only: free-tier prompts may be used to improve Google's
+    products, so it is refused in the cloud environment."""
+
+    VERTEX = "vertex"
+    AI_STUDIO = "ai_studio"
+
+
 class AuthMode(StrEnum):
     DEMO = "demo"
     FIREBASE = "firebase"
@@ -50,6 +59,11 @@ class Settings(BaseSettings):
     model_live: str | None = None
 
     llm_mode: LlmMode = LlmMode.REPLAY
+    llm_provider: LlmProvider = LlmProvider.VERTEX
+    gemini_api_key: SecretStr | None = Field(
+        default=None, validation_alias=AliasChoices("ARZI_GEMINI_API_KEY", "GEMINI_API_KEY")
+    )
+    """AI Studio key, read from the environment or a git-ignored ``.env.local``; never committed."""
     auth_mode: AuthMode = AuthMode.DEMO
 
     daily_budget_inr: int = Field(default=150, ge=0)
