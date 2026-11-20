@@ -11,6 +11,7 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Any
 
 from arzi.adapters.auth import DemoAuthVerifier
 from arzi.adapters.fixture_llm import FixtureLlmClient
@@ -22,15 +23,23 @@ from arzi.adapters.genai_client import (
     vertex_models,
 )
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
+from arzi.adapters.tts import (
+    BudgetedSpeech,
+    GeminiSpeech,
+    RecordingSpeech,
+    ReplaySpeech,
+    SilentSpeech,
+)
 from arzi.agents.nodes import ModelSettings
 from arzi.agents.pipeline import AdkAuditPipeline, run_reasoning
 from arzi.agents.stubs import FakeLlmClient
 from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
 from arzi.services.appeal import AppealService
 from arzi.services.claims import ClaimService
-from arzi.services.cost_ledger import BudgetedLlmClient, ModelPrice, parse_price_table
+from arzi.services.cost_ledger import BudgetedLlmClient, ModelPrice, PriceTable, parse_price_table
 from arzi.services.demo import DemoService
 from arzi.services.extraction import ExtractionService
+from arzi.services.family import FamilyService
 from arzi.services.pipeline import AuditStep, ExtractStep, ReconcileStep, RedactStep
 from arzi.services.ports import (
     AuthVerifier,
@@ -38,8 +47,10 @@ from arzi.services.ports import (
     ClaimRepository,
     CostLedgerStore,
     LlmClient,
+    SpeechClient,
     StoredDocument,
 )
+from arzi.services.public_check import DailyLimiter, PublicCheckService
 from arzi.services.redaction import Redactor
 from arzi.services.runs import RunService
 
@@ -59,6 +70,8 @@ class Services:
     runs: RunService
     appeals: AppealService
     demo: DemoService
+    family: FamilyService
+    public_check: PublicCheckService
     clock: Callable[[], dt.datetime]
 
 
@@ -70,15 +83,9 @@ def new_id() -> str:
     return uuid.uuid4().hex[:12]
 
 
-def build_llm(
-    settings: Settings, ledger: CostLedgerStore, clock: Callable[[], dt.datetime]
-) -> LlmClient:
-    if settings.llm_mode is LlmMode.REPLAY:
-        return ReplayLlmClient(settings.replay_dir, delay_s=settings.replay_delay_ms / 1000)
-    if settings.llm_mode is LlmMode.FAKE:
-        return FakeLlmClient(FixtureLlmClient(settings.replay_dir))
-    if not settings.model_flash:
-        raise ConfigurationError("live mode needs ARZI_MODEL_FLASH")
+def _live_models(settings: Settings, model: str) -> tuple[Any, bool, PriceTable]:
+    """The live Gemini models API (Vertex AI, or AI Studio for local testing), whether it can
+    read gs:// URIs, and the price table (free-tier models priced at zero)."""
     prices = parse_price_table(settings.price_table_json)
     if settings.llm_provider is LlmProvider.AI_STUDIO:
         if settings.env is Environment.CLOUD:
@@ -90,17 +97,60 @@ def build_llm(
         )
         # The free tier costs nothing; the guard still counts calls and tokens.
         prices.setdefault(
-            settings.model_flash,
-            ModelPrice(input_inr_per_1m=Decimal(0), output_inr_per_1m=Decimal(0)),
+            model, ModelPrice(input_inr_per_1m=Decimal(0), output_inr_per_1m=Decimal(0))
         )
-        gcs_uris = False
-    else:
-        if not settings.google_cloud_project:
-            raise ConfigurationError("Vertex AI needs GOOGLE_CLOUD_PROJECT")
-        models = vertex_models(
-            settings.google_cloud_project, settings.vertex_location, settings.llm_timeout_s
+        return models, False, prices
+    if not settings.google_cloud_project:
+        raise ConfigurationError("Vertex AI needs GOOGLE_CLOUD_PROJECT")
+    models = vertex_models(
+        settings.google_cloud_project, settings.vertex_location, settings.llm_timeout_s
+    )
+    return models, True, prices
+
+
+def build_speech(
+    settings: Settings, ledger: CostLedgerStore, clock: Callable[[], dt.datetime]
+) -> SpeechClient:
+    """Narration for the family page: recorded (replay), silence (fake) or Gemini TTS (live)."""
+    if settings.llm_mode is LlmMode.REPLAY:
+        return ReplaySpeech(settings.replay_dir, voice=settings.tts_voice)
+    if settings.llm_mode is LlmMode.FAKE:
+        return SilentSpeech()
+    if not settings.model_tts:
+        raise ConfigurationError("live mode needs ARZI_MODEL_TTS for narration")
+    models, _, prices = _live_models(settings, settings.model_tts)
+    gemini = GeminiSpeech(
+        models,
+        model=settings.model_tts,
+        voice=settings.tts_voice,
+        timeout_s=settings.llm_timeout_s,
+        max_retries=settings.llm_max_retries,
+    )
+    speech: SpeechClient = BudgetedSpeech(
+        gemini,
+        ledger,
+        prices,
+        model=settings.model_tts,
+        daily_cap_inr=settings.daily_budget_inr,
+        clock=clock,
+    )
+    if settings.llm_record_dir is not None:
+        return RecordingSpeech(
+            speech, settings.llm_record_dir.parent / "audio_cache", voice=settings.tts_voice
         )
-        gcs_uris = True
+    return speech
+
+
+def build_llm(
+    settings: Settings, ledger: CostLedgerStore, clock: Callable[[], dt.datetime]
+) -> LlmClient:
+    if settings.llm_mode is LlmMode.REPLAY:
+        return ReplayLlmClient(settings.replay_dir, delay_s=settings.replay_delay_ms / 1000)
+    if settings.llm_mode is LlmMode.FAKE:
+        return FakeLlmClient(FixtureLlmClient(settings.replay_dir))
+    if not settings.model_flash:
+        raise ConfigurationError("live mode needs ARZI_MODEL_FLASH")
+    models, gcs_uris, prices = _live_models(settings, settings.model_flash)
     gemini = GeminiLlmClient(
         models,
         timeout_s=settings.llm_timeout_s,
@@ -142,6 +192,7 @@ def build_services(
     blobs: BlobStore | None = None,
     ledger: CostLedgerStore | None = None,
     llm: LlmClient | None = None,
+    speech: SpeechClient | None = None,
     clock: Callable[[], dt.datetime] = utc_now,
     id_factory: Callable[[], str] = new_id,
 ) -> Services:
@@ -152,6 +203,7 @@ def build_services(
         default_repo, default_blobs, default_ledger = _storage(settings)
         repo, blobs, ledger = repo or default_repo, blobs or default_blobs, ledger or default_ledger
     llm = llm or build_llm(settings, ledger, clock)
+    speech = speech or build_speech(settings, ledger, clock)
     store = blobs
 
     async def load(document: StoredDocument) -> bytes:
@@ -184,6 +236,18 @@ def build_services(
         max_pages=settings.max_pages,
     )
     runs = RunService(repo, pipeline, clock=clock, new_id=id_factory)
+    appeals = AppealService(repo, models, clock=clock, reason=run_reasoning)
+    family = FamilyService(
+        repo,
+        blobs,
+        appeals,
+        speech,
+        models,
+        clock=clock,
+        reason=run_reasoning,
+        share_days=settings.share_link_days,
+        desk_contact=settings.desk_contact,
+    )
     return Services(
         repo=repo,
         blobs=blobs,
@@ -192,7 +256,20 @@ def build_services(
         auth=DemoAuthVerifier(),
         claims=claims,
         runs=runs,
-        appeals=AppealService(repo, models, clock=clock, reason=run_reasoning),
+        appeals=appeals,
         demo=DemoService(claims, runs, settings.replay_dir, enabled=settings.demo_cases_enabled),
+        family=family,
+        public_check=PublicCheckService(
+            claims,
+            runs,
+            family,
+            DailyLimiter(
+                settings.pseudonym_salt.get_secret_value().encode(),
+                per_key=settings.public_checks_per_ip_per_day,
+                total=settings.public_checks_per_day,
+                clock=clock,
+            ),
+            tenant_id=settings.public_tenant_id,
+        ),
         clock=clock,
     )

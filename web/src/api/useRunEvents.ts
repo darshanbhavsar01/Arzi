@@ -57,14 +57,15 @@ export function runStreamReducer(stream: RunStream, action: Action): RunStream {
   }
 }
 
-export function useRunEvents(claimId: string, runId: string | null): RunStream {
+/** ``url`` overrides the desk stream, e.g. a family link following its free check. */
+export function useRunEvents(claimId: string, runId: string | null, url?: string): RunStream {
   const [stream, dispatch] = useReducer(runStreamReducer, initial);
   const client = useQueryClient();
 
   useEffect(() => {
     if (!runId) return;
     dispatch({ type: 'reset' });
-    const source = new EventSource(`/api/v1/claims/${claimId}/runs/${runId}/events`);
+    const source = new EventSource(url ?? `/api/v1/claims/${claimId}/runs/${runId}/events`);
     source.onopen = () => {
       dispatch({ type: 'open' });
     };
@@ -93,7 +94,7 @@ export function useRunEvents(claimId: string, runId: string | null): RunStream {
     return () => {
       source.close();
     };
-  }, [claimId, runId, client]);
+  }, [claimId, runId, url, client]);
 
   return stream;
 }

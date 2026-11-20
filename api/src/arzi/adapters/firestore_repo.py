@@ -9,6 +9,7 @@ Layout (``docs/BUILD_PLAN.md`` §3.1)::
     hospitals/{hid}/claims/{cid}/events/{eid}        append-only audit log
     hospitals/{hid}/claims/{cid}/restricted/identity pseudonym → original identifiers
     hospitals/{hid}/claims/{cid}/appeals/{version}   AppealVersion (immutable content)
+    share_tokens/{sha256(token)}                     ShareLink (the token itself is never stored)
     cost_ledger/{yyyy-mm-dd}                         daily cost and token totals
 
 Concurrency: a claim write compares the stored ``revision`` and then writes with a
@@ -19,7 +20,14 @@ import datetime as dt
 from typing import Any
 
 from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AppealVersion, AuditRun, ClaimRecord, Hospital, LlmCall
+from arzi.domain.models import (
+    AppealVersion,
+    AuditRun,
+    ClaimRecord,
+    Hospital,
+    LlmCall,
+    ShareLink,
+)
 from arzi.services.ports import AuditLogEntry, ClaimPage, ConcurrentUpdateError, StoredDocument
 
 # The Firestore SDK is only partly typed; values crossing this boundary are plain dicts.
@@ -189,6 +197,25 @@ class FirestoreClaimRepository:
     async def list_appeals(self, hospital_id: str, claim_id: str) -> list[AppealVersion]:
         q = self._claim(hospital_id, claim_id).collection("appeals").order_by("version")
         return [AppealVersion.model_validate(s.to_dict()) async for s in q.stream()]
+
+    async def save_share(self, share: ShareLink) -> None:
+        ref = self._db.collection("share_tokens").document(share.token_sha256)
+        await ref.set(share.model_dump(mode="json"))
+
+    async def get_share(self, token_sha256: str) -> ShareLink | None:
+        snap = await self._db.collection("share_tokens").document(token_sha256).get()
+        return ShareLink.model_validate(snap.to_dict()) if snap.exists else None
+
+    async def list_shares(self, hospital_id: str, claim_id: str) -> list[ShareLink]:
+        from google.cloud.firestore_v1.base_query import FieldFilter
+
+        q = (
+            self._db.collection("share_tokens")
+            .where(filter=FieldFilter("hospital_id", "==", hospital_id))
+            .where(filter=FieldFilter("claim_id", "==", claim_id))
+        )
+        found = [ShareLink.model_validate(s.to_dict()) async for s in q.stream()]
+        return sorted(found, key=lambda s: s.created_at)
 
     async def seed_hospital(self, hospital_id: str, hospital: Hospital) -> None:
         await (

@@ -34,6 +34,24 @@ class FlagNotFoundError(AppError):
     status, slug, detail = 404, "flag-not-found", "No such flag in this claim's audit."
 
 
+class ShareLinkInvalidError(AppError):
+    """One answer for unknown, expired and withdrawn links, so tokens cannot be probed."""
+
+    status, slug, detail = (
+        404,
+        "share-link-invalid",
+        "This link has expired or was withdrawn. Ask the hospital desk for a new one.",
+    )
+
+
+class RateLimitedError(AppError):
+    status, slug, detail = (
+        429,
+        "rate-limited",
+        "Too many checks from this connection today. Please try again tomorrow.",
+    )
+
+
 class DemoUnavailableError(AppError):
     status, slug, detail = (
         404,

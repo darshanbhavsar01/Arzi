@@ -16,6 +16,8 @@ const WorkspacePage = lazy(() => import('@/features/claims/workspace/WorkspacePa
 const AppealEditorPage = lazy(() => import('@/features/appeal/AppealEditorPage'));
 const AppealsPage = lazy(() => import('@/features/appeal/AppealsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage'));
+const FamilyPage = lazy(() => import('@/features/family/FamilyPage'));
+const CheckPage = lazy(() => import('@/features/family/CheckPage'));
 
 function PageFallback() {
   return (
@@ -74,6 +76,9 @@ function NotFound() {
 
 export const router = createBrowserRouter([
   { path: '/sign-in', element: page(<SignInPage />), errorElement: <RouteError /> },
+  // Public: the family's page (by link token) and the free check. No desk session.
+  { path: '/f/:token', element: page(<FamilyPage />), errorElement: <RouteError /> },
+  { path: '/check', element: page(<CheckPage />), errorElement: <RouteError /> },
   {
     path: '/',
     element: (

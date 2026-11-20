@@ -7,6 +7,7 @@ import { RedactionBadge, StatusPill } from '@/components/domain';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/primitives';
 import { formatDate } from '@/lib/format';
+import { ShareDialog } from '@/features/claims/workspace/ShareDialog';
 import { MODE } from '@/lib/labels';
 
 export function canAppeal(claim: ClaimRecord): boolean {
@@ -70,6 +71,7 @@ export function WorkspaceHeader({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        {claim.audit ? <ShareDialog claimId={claim.claim_id} /> : null}
         {rerunnable ? (
           <Button variant="secondary" onClick={onRerun} loading={rerunning}>
             {rerunning ? null : <RotateCw aria-hidden />}

@@ -456,6 +456,216 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/claims/{claim_id}/family": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Prepare Family
+         * @description Write (once) the family explanation in Gujarati, Hindi and English, and narrate it.
+         */
+        post: operations["prepare_family_api_v1_claims__claim_id__family_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Shares */
+        get: operations["list_shares_api_v1_claims__claim_id__shares_get"];
+        put?: never;
+        /**
+         * Create Share
+         * @description A 7-day family link. The token appears only in this response; Arzi keeps its hash.
+         */
+        post: operations["create_share_api_v1_claims__claim_id__shares_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/shares/{token_sha256}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Share */
+        post: operations["revoke_share_api_v1_claims__claim_id__shares__token_sha256__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Family View */
+        get: operations["family_view_api_v1_family__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Family Prepare
+         * @description For the free check: write the explanation once its audit has finished.
+         */
+        post: operations["family_prepare_api_v1_family__token__prepare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}/audio/{lang}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Family Audio */
+        get: operations["family_audio_api_v1_family__token__audio__lang__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Family Events
+         * @description Progress of the free check's audit (same events as the desk).
+         */
+        get: operations["family_events_api_v1_family__token__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}/appeal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Appeal Latest */
+        get: operations["public_appeal_latest_api_v1_family__token__appeal_get"];
+        put?: never;
+        /**
+         * Public Appeal
+         * @description Free check only: a draft appeal to the insurer's grievance officer, for review.
+         */
+        post: operations["public_appeal_api_v1_family__token__appeal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}/appeal/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Public Appeal Sign
+         * @description The policyholder or their family reviews and signs; the SHA-256 is stored as for the desk.
+         */
+        post: operations["public_appeal_sign_api_v1_family__token__appeal_sign_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/family/{token}/appeal.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public Appeal Pdf */
+        get: operations["public_appeal_pdf_api_v1_family__token__appeal_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Check
+         * @description Upload, audit and get a private link to the result (a 7-day family view).
+         */
+        post: operations["start_check_api_v1_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -727,6 +937,44 @@ export interface components {
              */
             confirmed_by_human: boolean;
         };
+        /** Body_start_check_api_v1_check_post */
+        Body_start_check_api_v1_check_post: {
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "post_deduction" | "post_rejection";
+            /**
+             * Consent
+             * @description Consent to process these documents
+             */
+            consent: boolean;
+            /**
+             * Letter
+             * @description The insurer's letter
+             */
+            letter: string;
+            /**
+             * Bill
+             * @description The final itemised hospital bill
+             */
+            bill: string;
+            /**
+             * Policy
+             * @description Policy schedule and/or wording
+             */
+            policy: string[];
+            /**
+             * Discharge
+             * @description Discharge summary
+             */
+            discharge?: string | null;
+            /**
+             * Given By
+             * @default policyholder
+             */
+            given_by: string;
+        };
         /** Body_upload_document_api_v1_claims__claim_id__documents_post */
         Body_upload_document_api_v1_claims__claim_id__documents_post: {
             /**
@@ -760,6 +1008,13 @@ export interface components {
             latency_ms: number;
             /** Detail */
             detail?: string | null;
+        };
+        /** CheckStarted */
+        CheckStarted: {
+            /** Url Path */
+            url_path: string;
+            /** Run Id */
+            run_id: string;
         };
         /**
          * CheckState
@@ -883,6 +1138,7 @@ export interface components {
              * @default []
              */
             flag_reviews: components["schemas"]["FlagReview"][];
+            family?: components["schemas"]["FamilyPack"] | null;
             /**
              * Runs
              * @default []
@@ -1038,6 +1294,160 @@ export interface components {
         DraftAppeal: {
             forum: components["schemas"]["AppealForum"];
             gro_complaint?: components["schemas"]["GroComplaint"] | null;
+        };
+        /** FamilyAppealOut */
+        FamilyAppealOut: {
+            forum: components["schemas"]["AppealForum"];
+            status: components["schemas"]["AppealStatus"];
+            /** Version */
+            version: number;
+            /** Signed By */
+            signed_by: string | null;
+            /** Content Sha256 */
+            content_sha256: string | null;
+        };
+        /**
+         * FamilyAudio
+         * @description A narrated explanation, synthesised once per language.
+         */
+        FamilyAudio: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "en" | "hi" | "gu";
+            /** Uri */
+            uri: string;
+            /**
+             * Content Type
+             * @enum {string}
+             */
+            content_type: "audio/mpeg" | "audio/wav";
+            /** Seconds */
+            seconds: number;
+            /** Model */
+            model: string;
+            /**
+             * Adapter
+             * @enum {string}
+             */
+            adapter: "gemini_tts" | "replay" | "fake";
+            /** Text Sha256 */
+            text_sha256: string;
+        };
+        /** FamilyAudioOut */
+        FamilyAudioOut: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "en" | "hi" | "gu";
+            /** Seconds */
+            seconds: number;
+            /** Url */
+            url: string;
+        };
+        /**
+         * FamilyExplanation
+         * @description What happened, why and what to do next, for the patient's family, in one language.
+         *     Amounts are engine placeholders, as everywhere else.
+         */
+        FamilyExplanation: {
+            /**
+             * Lang
+             * @enum {string}
+             */
+            lang: "en" | "hi" | "gu";
+            status: components["schemas"]["ReasoningStatus"];
+            /** Prompt Ref */
+            prompt_ref?: string | null;
+            /**
+             * Violations
+             * @default []
+             */
+            violations: string[];
+            headline: components["schemas"]["Prose"];
+            /**
+             * What Happened
+             * @default []
+             */
+            what_happened: components["schemas"]["Prose"][];
+            /**
+             * Why
+             * @default []
+             */
+            why: components["schemas"]["Prose"][];
+            /**
+             * Next Steps
+             * @default []
+             */
+            next_steps: components["schemas"]["Prose"][];
+            reassurance: components["schemas"]["Prose"];
+        };
+        /** FamilyFigure */
+        FamilyFigure: {
+            /**
+             * Key
+             * @enum {string}
+             */
+            key: "billed" | "payable" | "at_risk" | "recoverable";
+            /** Amount */
+            amount: number;
+        };
+        /** FamilyPack */
+        FamilyPack: {
+            /**
+             * Explanations
+             * @default []
+             */
+            explanations: components["schemas"]["FamilyExplanation"][];
+            /**
+             * Audio
+             * @default []
+             */
+            audio: components["schemas"]["FamilyAudio"][];
+            /** Generated At */
+            generated_at?: string | null;
+        };
+        /**
+         * FamilyView
+         * @description Everything the family page shows. No names, numbers or document text.
+         */
+        FamilyView: {
+            /**
+             * Purpose
+             * @enum {string}
+             */
+            purpose: "family" | "public_check";
+            /** Hospital Name */
+            hospital_name: string;
+            /** Hospital City */
+            hospital_city: string;
+            /** Desk Contact */
+            desk_contact: string;
+            mode: components["schemas"]["ClaimMode"];
+            /** Status */
+            status: string;
+            /** Procedure */
+            procedure: string;
+            /** Admitted On */
+            admitted_on: string | null;
+            /** Discharged On */
+            discharged_on: string | null;
+            /** Figures */
+            figures: components["schemas"]["FamilyFigure"][];
+            /** Explanations */
+            explanations: components["schemas"]["FamilyExplanation"][];
+            /** Audio */
+            audio: components["schemas"]["FamilyAudioOut"][];
+            appeal: components["schemas"]["FamilyAppealOut"] | null;
+            /** Can Draft Appeal */
+            can_draft_appeal: boolean;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
         };
         /**
          * FixCode
@@ -1537,6 +1947,16 @@ export interface components {
             /** Text */
             text?: string | null;
         };
+        /** PublicSign */
+        PublicSign: {
+            /** Name */
+            name: string;
+            /**
+             * Declaration
+             * @constant
+             */
+            declaration: true;
+        };
         /** ReadinessReport */
         ReadinessReport: {
             /** Ready */
@@ -1648,6 +2068,44 @@ export interface components {
          * @enum {string}
          */
         Severity: "info" | "low" | "medium" | "high" | "critical";
+        /** ShareCreated */
+        ShareCreated: {
+            /** Url Path */
+            url_path: string;
+            share: components["schemas"]["ShareLink"];
+        };
+        /**
+         * ShareLink
+         * @description A family link. Only the SHA-256 of the token is stored; the token is shown once.
+         */
+        ShareLink: {
+            /** Token Sha256 */
+            token_sha256: string;
+            /** Hospital Id */
+            hospital_id: string;
+            /** Claim Id */
+            claim_id: string;
+            /**
+             * Purpose
+             * @default family
+             * @enum {string}
+             */
+            purpose: "family" | "public_check";
+            /** Created By */
+            created_by: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Revoked At */
+            revoked_at?: string | null;
+        };
         /** SignRequest */
         SignRequest: {
             /** Reviewer Name */
@@ -2737,6 +3195,428 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DemoClaim"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_family_api_v1_claims__claim_id__family_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyPack"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_shares_api_v1_claims__claim_id__shares_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLink"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_share_api_v1_claims__claim_id__shares_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    revoke_share_api_v1_claims__claim_id__shares__token_sha256__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+                token_sha256: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareLink"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    family_view_api_v1_family__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    family_prepare_api_v1_family__token__prepare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FamilyView"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    family_audio_api_v1_family__token__audio__lang__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+                lang: "en" | "hi" | "gu";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "audio/mpeg": unknown;
+                    "audio/wav": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    family_events_api_v1_family__token__events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "last-event-id"?: number | null;
+            };
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_appeal_latest_api_v1_family__token__appeal_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_appeal_api_v1_family__token__appeal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_appeal_sign_api_v1_family__token__appeal_sign_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicSign"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppealVersion"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    public_appeal_pdf_api_v1_family__token__appeal_pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_check_api_v1_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_start_check_api_v1_check_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckStarted"];
                 };
             };
             /** @description Validation Error */

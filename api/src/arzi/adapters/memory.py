@@ -7,9 +7,21 @@ tenant boundary and optimistic concurrency, so behaviour seen locally is behavio
 import datetime as dt
 from collections import defaultdict
 
-from arzi.adapters.demo_seed import DEMO_HOSPITAL, DEMO_HOSPITAL_ID
+from arzi.adapters.demo_seed import (
+    DEMO_HOSPITAL,
+    DEMO_HOSPITAL_ID,
+    PUBLIC_HOSPITAL,
+    PUBLIC_HOSPITAL_ID,
+)
 from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AppealVersion, AuditRun, ClaimRecord, Hospital, LlmCall
+from arzi.domain.models import (
+    AppealVersion,
+    AuditRun,
+    ClaimRecord,
+    Hospital,
+    LlmCall,
+    ShareLink,
+)
 from arzi.services.ports import AuditLogEntry, ClaimPage, ConcurrentUpdateError, StoredDocument
 
 
@@ -24,13 +36,18 @@ def _sort_key(record: ClaimRecord) -> tuple[str, str]:
 
 class InMemoryClaimRepository:
     def __init__(self, hospitals: dict[str, Hospital] | None = None) -> None:
-        self._hospitals = hospitals if hospitals is not None else {DEMO_HOSPITAL_ID: DEMO_HOSPITAL}
+        self._hospitals = (
+            hospitals
+            if hospitals is not None
+            else {DEMO_HOSPITAL_ID: DEMO_HOSPITAL, PUBLIC_HOSPITAL_ID: PUBLIC_HOSPITAL}
+        )
         self._claims: dict[tuple[str, str], ClaimRecord] = {}
         self._documents: dict[tuple[str, str], list[StoredDocument]] = defaultdict(list)
         self._runs: dict[tuple[str, str, str], AuditRun] = {}
         self._log: dict[tuple[str, str], list[AuditLogEntry]] = defaultdict(list)
         self.vaults: dict[tuple[str, str], dict[str, str]] = {}
         self._appeals: dict[tuple[str, str, int], AppealVersion] = {}
+        self._shares: dict[str, ShareLink] = {}
 
     async def get_hospital(self, hospital_id: str) -> Hospital | None:
         return self._hospitals.get(hospital_id)
@@ -138,6 +155,20 @@ class InMemoryClaimRepository:
     async def list_appeals(self, hospital_id: str, claim_id: str) -> list[AppealVersion]:
         found = [a for (h, c, _), a in self._appeals.items() if (h, c) == (hospital_id, claim_id)]
         return sorted(found, key=lambda a: a.version)
+
+    async def save_share(self, share: ShareLink) -> None:
+        self._shares[share.token_sha256] = share
+
+    async def get_share(self, token_sha256: str) -> ShareLink | None:
+        return self._shares.get(token_sha256)
+
+    async def list_shares(self, hospital_id: str, claim_id: str) -> list[ShareLink]:
+        found = [
+            s
+            for s in self._shares.values()
+            if (s.hospital_id, s.claim_id) == (hospital_id, claim_id)
+        ]
+        return sorted(found, key=lambda s: s.created_at)
 
 
 class InMemoryBlobStore:
