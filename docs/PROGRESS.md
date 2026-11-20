@@ -7,7 +7,7 @@
 | 1 | done | 2026-11-20 | Paise money, claim models, state machine, 12-rule engine with trace, citation whitelist, matcher, CLI; goldens A/B/C exact. |
 | 2 | done | 2026-11-20 | Generator for 3 cases: 20 PDFs + scanned JPG, facts/expected/identifiers JSON, README; byte-stable. |
 | 3 | done | 2026-11-20 | Upload → SSE-streamed audit → persisted claim; live (Vertex AI; AI Studio for testing) / replay / fake LLM modes; redaction; reconcile; cost ledger + budget guard; Firestore/GCS adapters. Recorded A, B, C replay. |
-| 4 | not started | | ADK agents, guardrails, appeals |
+| 4 | done | 2026-11-20 | ADK Workflow audit (policy interpreter + flag explainer as guarded LlmAgents), citation whitelist + amount guard, forum-specific AppealDrafter, versioned review/sign with SHA-256, signed PDF export, forum checklist. Recorded A, B, C replay. |
 | 5 | not started | | Desk web app |
 | 6 | not started | | Family experience |
 | 7 | not started | | Production hardening |
@@ -47,6 +47,17 @@
 | Replay reproduces it offline | pass: `record_demo.py case_a case_b case_c --replay`, plus an API integration test in replay mode for all three cases |
 | Cost per claim for case A recorded here | ₹0 on the AI Studio free tier. Tokens: 8,765 input / 2,807 output over 10 calls, about ₹3.1 at the Vertex AI standard rate (₹135/₹675 per 1M, assumed ₹90/USD) and about ₹1.5 at today's introductory rate. See Measured numbers |
 | Coverage ≥ 85% | pass: 99% (513 API tests); rules gate still 100% |
+
+### Phase 4 gate
+| Check | Result |
+|---|---|
+| Case B produces a GRO appeal whose disputed items, citations and relief equal `expected.json` | pass: items `SUBSUMED_ITEM` ₹900 and `PROP_WRONGLY_APPLIED` ₹19,237.50 (the engine's appealable disputes, in order), each carrying its `expected.json` citations, relief ₹20,137.50. Checked in fake mode and on the recorded Gemini draft (`test_recorded_gemini_responses_replay_to_expected_values`, `record_demo.py --replay`) |
+| Case C produces an appeal citing `IRDAI_PED_36M` | pass: one item `WAITING_REJECTION_INVALID` ₹3,10,000 citing `IRDAI_PED_36M` and `policy:5.1` |
+| Guardrail tests pass | pass: 44 guardrail tests, 24 of them adversarial rejections (₹/Rs./INR/rupees/"/-", lakh and crore, comma-grouped figures, Hindi and Gujarati words and native digits, currency before a placeholder, invented circular code and "circular no.", unknown clause, paragraph numbers, unknown placeholders, citation whitelist), plus retry, needs-review and unavailable paths under ADK |
+| Export is impossible before signing (API test) | pass: 409 `appeal-not-signed` for draft and in-review versions; edits after signing make a new unsigned version |
+| Signed PDF opens and shows the hash | pass: pypdfium2 opens it and finds `Content SHA-256: <hash>` and the reviewer line on every page; rendered pages reviewed for cases B (2 pages) and C; identical bytes on re-export |
+| Recorded responses in `llm_cache`; replay demos all three cases | pass: `record_demo.py case_a case_b case_c --replay` exits 0 offline; every agent step and both appeals `passed` |
+| `make check` green | pass (recipes run directly): 607 API tests, 99.15% coverage; rules gate 100% (153 tests); ruff, mypy strict, ESLint, Prettier, tsc, Vitest |
 
 ## Decisions
 - 2026-11-20 — Record architecture decisions as ADRs (ADR-0001).
@@ -169,6 +180,42 @@
   responses, so a rerun after a quota error costs only what is still missing.
 - 2026-11-20 — Case C in post-rejection mode relies on the statutory 36-month cap even when the
   rejected condition does not match a declared PED (`min(policy waiting or 36, 36)`).
+- 2026-11-20 — The audit is an ADK 2.15 `Workflow` (`SequentialAgent` is deprecated in 2.x), run
+  in-process with an in-memory session per run; `LlmAgent`s use a `BaseLlm` bridge over the
+  `LlmClient` port so replay, fake, budget guard and cost ledger are unchanged (ADR-0004).
+  `google-genai` moved from 3.6 to 2.34 because ADK requires `<3`.
+- 2026-11-20 — Reasoning steps never carry the money and never block the audit: a model outage,
+  replay miss or budget stop leaves the step `unavailable` and the run still completes. One retry
+  with the validator's feedback, then `needs_review` (draft kept, unrenderable text hidden).
+- 2026-11-20 — Placeholders, the amount guard and the citation whitelist apply to every model- and
+  person-written sentence; prose is stored as `{template, text}` so line corrections re-render
+  without a model call (ADR-0005). Rendering also turns ref IDs into readable labels.
+- 2026-11-20 — The PolicyInterpreter does not change the facts the engine uses; it is a second
+  reading. A clause that disagrees with extraction becomes a `policy_term_unconfirmed` issue,
+  confidence below 0.8 marks the term for confirmation.
+- 2026-11-20 — Agent inputs exclude claim IDs, timestamps and pseudonyms (which depend on the
+  deployment's key), so a recording replays for every run of a demo case.
+- 2026-11-20 — Appeals: disputed items are the engine's `dispute` flags that are appealable; their
+  amounts, the insurer's reason (fixed wording, never the letter's own text, which can quote
+  amounts) and the relief total are deterministic; the model writes subject, facts, one argument per
+  item and the relief sentence. Item citations are the engine's refs plus any whitelisted refs the
+  model added.
+- 2026-11-20 — Versions are immutable; only the latest can be edited, submitted or signed. Edits are
+  rejected (422) rather than retried when they break the guardrails. Only a draft whose prose passed
+  its checks and has text in every section can go to review.
+- 2026-11-20 — The SHA-256 covers the rendered letter content (claim, version, forum, subject,
+  facts, items, relief, enclosures). Identity fields come from the restricted vault only when the
+  PDF is printed and are not part of the hash; the export re-checks the hash before printing.
+- 2026-11-20 — `GET .../export.pdf` moves a signed appeal to `exported` on first call; later calls
+  reprint the same bytes. Idempotent, so a GET is acceptable; the audit log records one export.
+- 2026-11-20 — Forum eligibility is deterministic (`rules/forums.py`): GRO and Bima Bharosa are
+  always open; the Ombudsman needs a written complaint first, a rejection or unsatisfactory reply or
+  a month without one, filing within a year of that, and an amount in dispute up to ₹50 lakh. The
+  GRO window is shown as "about 15 days (verify)".
+- 2026-11-20 — Signed PDFs use reportlab with embedded IBM Plex fonts (OFL), not WeasyPrint, which
+  needs Pango and could not be built or tested on the development machine (ADR-0006).
+- 2026-11-20 — Reasoning agents default to a 1024-token thinking budget and an 8192-token output
+  cap: with the model's default budget the policy interpreter's JSON came back truncated.
 
 ## Model choices
 Checked 2026-11-20 with `make models` (listing only; first real call is in Phase 3). Rule: newest of
@@ -181,6 +228,11 @@ each tier, `asia-south1` if served there, otherwise `global`.
 
 ## Measured numbers (for the pitch)
 - Cost per claim (case A, live): 8,765 input + 2,807 output tokens over 10 Gemini calls; ₹0 on the AI Studio free tier, about ₹3.1 at the Vertex AI standard rate (₹1.5 at the introductory rate). Measured on free-tier Flash models; re-measure on Vertex `gemini-3.8-flash` before quoting it on stage.
+- Agents (recorded, free-tier models): policy reading about 1,320 in / 550-780 out tokens; flag
+  explanations 2,000-4,100 in / 140-1,000 out (+ up to 1,200 thinking); GRO appeal 2,200-3,000 in /
+  320-580 out (+ about 1,200 thinking). Case A audit including agents: 13,423 in / 4,133 out over
+  12 calls, about ₹4.6 at the Vertex AI standard rate (₹3.1 extraction + ₹1.5 agents); case B appeal
+  about ₹1.5. Re-measure on Vertex `gemini-3.8-flash`.
 - Eval: extraction field accuracy %, flags caught X/Y, ₹ exact-match %
 - Median audit time: s
 
@@ -224,6 +276,17 @@ each tier, `asia-south1` if served there, otherwise `global`.
   when GCS cannot sign URLs) and `GET /claims/{cid}/audit-log` beyond the plan's list.
 - Commits: one per rule family rather than one per rule, so every commit stays green under the
   100% rules coverage gate.
+- Phase 4: ADK `Workflow` instead of `SequentialAgent` (deprecated in ADK 2.x); the ADK fallback
+  was not needed. `reconcile` runs as its own node between `redact` and `interpret_policy`.
+- Phase 4: reportlab instead of WeasyPrint for the PDF (ADR-0006). Fonts for Hindi and Gujarati are
+  not embedded: appeals are in English, and reportlab cannot shape Indic scripts.
+- Phase 4: endpoints beyond the plan: `GET /claims/{cid}/appeals/forums` (checklist),
+  `GET /claims/{cid}/appeals` and `GET /claims/{cid}/appeals/{v}`. `PUT` returns 201 with the new
+  version. `POST /appeals` accepts `gro_complaint` for the Ombudsman checks.
+- Phase 4: recordings mix `gemini-3.6-flash`, `gemini-3.5-flash-lite` and `gemini-2.5-flash`
+  (free-tier quota; `gemini-3.8-flash` was rate-limited). Replay keys exclude the model.
+- Phase 4: fixed a regression from the SDK downgrade found while recording: google-genai 2.x closes
+  its transport when the `Client` is garbage-collected, so the factories now keep it alive.
 
 ## Follow-ups
 - Phase 3: models live in different locations (Flash/Pro/TTS global, Live asia-south1), but
@@ -265,6 +328,19 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 3: stale-run sweeper for runs left `running` by a dead instance (ADR-0003).
 - Phase 3: Firestore worklist search (`q`) scans a bounded window client-side; move to a search
   field or prefix index if volumes grow.
+- Phase 4: escalation after export (GRO letter exported, no reply → Ombudsman) needs a state
+  transition from `exported`; today an exported claim cannot be appealed again.
+- Phase 4: signing is open to any signed-in desk user who names a reviewer; restrict it to the
+  `reviewer` role with Firebase Auth (Phase 7).
+- Phase 4: give agents dates as "3 October 2026" rather than ISO (the recorded case B facts read
+  "2026-10-03"); needs a re-recording.
+- Phase 4: treat transport errors (httpx connect/read) as retryable `llm-network` in the Gemini
+  client; today only API errors and timeouts are retried.
+- Phase 4: map the Ombudsman office from the hospital's city; the letter says "jurisdiction to be
+  confirmed".
+- Phase 4: the GRO prompt lets the model say "within 15 days"; prefer "about 15 days" while
+  `INSURER_GRIEVANCE_15D` is `verify`.
+- Phase 4: re-record the agent and appeal responses on Vertex AI with the demo-day model.
 
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.

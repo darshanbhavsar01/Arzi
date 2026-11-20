@@ -28,7 +28,10 @@ Run `make help` for every target.
 FastAPI (Python 3.12) and a React + TypeScript single-page app, shipped as one container on
 Cloud Run in `asia-south1` (Mumbai), with Firestore and Cloud Storage in the same region and
 Gemini on Vertex AI. Rupee amounts come only from a deterministic rules engine; the model
-extracts, explains, cites and drafts.
+extracts, explains, cites and drafts. The audit is a Google ADK workflow (extract → redact →
+reconcile → policy interpreter → rules engine → flag explainer); every model-written sentence
+passes an amount guard and a citation whitelist, and appeals are exported only after a named
+reviewer signs them.
 
 - Architecture and the **Live vs roadmap** table: [`docs/architecture.md`](docs/architecture.md) (Phase 9)
 - Build plan and status: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md), [`docs/PROGRESS.md`](docs/PROGRESS.md)
