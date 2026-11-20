@@ -65,3 +65,11 @@ async def test_health_routes_take_precedence_over_the_spa(
         response = await client.get("/healthz")
 
     assert response.json()["status"] == "ok"
+
+
+async def test_health_alias_matches_healthz(client: httpx.AsyncClient) -> None:
+    alias = await client.get("/health")
+    original = await client.get("/healthz")
+
+    assert alias.status_code == 200
+    assert alias.json() == original.json()

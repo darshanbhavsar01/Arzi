@@ -23,6 +23,12 @@ class Liveness(BaseModel):
 
 
 @router.get("/healthz", summary="Liveness: the process is up")
+@router.get(
+    "/health",
+    summary="Liveness alias for external checks",
+    description="Same as /healthz. Google's front end reserves /healthz on *.run.app URLs and "
+    "answers it without reaching the container, so uptime checks from outside use this path.",
+)
 async def healthz(settings: SettingsDep) -> Liveness:
     """Deliberately dependency-free, so a slow database never restarts a healthy container."""
     return Liveness(build_sha=settings.build_sha)

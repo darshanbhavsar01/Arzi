@@ -42,5 +42,6 @@ run gcloud artifacts repositories set-cleanup-policies cloud-run-source-deploy \
 if ! is_dry_run; then
   url="$(gcloud run services describe "$SERVICE" --project="$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
   echo "Service URL: $url"
-  echo "Smoke test: $(curl -fsS "$url/healthz")"
+  # /healthz is reserved by the run.app front end; /health is the external alias.
+  echo "Smoke test: $(curl -fsS --retry 3 --retry-all-errors "$url/health")"
 fi

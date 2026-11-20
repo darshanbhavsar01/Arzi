@@ -66,6 +66,7 @@ gcloud run services update arzi --region asia-south1 --min-instances=0   # rever
 
 ## Health
 
-- `GET /healthz` — liveness; no dependencies.
+- `GET /healthz` — liveness for Cloud Run probes; no dependencies. On the public `*.run.app` URL
+  Google's front end reserves this path (returns its own 404), so external checks use `GET /health`.
 - `GET /readyz` — Firestore and Cloud Storage reachability with the runtime identity; 503 if
   either fails (the body names the failing check and the exception type only).
