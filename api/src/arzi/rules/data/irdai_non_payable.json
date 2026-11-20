@@ -1,0 +1,44 @@
+[
+  {
+    "list": "I",
+    "item": "Baby food",
+    "aliases": ["baby food"],
+    "source": "docs/context/03_DOMAIN_RULES_IRDAI.md, List I examples",
+    "status": "verify"
+  },
+  {
+    "list": "I",
+    "item": "Beauty services",
+    "aliases": ["beauty services", "beauty service"],
+    "source": "docs/context/03_DOMAIN_RULES_IRDAI.md, List I examples",
+    "status": "verify"
+  },
+  {
+    "list": "I",
+    "item": "Laundry",
+    "aliases": ["laundry"],
+    "source": "docs/context/03_DOMAIN_RULES_IRDAI.md, List I examples",
+    "status": "verify"
+  },
+  {
+    "list": "I",
+    "item": "Cold pack / hot pack",
+    "aliases": ["cold pack", "hot pack", "cold hot pack"],
+    "source": "docs/context/03_DOMAIN_RULES_IRDAI.md, List I examples",
+    "status": "verify"
+  },
+  {
+    "list": "I",
+    "item": "Crepe bandage",
+    "aliases": ["crepe bandage"],
+    "source": "docs/context/03_DOMAIN_RULES_IRDAI.md, List I examples",
+    "status": "verify"
+  },
+  {
+    "list": "IV",
+    "item": "Admission / registration charges",
+    "aliases": ["admission charges", "registration charges", "admission registration charges"],
+    "source": "docs/context/03_DOMAIN_RULES_IRDAI.md, List IV examples",
+    "status": "verify"
+  }
+]

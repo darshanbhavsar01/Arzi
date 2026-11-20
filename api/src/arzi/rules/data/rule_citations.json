@@ -1,0 +1,74 @@
+[
+  {
+    "id": "IRDAI_MC_2024",
+    "title": "Master Circular on Health Insurance Products",
+    "source_doc": "IRDAI Master Circular on Health Insurance Products",
+    "ref": "IRDAI/HLT/CIR/PRO/84/5/2024, 29 May 2024",
+    "summary_en": "Consolidates and repeals 55 earlier circulars and sets policyholder-friendly norms, including cashless timelines.",
+    "status": "verified"
+  },
+  {
+    "id": "IRDAI_CASHLESS_TAT",
+    "title": "Cashless authorisation timelines",
+    "source_doc": "IRDAI Master Circular on Health Insurance Products (2024)",
+    "ref": "IRDAI/HLT/CIR/PRO/84/5/2024; paragraph number to be confirmed",
+    "summary_en": "The insurer decides on cashless pre-authorisation within 1 hour and on final discharge authorisation within 3 hours of the hospital's request.",
+    "status": "verify"
+  },
+  {
+    "id": "IRDAI_PROP_DED_2020",
+    "title": "Norms on proportionate deductions",
+    "source_doc": "IRDAI circular on proportionate deductions",
+    "ref": "IRDAI/HLT/REG/CIR/151/06/2020, 11 June 2020",
+    "summary_en": "Proportionate deduction may apply only to defined associated medical expenses when a higher room category is chosen. Pharmacy and consumables, implants and medical devices, and diagnostics are excluded from associated expenses, and no proportionate deduction applies to ICU charges.",
+    "status": "verified"
+  },
+  {
+    "id": "IRDAI_PED_36M",
+    "title": "Pre-existing disease: look-back and maximum waiting period",
+    "source_doc": "IRDAI health insurance norms effective 1 April 2024",
+    "ref": "PED definition and waiting periods, effective 1 April 2024",
+    "summary_en": "The PED look-back is 36 months (was 48). The maximum PED waiting period is 36 months, and specific waiting periods are capped at 36 months.",
+    "status": "verified"
+  },
+  {
+    "id": "IRDAI_MORATORIUM_60M",
+    "title": "Moratorium period",
+    "source_doc": "IRDAI health insurance norms effective 1 April 2024",
+    "ref": "Moratorium, effective 1 April 2024",
+    "summary_en": "After 60 months of continuous cover (was 96), the insurer cannot contest a claim or the policy for non-disclosure or misrepresentation, except proven fraud.",
+    "status": "verified"
+  },
+  {
+    "id": "IRDAI_NON_PAYABLE_ANNEX_I",
+    "title": "Non-payable items: Annexure I, Lists I to IV",
+    "source_doc": "IRDAI standardisation guidelines, Annexure I (carried into the Master Circular)",
+    "ref": "Annexure I, Lists I-IV; item list to be loaded from the official PDF",
+    "summary_en": "List I items are not payable unless the insurer offers an optional cover. List II, III and IV items are subsumed into room, procedure and treatment cost respectively, so they are not separate deductions.",
+    "status": "verify"
+  },
+  {
+    "id": "INSURER_GRIEVANCE_15D",
+    "title": "Insurer grievance resolution timeline",
+    "source_doc": "IRDAI grievance redressal norms",
+    "ref": "Insurer grievance timeline; 14 or 15 days to be confirmed",
+    "summary_en": "The insurer should resolve a written grievance within 15 days.",
+    "status": "verify"
+  },
+  {
+    "id": "OMBUDSMAN_RULES_2017",
+    "title": "Insurance Ombudsman Rules, 2017 (as amended)",
+    "source_doc": "Insurance Ombudsman Rules, 2017",
+    "ref": "Insurance Ombudsman Rules, 2017, as amended",
+    "summary_en": "Complain to the Ombudsman after the insurer rejects a written complaint, replies unsatisfactorily, or does not reply within 1 month; file within 1 year; claim value up to 50 lakh; free of cost; the award binds the insurer.",
+    "status": "verified"
+  },
+  {
+    "id": "BIMA_BHAROSA",
+    "title": "Bima Bharosa grievance portal",
+    "source_doc": "IRDAI Bima Bharosa (formerly IGMS)",
+    "ref": "Bima Bharosa portal",
+    "summary_en": "Open to all with no claim-amount limit; forwards the complaint to the insurer and tracks it.",
+    "status": "verified"
+  }
+]
