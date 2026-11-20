@@ -75,7 +75,7 @@ def _default_firestore(settings: Settings) -> FirestoreClientLike:
 
 def _default_storage(settings: Settings) -> StorageClientLike:
     # google-cloud-storage ships no type information (third-party boundary).
-    from google.cloud import storage  # type: ignore[attr-defined]
+    from google.cloud import storage
 
     client: StorageClientLike = storage.Client(project=settings.google_cloud_project)
     return client

@@ -22,17 +22,14 @@ from arzi.adapters.genai_client import (
     vertex_models,
 )
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
+from arzi.agents.nodes import ModelSettings
+from arzi.agents.pipeline import AdkAuditPipeline
+from arzi.agents.stubs import FakeLlmClient
 from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
 from arzi.services.claims import ClaimService
 from arzi.services.cost_ledger import BudgetedLlmClient, ModelPrice, parse_price_table
 from arzi.services.extraction import ExtractionService
-from arzi.services.pipeline import (
-    AuditStep,
-    ExtractStep,
-    PipelineStep,
-    ReconcileStep,
-    RedactStep,
-)
+from arzi.services.pipeline import AuditStep, ExtractStep, ReconcileStep, RedactStep
 from arzi.services.ports import (
     AuthVerifier,
     BlobStore,
@@ -74,7 +71,7 @@ def build_llm(
     if settings.llm_mode is LlmMode.REPLAY:
         return ReplayLlmClient(settings.replay_dir)
     if settings.llm_mode is LlmMode.FAKE:
-        return FixtureLlmClient(settings.replay_dir)
+        return FakeLlmClient(FixtureLlmClient(settings.replay_dir))
     if not settings.model_flash:
         raise ConfigurationError("live mode needs ARZI_MODEL_FLASH")
     prices = parse_price_table(settings.price_table_json)
@@ -125,7 +122,7 @@ def _storage(settings: Settings) -> tuple[ClaimRepository, BlobStore, CostLedger
     )
     blobs: BlobStore = InMemoryBlobStore()
     if settings.bucket:
-        from google.cloud import storage  # type: ignore[attr-defined]  # untyped SDK
+        from google.cloud import storage
 
         from arzi.adapters.gcs import GcsBlobStore
 
@@ -161,12 +158,18 @@ def build_services(
         thinking_budget=settings.llm_thinking_budget,
         concurrency=settings.extraction_concurrency,
     )
-    steps: list[PipelineStep] = [
+    models = ModelSettings(
+        client=llm,
+        model=settings.model_flash or "model-not-configured",
+        thinking_budget=settings.reasoning_thinking_budget,
+    )
+    pipeline = AdkAuditPipeline(
         ExtractStep(extraction, load),
         RedactStep(Redactor(settings.pseudonym_salt.get_secret_value().encode())),
         ReconcileStep(),
         AuditStep(),
-    ]
+        models,
+    )
     return Services(
         repo=repo,
         blobs=blobs,
@@ -181,5 +184,5 @@ def build_services(
             max_upload_mb=settings.max_upload_mb,
             max_pages=settings.max_pages,
         ),
-        runs=RunService(repo, steps, clock=clock, new_id=id_factory),
+        runs=RunService(repo, pipeline, clock=clock, new_id=id_factory),
     )

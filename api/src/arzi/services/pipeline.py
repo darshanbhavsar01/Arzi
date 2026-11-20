@@ -3,16 +3,26 @@
 Redaction runs before reconciliation (the plan lists it after): ``ClaimFacts`` is the first
 artefact downstream steps reason over, so it must never be built from raw identifiers.
 Each step reports a small summary (counts, never document text) for its ``stage.completed``
-event. Phase 4 adds reasoning steps behind the same contract.
+event. ``StepPipeline`` runs the steps in order; the ADK pipeline (``arzi.agents.pipeline``) runs
+the same steps plus the reasoning agents and emits the same events.
 """
 
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
 from pydantic import BaseModel
 
-from arzi.domain.models import AuditResult, ClaimRecord, Hospital, LlmCall
+from arzi.domain.models import (
+    AuditResult,
+    ClaimNarratives,
+    ClaimRecord,
+    Hospital,
+    LlmCall,
+    PolicyReview,
+    ReviewIssue,
+    RunEventType,
+)
 from arzi.rules.engine import audit
 from arzi.services.extraction import DocumentExtraction, ExtractionService
 from arzi.services.extraction_schemas import (
@@ -37,6 +47,10 @@ class RunContext:
     redaction: RedactionOutcome[BaseModel] | None = None
     reconciled: ReconcileOutcome | None = None
     audit: AuditResult | None = None
+    policy_review: PolicyReview | None = None
+    narratives: ClaimNarratives | None = None
+    review_issues: list[ReviewIssue] = field(default_factory=list)
+    """Issues raised by reasoning steps, on top of reconciliation's."""
     calls: list[LlmCall] = field(default_factory=list)
 
 
@@ -44,6 +58,50 @@ class PipelineStep(Protocol):
     name: str
 
     async def run(self, ctx: RunContext) -> Summary: ...
+
+
+@dataclass(frozen=True, slots=True)
+class StageEvent:
+    type: RunEventType
+    stage: str | None
+    data: Summary = field(default_factory=dict)
+
+
+class Pipeline(Protocol):
+    def stream(self, ctx: RunContext) -> AsyncIterator[StageEvent]:
+        """Run every stage against ``ctx`` and yield progress as it happens."""
+        ...
+
+
+def flag_events(ctx: RunContext) -> Iterator[StageEvent]:
+    """One ``flag.created`` per engine flag, announced as soon as the audit has run."""
+    for flag in ctx.audit.flags if ctx.audit else ():
+        yield StageEvent(
+            "flag.created",
+            AuditStep.name,
+            {
+                "flag_id": flag.flag_id,
+                "rule_id": flag.rule_id,
+                "severity": str(flag.severity),
+                "amount_at_risk": flag.amount_at_risk,
+                "recoverable": flag.recoverable,
+            },
+        )
+
+
+class StepPipeline:
+    """The deterministic steps in order, without agents."""
+
+    def __init__(self, steps: Sequence[PipelineStep]) -> None:
+        self._steps = steps
+
+    async def stream(self, ctx: RunContext) -> AsyncIterator[StageEvent]:
+        for step in self._steps:
+            yield StageEvent("stage.started", step.name)
+            yield StageEvent("stage.completed", step.name, await step.run(ctx))
+            if step.name == AuditStep.name:
+                for event in flag_events(ctx):
+                    yield event
 
 
 class ExtractStep:

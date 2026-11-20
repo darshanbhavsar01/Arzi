@@ -1,8 +1,9 @@
 """Upload → streamed audit → persisted claim, for demo cases A, B and C, with no model costs.
 
-The LLM is the fixture client (``fake`` mode): it returns the ideal transcription of each demo
-document, so these tests check everything Arzi does after the model: redaction, reconciliation,
-the rules engine, persistence and the event stream.
+The LLM is ``fake`` mode: the ideal transcription of each demo document and deterministic stubs
+for the reasoning agents, so these tests check everything Arzi does around the model: redaction,
+reconciliation, the ADK workflow and its guardrails, the rules engine, persistence and the
+event stream.
 """
 
 import json
@@ -17,6 +18,7 @@ from fastapi import FastAPI
 from arzi.adapters.memory import InMemoryClaimRepository
 from arzi.bootstrap import Services, build_services
 from arzi.config import LlmMode, Settings
+from arzi.domain.enums import ReasoningStatus
 from arzi.domain.models import ClaimRecord
 from arzi.main import create_app
 from tests.integration.pipeline_support import (
@@ -30,6 +32,8 @@ from tests.unit.rules.helpers import DEMO_CASES
 
 sys.path.insert(0, str(DEMO_CASES.parent / "scripts"))
 from gen_demo_cases import expected
+
+STAGES = ("extract", "redact", "reconcile", "interpret_policy", "audit", "explain_flags")
 
 
 @pytest.fixture
@@ -69,11 +73,14 @@ async def test_case_audits_to_expected_values(
     kinds = [e.event for e in events]
     stages = [(e.event, e.data.get("stage")) for e in events if e.event.startswith("stage.")]
     assert stages == [
-        (kind, stage)
-        for stage in ("extract", "redact", "reconcile", "audit")
-        for kind in ("stage.started", "stage.completed")
+        (kind, stage) for stage in STAGES for kind in ("stage.started", "stage.completed")
     ]
     assert kinds[-1] == "run.completed"
+    # Flags are announced as soon as the engine has run, before the explanations are written.
+    audit_done = kinds.index("stage.completed", 2 * STAGES.index("audit"))
+    assert kinds[audit_done + 1 : audit_done + 1 + kinds.count("flag.created")] == [
+        "flag.created"
+    ] * kinds.count("flag.created")
     assert [e.id for e in events] == list(range(1, len(events) + 1))
 
     record = await _claim(api, claim_id)
@@ -99,9 +106,25 @@ async def test_case_audits_to_expected_values(
 
     run = (await api.get(f"/api/v1/claims/{claim_id}/runs/{run_id}")).json()
     assert run["status"] == "completed"
-    assert {"classify_document@v1", "extract_bill@v1", "extract_policy@v2"} <= set(
-        run["prompt_versions"]
+    assert {
+        "classify_document@v1",
+        "extract_bill@v1",
+        "extract_policy@v2",
+        "interpret_policy@v1",
+        "explain_flags@v1",
+    } <= set(run["prompt_versions"])
+
+    # The reasoning agents ran under their guardrails: one explanation per flag, amounts rendered
+    # from the engine, and every clause the policy reading cites is in the policy.
+    assert record.narratives is not None
+    assert record.narratives.status is ReasoningStatus.PASSED
+    assert [n.flag_id for n in record.narratives.items] == [f.flag_id for f in record.audit.flags]
+    assert all(
+        n.explanation.text and "{{" not in n.explanation.text for n in record.narratives.items
     )
+    assert record.policy_review is not None
+    assert record.policy_review.status is ReasoningStatus.PASSED
+    assert record.policy_review.terms
 
 
 async def test_documents_with_a_chosen_type_skip_classification(api: httpx.AsyncClient) -> None:

@@ -3,10 +3,10 @@ from typing import Any
 
 import pytest
 
-from arzi.adapters.fixture_llm import FixtureLlmClient
 from arzi.adapters.gcs import GcsBlobStore
 from arzi.adapters.genai_client import RecordingLlmClient, ReplayLlmClient
 from arzi.adapters.memory import InMemoryCostLedger
+from arzi.agents.stubs import FakeLlmClient
 from arzi.bootstrap import ConfigurationError, build_llm, build_services, utc_now
 from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
 from arzi.services.cost_ledger import BudgetedLlmClient
@@ -71,9 +71,7 @@ def test_llm_mode_selects_the_client(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert isinstance(
         build_llm(_settings(llm_mode=LlmMode.REPLAY), ledger, utc_now), ReplayLlmClient
     )
-    assert isinstance(
-        build_llm(_settings(llm_mode=LlmMode.FAKE), ledger, utc_now), FixtureLlmClient
-    )
+    assert isinstance(build_llm(_settings(llm_mode=LlmMode.FAKE), ledger, utc_now), FakeLlmClient)
     with pytest.raises(ConfigurationError, match="live mode"):
         build_llm(_settings(llm_mode=LlmMode.LIVE), ledger, utc_now)
 
@@ -124,7 +122,7 @@ def test_only_demo_auth_until_phase_7() -> None:
 
 
 def test_cloud_project_wires_firestore_and_storage(monkeypatch: pytest.MonkeyPatch) -> None:
-    from google.cloud import firestore, storage  # type: ignore[attr-defined]
+    from google.cloud import firestore, storage
 
     from arzi.adapters.firestore_repo import FirestoreClaimRepository
     from arzi.adapters.gcs import GcsBlobStore as Gcs

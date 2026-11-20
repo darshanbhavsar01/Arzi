@@ -12,7 +12,7 @@ from arzi.domain.models import ClaimRecord, Consent, RunEvent
 from arzi.prompts import load_prompt
 from arzi.services.cost_ledger import BudgetExceededError, PriceUnknownError
 from arzi.services.errors import InvalidStateError
-from arzi.services.pipeline import RunContext, Summary
+from arzi.services.pipeline import RunContext, StepPipeline, Summary
 from arzi.services.ports import LlmUnavailableError, StoredDocument
 from arzi.services.runs import RunService, _error_slug
 
@@ -35,7 +35,9 @@ class Step:
 
 def _service(repo: InMemoryClaimRepository, *steps: Step) -> RunService:
     ids = itertools.count(1)
-    return RunService(repo, steps, clock=lambda: T0, new_id=lambda: f"{next(ids):04d}", poll_s=0.01)
+    return RunService(
+        repo, StepPipeline(steps), clock=lambda: T0, new_id=lambda: f"{next(ids):04d}", poll_s=0.01
+    )
 
 
 async def _ready_claim(repo: InMemoryClaimRepository, status: ClaimStatus) -> str:

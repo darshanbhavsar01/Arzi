@@ -24,7 +24,7 @@ from arzi.services.errors import (
     InvalidStateError,
     RunNotFoundError,
 )
-from arzi.services.pipeline import PipelineStep, RunContext, Summary
+from arzi.services.pipeline import Pipeline, RunContext, Summary
 from arzi.services.ports import (
     AuditLogEntry,
     ClaimRepository,
@@ -64,14 +64,14 @@ class RunService:
     def __init__(
         self,
         repo: ClaimRepository,
-        steps: Sequence[PipelineStep],
+        pipeline: Pipeline,
         *,
         clock: Clock,
         new_id: IdFactory,
         poll_s: float = 1.0,
     ) -> None:
         self._repo = repo
-        self._steps = steps
+        self._pipeline = pipeline
         self._clock = clock
         self._new_id = new_id
         self._poll_s = poll_s
@@ -138,28 +138,11 @@ class RunService:
         hid, cid = principal.hospital_id, ctx.claim.claim_id
         run = run.model_copy(update={"status": "running"})
         try:
-            for step in self._steps:
-                run = await self._emit(hid, cid, run, "stage.started", step.name)
-                summary: Summary = await step.run(ctx)
-                run = await self._emit(hid, cid, run, "stage.completed", step.name, summary)
+            async for event in self._pipeline.stream(ctx):
+                run = await self._emit(hid, cid, run, event.type, event.stage, event.data)
             audit = ctx.audit
             if audit is None or ctx.reconciled is None:  # pragma: no cover - steps guarantee it
                 raise RuntimeError("pipeline finished without an audit")
-            for flag in audit.flags:
-                run = await self._emit(
-                    hid,
-                    cid,
-                    run,
-                    "flag.created",
-                    "audit",
-                    {
-                        "flag_id": flag.flag_id,
-                        "rule_id": flag.rule_id,
-                        "severity": str(flag.severity),
-                        "amount_at_risk": flag.amount_at_risk,
-                        "recoverable": flag.recoverable,
-                    },
-                )
             await self._finish_claim(hid, cid, ctx, run, failed=False)
             run = await self._emit(
                 hid,
@@ -243,9 +226,11 @@ class RunService:
             update |= {
                 "status": transition(claim.status, ClaimEvent.COMPLETE_AUDIT),
                 "facts": reconciled.facts if reconciled else None,
-                "issues": tuple(reconciled.issues) if reconciled else (),
+                "issues": (*(reconciled.issues if reconciled else ()), *ctx.review_issues),
                 "audit": result,
                 "redaction": ctx.redaction.summary if ctx.redaction else None,
+                "policy_review": ctx.policy_review,
+                "narratives": ctx.narratives,
             }
             if ctx.redaction is not None:
                 await self._repo.save_identity_vault(hid, cid, ctx.redaction.vault)

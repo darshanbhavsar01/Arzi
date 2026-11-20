@@ -24,6 +24,8 @@ from arzi.domain.enums import (
     InsurerLetterType,
     IrdaiList,
     LineCategory,
+    PolicyTermKind,
+    ReasoningStatus,
     RejectionGround,
     RoomRentCapType,
     Severity,
@@ -35,6 +37,8 @@ Percent = Annotated[Decimal, Field(ge=0, le=100, max_digits=5, decimal_places=2)
 Quantity = Annotated[Decimal, Field(gt=0, max_digits=9, decimal_places=3)]
 Months = Annotated[int, Field(ge=0, le=1200)]
 Text = Annotated[str, Field(max_length=2000)]
+LongText = Annotated[str, Field(max_length=6000)]
+Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Name = Annotated[str, Field(min_length=1, max_length=200)]
 
 SCHEMA_VERSION = 1
@@ -355,12 +359,116 @@ class AuditRun(_Value):
         return sum(call.cost_micro_inr for call in self.calls)
 
 
+# --------------------------------------------------------------------------- reasoning
+
+
+class Prose(_Value):
+    """Model- or person-written text whose rupee amounts are placeholders.
+
+    ``template`` holds ``{{totals.at_risk}}``-style placeholders; ``text`` is the same prose with
+    each placeholder filled from the rules engine. ``text`` is None when the template could not
+    be rendered (a step that needs review), so the UI shows a warning instead.
+    """
+
+    template: LongText
+    text: LongText | None = None
+
+
+class PolicyTermNote(_Value):
+    term: PolicyTermKind
+    clause_id: Name | None = None
+    summary: Prose
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    needs_confirmation: bool = False
+
+
+class PolicyReview(_Value):
+    """The policy interpreter's reading: which clause governs each term, in plain language."""
+
+    status: ReasoningStatus
+    prompt_ref: Name | None = None
+    violations: tuple[Text, ...] = ()
+    terms: tuple[PolicyTermNote, ...] = ()
+
+
+class FlagNarrative(_Value):
+    flag_id: Name
+    headline: Prose
+    explanation: Prose
+    fix: Prose
+    citations: tuple[Name, ...] = ()
+
+
+class ClaimNarratives(_Value):
+    """Plain-language explanation and fix for each flag. Amounts stay engine-owned."""
+
+    status: ReasoningStatus
+    prompt_ref: Name | None = None
+    violations: tuple[Text, ...] = ()
+    items: tuple[FlagNarrative, ...] = ()
+
+
+# --------------------------------------------------------------------------- appeals
+
+
+class AppealItem(_Value):
+    """One disputed deduction or rejection. Amount and insurer reason come from the engine and
+    the letter; only ``argument`` is drafted."""
+
+    flag_id: Name
+    rule_id: Name
+    amount: Amount
+    amount_ref: Name
+    insurer_reason: Text
+    argument: Prose
+    citations: tuple[Name, ...] = ()
+
+
+class AppealContent(_Value):
+    subject: Prose
+    facts: Prose
+    items: tuple[AppealItem, ...]
+    relief: Prose
+    relief_amount: Amount
+    enclosures: tuple[Text, ...] = ()
+
+
+class AppealSignature(_Value):
+    """Who reviewed the appeal, and the SHA-256 of exactly what they signed."""
+
+    reviewer_name: Name
+    reviewer_role: Name
+    signed_by: Name
+    signed_at: dt.datetime
+    content_sha256: Sha256
+
+
+class AppealVersion(_Value):
+    """One immutable version of a claim's appeal. Edits create the next version."""
+
+    claim_id: Name
+    version: Annotated[int, Field(ge=1)]
+    forum: AppealForum
+    status: AppealStatus = AppealStatus.DRAFT
+    content: AppealContent
+    drafting: ReasoningStatus
+    prompt_ref: Name | None = None
+    """The drafter's prompt version; None for a version a person edited."""
+    violations: tuple[Text, ...] = ()
+    based_on: Annotated[int, Field(ge=1)] | None = None
+    idempotency_key: Annotated[str, Field(max_length=128)] | None = None
+    created_by: Name
+    created_at: dt.datetime
+    signature: AppealSignature | None = None
+    exported_at: dt.datetime | None = None
+
+
 class AppealSummary(_Value):
     appeal_id: Name
     forum: AppealForum
     version: Annotated[int, Field(ge=1)] = 1
     status: AppealStatus = AppealStatus.DRAFT
-    content_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")] | None = None
+    content_sha256: Sha256 | None = None
 
 
 class Consent(_Value):
@@ -383,6 +491,7 @@ class ReviewIssue(_Value):
         "cap_unresolved",
         "missing_document",
         "missing_field",
+        "policy_term_unconfirmed",
     ]
     message: Text
     line_id: int | None = None
@@ -419,6 +528,8 @@ class ClaimRecord(_Value):
     audit: AuditResult | None = None
     issues: tuple[ReviewIssue, ...] = ()
     redaction: RedactionSummary | None = None
+    policy_review: PolicyReview | None = None
+    narratives: ClaimNarratives | None = None
     runs: tuple[AuditRun, ...] = ()
     appeals: tuple[AppealSummary, ...] = ()
     audit_refs: tuple[str, ...] = ()
