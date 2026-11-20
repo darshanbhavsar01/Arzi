@@ -8,10 +8,11 @@ SHELL := bash
 UV ?= uv
 NPM ?= npm
 API := api
+CASE ?= case_a
 WEB := web
 
 .PHONY: help setup dev check lint typecheck test test-api test-rules test-web \
-        test-e2e eval models demo-cases openapi deploy billing-switch
+        test-e2e eval models demo-cases rules-demo openapi deploy billing-switch
 
 help: ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-16s %s\n", $$1, $$2}'
@@ -57,6 +58,9 @@ eval: ## Extraction and flag accuracy report -> evals/report.md
 
 models: ## List Gemini models visible to GOOGLE_CLOUD_PROJECT (read-only)
 	cd $(API) && $(UV) run python ../scripts/list_models.py $(MODELS_ARGS)
+
+rules-demo: ## Print flags, totals and trace for a demo case (CASE=case_a|case_b|case_c)
+	cd $(API) && $(UV) run python -m arzi.rules.cli ../demo_cases/$(CASE)/facts.json
 
 demo-cases: ## Regenerate synthetic demo PDFs and expected outputs
 	@echo "make demo-cases: not yet implemented (Phase 2)"

@@ -1,0 +1,175 @@
+{
+  "claim_id": "ARZ-2026-0003",
+  "mode": "post_rejection",
+  "hospital": {
+    "name": "Sanjeevani Multispeciality Hospital",
+    "city": "Vadodara",
+    "room_categories": [
+      {
+        "name": "General ward",
+        "rate_per_day": 250000
+      },
+      {
+        "name": "Twin sharing",
+        "rate_per_day": 450000
+      },
+      {
+        "name": "Single private AC",
+        "rate_per_day": 800000
+      }
+    ]
+  },
+  "patient": {
+    "redacted_id": "P-91D4",
+    "age": 63
+  },
+  "policy": {
+    "insurer": "Suraksha Health Insurance Co. (fictional)",
+    "product": "Parivar Suraksha Floater (fictional)",
+    "sum_insured": 50000000,
+    "continuous_cover_months": 40,
+    "room_rent_cap": {
+      "type": "pct_of_si",
+      "pct": "1",
+      "clause_id": "4.2"
+    },
+    "proportionate_clause_id": "4.3",
+    "ped_declared": [
+      {
+        "condition": "Osteoarthritis of knee",
+        "waiting_months": 36,
+        "clause_id": "5.2"
+      }
+    ],
+    "claims_clause_id": "9.1",
+    "clauses": [
+      {
+        "id": "4.2",
+        "title": "Room rent limit",
+        "text": "Room, boarding and nursing expenses are payable up to the per-day limit shown in the schedule. (Synthetic wording for the demo.)",
+        "page": 6
+      },
+      {
+        "id": "4.3",
+        "title": "Proportionate deduction",
+        "text": "If the insured person occupies a room above the eligible limit, associated medical expenses are payable in the proportion that the eligible room rent bears to the room rent actually incurred. (Synthetic wording for the demo.)",
+        "page": 6
+      },
+      {
+        "id": "5.2",
+        "title": "Pre-existing diseases",
+        "text": "Expenses for a declared pre-existing disease are covered after the waiting period shown in the schedule of continuous cover. (Synthetic wording for the demo.)",
+        "page": 8
+      },
+      {
+        "id": "7.1",
+        "title": "Co-payment",
+        "text": "Each admissible claim is subject to the co-payment percentage shown in the schedule, applied on the admissible claim amount. (Synthetic wording for the demo.)",
+        "page": 11
+      },
+      {
+        "id": "9.1",
+        "title": "Claim documents",
+        "text": "Claims must be supported by the discharge summary, investigation reports and, where an implant is used, the implant invoice and sticker. (Synthetic wording for the demo.)",
+        "page": 14
+      }
+    ]
+  },
+  "admission": {
+    "date_in": "2026-10-20",
+    "date_out": "2026-10-24",
+    "diagnosis": "Primary osteoarthritis, right knee",
+    "procedure": "Right total knee replacement",
+    "icd10": "M17.1",
+    "room_category_used": "Twin sharing"
+  },
+  "bill_lines": [
+    {
+      "line_id": 1,
+      "description": "Twin sharing room, 4 days @ 4,500/day",
+      "category": "room",
+      "amount": 1800000,
+      "qty": "4",
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 2,
+      "description": "Surgeon fees",
+      "category": "surgeon",
+      "amount": 9000000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 3,
+      "description": "Anaesthetist fees",
+      "category": "anaesthetist",
+      "amount": 2000000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 4,
+      "description": "Operation theatre charges",
+      "category": "ot",
+      "amount": 3000000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 5,
+      "description": "Nursing charges",
+      "category": "nursing",
+      "amount": 600000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 6,
+      "description": "Pharmacy and medicines",
+      "category": "pharmacy",
+      "amount": 2200000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 7,
+      "description": "Laboratory and radiology",
+      "category": "diagnostics",
+      "amount": 900000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 8,
+      "description": "Total knee prosthesis (implant)",
+      "category": "implant",
+      "amount": 11000000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 9,
+      "description": "Physiotherapy sessions",
+      "category": "other",
+      "amount": 500000,
+      "source_page": 3,
+      "confidence": 0.97
+    }
+  ],
+  "insurer_letter": {
+    "type": "rejection",
+    "date": "2026-11-04",
+    "amount_claimed": 31000000,
+    "rejection_ground": "ped_waiting"
+  },
+  "documents_present": [
+    "policy",
+    "itemised_bill",
+    "discharge_summary",
+    "investigation_reports",
+    "implant_invoice",
+    "insurer_letter"
+  ]
+}

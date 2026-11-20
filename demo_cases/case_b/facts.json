@@ -1,0 +1,269 @@
+{
+  "claim_id": "ARZ-2026-0002",
+  "mode": "post_deduction",
+  "hospital": {
+    "name": "Sanjeevani Multispeciality Hospital",
+    "city": "Vadodara",
+    "room_categories": [
+      {
+        "name": "General ward",
+        "rate_per_day": 250000
+      },
+      {
+        "name": "Twin sharing",
+        "rate_per_day": 450000
+      },
+      {
+        "name": "Single private AC",
+        "rate_per_day": 800000
+      }
+    ]
+  },
+  "patient": {
+    "redacted_id": "P-2C91",
+    "age": 54
+  },
+  "policy": {
+    "insurer": "Suraksha Health Insurance Co. (fictional)",
+    "product": "Parivar Suraksha Floater (fictional)",
+    "sum_insured": 50000000,
+    "continuous_cover_months": 30,
+    "room_rent_cap": {
+      "type": "per_day_amount",
+      "amount": 500000,
+      "clause_id": "4.2"
+    },
+    "proportionate_clause_id": "4.3",
+    "copay": {
+      "pct": "10",
+      "clause_id": "7.1"
+    },
+    "claims_clause_id": "9.1",
+    "clauses": [
+      {
+        "id": "4.2",
+        "title": "Room rent limit",
+        "text": "Room, boarding and nursing expenses are payable up to the per-day limit shown in the schedule. (Synthetic wording for the demo.)",
+        "page": 6
+      },
+      {
+        "id": "4.3",
+        "title": "Proportionate deduction",
+        "text": "If the insured person occupies a room above the eligible limit, associated medical expenses are payable in the proportion that the eligible room rent bears to the room rent actually incurred. (Synthetic wording for the demo.)",
+        "page": 6
+      },
+      {
+        "id": "5.2",
+        "title": "Pre-existing diseases",
+        "text": "Expenses for a declared pre-existing disease are covered after the waiting period shown in the schedule of continuous cover. (Synthetic wording for the demo.)",
+        "page": 8
+      },
+      {
+        "id": "7.1",
+        "title": "Co-payment",
+        "text": "Each admissible claim is subject to the co-payment percentage shown in the schedule, applied on the admissible claim amount. (Synthetic wording for the demo.)",
+        "page": 11
+      },
+      {
+        "id": "9.1",
+        "title": "Claim documents",
+        "text": "Claims must be supported by the discharge summary, investigation reports and, where an implant is used, the implant invoice and sticker. (Synthetic wording for the demo.)",
+        "page": 14
+      }
+    ]
+  },
+  "admission": {
+    "date_in": "2026-10-12",
+    "date_out": "2026-10-17",
+    "diagnosis": "Fracture of neck of right femur",
+    "procedure": "Right hip hemiarthroplasty",
+    "icd10": "S72.0",
+    "room_category_used": "Single private AC"
+  },
+  "bill_lines": [
+    {
+      "line_id": 1,
+      "description": "Single private AC room, 4 days @ 8,000/day",
+      "category": "room",
+      "amount": 3200000,
+      "qty": "4",
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 2,
+      "description": "ICU charges, 1 day",
+      "category": "icu",
+      "amount": 1500000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 3,
+      "description": "Surgeon fees",
+      "category": "surgeon",
+      "amount": 6000000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 4,
+      "description": "Operation theatre charges",
+      "category": "ot",
+      "amount": 2500000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 5,
+      "description": "Nursing charges",
+      "category": "nursing",
+      "amount": 800000,
+      "source_page": 2,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 6,
+      "description": "Pharmacy and medicines",
+      "category": "pharmacy",
+      "amount": 3000000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 7,
+      "description": "Laboratory and radiology",
+      "category": "diagnostics",
+      "amount": 1200000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 8,
+      "description": "Bipolar hip prosthesis (implant)",
+      "category": "implant",
+      "amount": 4000000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 9,
+      "description": "Laundry charges",
+      "category": "non_payable",
+      "amount": 120000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 10,
+      "description": "Cold pack / hot pack",
+      "category": "non_payable",
+      "amount": 80000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 11,
+      "description": "Crepe bandage",
+      "category": "non_payable",
+      "amount": 150000,
+      "source_page": 3,
+      "confidence": 0.97
+    },
+    {
+      "line_id": 12,
+      "description": "Registration charges",
+      "category": "other",
+      "amount": 100000,
+      "source_page": 3,
+      "confidence": 0.97
+    }
+  ],
+  "insurer_letter": {
+    "type": "deduction",
+    "date": "2026-11-02",
+    "amount_claimed": 22650000,
+    "amount_approved": 13837500,
+    "deductions": [
+      {
+        "line_id": 1,
+        "amount": 1200000,
+        "reason": "room_rent_excess",
+        "reason_text": "Room rent above eligible limit"
+      },
+      {
+        "line_id": 2,
+        "amount": 562500,
+        "reason": "proportionate",
+        "reason_text": "Proportionate deduction"
+      },
+      {
+        "line_id": 3,
+        "amount": 2250000,
+        "reason": "proportionate",
+        "reason_text": "Proportionate deduction"
+      },
+      {
+        "line_id": 4,
+        "amount": 937500,
+        "reason": "proportionate",
+        "reason_text": "Proportionate deduction"
+      },
+      {
+        "line_id": 5,
+        "amount": 300000,
+        "reason": "proportionate",
+        "reason_text": "Proportionate deduction"
+      },
+      {
+        "line_id": 6,
+        "amount": 1125000,
+        "reason": "proportionate",
+        "reason_text": "Proportionate deduction"
+      },
+      {
+        "line_id": 7,
+        "amount": 450000,
+        "reason": "proportionate",
+        "reason_text": "Proportionate deduction"
+      },
+      {
+        "line_id": 9,
+        "amount": 120000,
+        "reason": "non_payable",
+        "reason_text": "Non-medical expense"
+      },
+      {
+        "line_id": 10,
+        "amount": 80000,
+        "reason": "non_payable",
+        "reason_text": "Non-medical expense"
+      },
+      {
+        "line_id": 11,
+        "amount": 150000,
+        "reason": "non_payable",
+        "reason_text": "Non-medical expense"
+      },
+      {
+        "line_id": 12,
+        "amount": 100000,
+        "reason": "non_payable",
+        "reason_text": "Registration charges not payable"
+      },
+      {
+        "amount": 1537500,
+        "reason": "copay",
+        "reason_text": "Co-payment 10%"
+      }
+    ]
+  },
+  "documents_present": [
+    "policy",
+    "itemised_bill",
+    "discharge_summary",
+    "investigation_reports",
+    "implant_invoice",
+    "insurer_letter"
+  ]
+}
