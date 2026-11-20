@@ -13,6 +13,7 @@ import json
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Annotated, Any, Literal
 
+import anyio
 from pydantic import BaseModel, ConfigDict, Field
 
 from arzi.agents import appeal_drafter
@@ -20,7 +21,14 @@ from arzi.agents.appeal_drafter import AppealJob, disputed, insurer_reason
 from arzi.agents.guardrails import Violation, check_prose, placeholder_values, try_render
 from arzi.agents.nodes import ModelSettings, ReasoningTask
 from arzi.agents.schemas import AppealDraftOutput
-from arzi.domain.enums import AppealForum, AppealStatus, ClaimMode, ClaimStatus, ReasoningStatus
+from arzi.domain.enums import (
+    AppealForum,
+    AppealStatus,
+    CitationStatus,
+    ClaimMode,
+    ClaimStatus,
+    ReasoningStatus,
+)
 from arzi.domain.models import (
     AppealContent,
     AppealItem,
@@ -33,8 +41,15 @@ from arzi.domain.models import (
     LlmCall,
     Prose,
 )
+from arzi.domain.money import format_inr
 from arzi.domain.state import ClaimEvent, transition
+from arzi.rules.context import POLICY_REF_PREFIX
+from arzi.rules.disputes import PROP_WRONGLY_APPLIED
 from arzi.rules.forums import ForumOption, GroComplaint, forum_options
+from arzi.rules.non_payable import SUBSUMED_ITEM
+from arzi.rules.reference import citations
+from arzi.rules.waiting import MORATORIUM, WAITING_REJECTION_INVALID
+from arzi.services.appeal_pdf import Letter, LetterItem, render_letter
 from arzi.services.cost_ledger import IST
 from arzi.services.errors import (
     AppealGuardrailError,
@@ -64,6 +79,30 @@ _ENCLOSURES = (
     ("discharge_summary", "Discharge summary"),
     ("investigation_reports", "Investigation reports"),
     ("implant_invoice", "Implant invoice and sticker"),
+)
+_ITEM_TITLES = {
+    PROP_WRONGLY_APPLIED: "Proportionate deduction on items it cannot apply to",
+    SUBSUMED_ITEM: "Item deducted that is part of room or procedure charges",
+    WAITING_REJECTION_INVALID: "Rejection under a waiting period that had ended",
+    MORATORIUM: "Rejection after the moratorium period",
+}
+_ADDRESSEE = {
+    AppealForum.INSURER_GRO: ("The Grievance Redressal Officer", "{insurer}"),
+    AppealForum.BIMA_BHAROSA: (
+        "Bima Bharosa grievance portal",
+        "Insurance Regulatory and Development Authority of India",
+        "Complaint against {insurer}",
+    ),
+    AppealForum.OMBUDSMAN: (
+        "The Insurance Ombudsman",
+        "Office of the Insurance Ombudsman (jurisdiction to be confirmed)",
+        "Complaint against {insurer}",
+    ),
+}
+_IDENTITY_FIELDS = (
+    ("[POLICY_NUMBER-", "Policy number"),
+    ("[MEMBER_ID-", "Member ID"),
+    ("[CLAIM_NUMBER-", "Insurer claim number"),
 )
 _FALLBACK = AppealDraftOutput(
     subject="Request to review the claim decision",
@@ -169,6 +208,84 @@ def compose(facts: ClaimFacts, result: AuditResult, output: AppealDraftOutput) -
         relief=prose(output.relief),
         relief_amount=result.totals.recoverable_on_appeal,
         enclosures=enclosures(facts),
+    )
+
+
+def citation_label(ref: str) -> str:
+    """How a reference reads in a letter: the clause number, or the regulation's title (plus its
+    circular number once that is verified)."""
+    if ref.startswith(POLICY_REF_PREFIX):
+        return f"Policy clause {ref.removeprefix(POLICY_REF_PREFIX)}"
+    entry = citations().get(ref)
+    if entry is None:  # pragma: no cover - the whitelist keeps unknown refs out
+        return ref
+    verified = entry.status is CitationStatus.VERIFIED
+    return f"{entry.title} ({entry.ref})" if verified else entry.title
+
+
+def identity_fields(vault: dict[str, str], patient: str) -> list[tuple[str, str]]:
+    """Patient, policy, member and claim numbers for the letter's reference block."""
+    found = [("Patient", vault[patient])] if patient in vault else []
+    for prefix, label in _IDENTITY_FIELDS:
+        alias = next((a for a in sorted(vault) if a.startswith(prefix)), None)
+        if alias is not None:
+            found.append((label, vault[alias]))
+    return found
+
+
+def letter_for(claim: ClaimRecord, appeal: AppealVersion, vault: dict[str, str]) -> Letter:
+    """The printable letter. Pseudonyms in the reviewed text are replaced by the identifiers
+    they stand for, from the restricted vault, only here."""
+    facts, signature = claim.facts, appeal.signature
+    if facts is None or signature is None:  # pragma: no cover - checked by the caller
+        raise InvalidStateError("Only a signed appeal of an audited claim can be printed.")
+    pseudonyms = sorted(vault, key=len, reverse=True)
+
+    def reveal(text: str | None) -> str:
+        shown = text or ""
+        for alias in pseudonyms:
+            shown = shown.replace(alias, vault[alias])
+        return shown
+
+    references = [
+        *identity_fields(vault, facts.patient.redacted_id),
+        ("Hospital reference", f"{claim.claim_id}, appeal version {appeal.version}"),
+    ]
+    lines = {line.line_id: line.description for line in facts.bill_lines}
+    flags = {f.flag_id: f for f in claim.audit.flags} if claim.audit else {}
+    items = []
+    for item in appeal.content.items:
+        flag = flags.get(item.flag_id)
+        described = [lines[i] for i in (flag.lines if flag else ()) if i in lines]
+        title = _ITEM_TITLES.get(item.rule_id, item.rule_id.replace("_", " ").capitalize())
+        items.append(
+            LetterItem(
+                title=title,
+                lines=[reveal(d) for d in described],
+                amount=format_inr(item.amount, always_paise=True),
+                insurer_reason=item.insurer_reason,
+                argument=reveal(item.argument.text),
+                citations=[citation_label(c) for c in item.citations],
+            )
+        )
+    signed = signature.signed_at.astimezone(IST).date()
+    on = f"{signed.day} {signed:%B %Y}"
+    insurer = facts.policy.insurer
+    return Letter(
+        hospital_name=facts.hospital.name,
+        hospital_city=facts.hospital.city,
+        addressee=[line.format(insurer=insurer) for line in _ADDRESSEE[appeal.forum]],
+        date=on,
+        references=references,
+        subject=reveal(appeal.content.subject.text),
+        facts=reveal(appeal.content.facts.text),
+        items=items,
+        relief=reveal(appeal.content.relief.text),
+        enclosures=list(appeal.content.enclosures),
+        reviewer_name=signature.reviewer_name,
+        reviewer_role=signature.reviewer_role,
+        signed_on=on,
+        content_sha256=signature.content_sha256,
     )
 
 
@@ -398,8 +515,14 @@ class AppealService:
         )
         return appeal
 
-    async def identity(self, principal: Principal, claim_id: str) -> dict[str, str]:
-        return await self._repo.get_identity_vault(principal.hospital_id, claim_id)
+    async def export(
+        self, principal: Principal, claim_id: str, version: int
+    ) -> tuple[bytes, AppealVersion]:
+        """The signed letter as a PDF. Same signed version, same bytes, every time."""
+        claim, appeal = await self.signed_for_export(principal, claim_id, version)
+        vault = await self._repo.get_identity_vault(principal.hospital_id, claim_id)
+        pdf = await anyio.to_thread.run_sync(render_letter, letter_for(claim, appeal, vault))
+        return pdf, await self.mark_exported(principal, claim, appeal)
 
     # ------------------------------------------------------------------ helpers
 

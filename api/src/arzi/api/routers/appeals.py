@@ -7,7 +7,7 @@ exact content, and any edit after signing makes a new version that needs a fresh
 import datetime as dt
 from typing import Annotated
 
-from fastapi import APIRouter, Header, status
+from fastapi import APIRouter, Header, Query, Response, status
 from pydantic import BaseModel, ConfigDict
 
 from arzi.api.deps import PrincipalDep, ServicesDep
@@ -95,3 +95,30 @@ async def sign_appeal(
 ) -> AppealVersion:
     """A named reviewer signs; the SHA-256 of the exact content is stored with the signature."""
     return await services.appeals.sign(principal, claim_id, version, body)
+
+
+@router.get(
+    "/{version}/export.pdf",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+async def export_appeal(
+    claim_id: str,
+    version: int,
+    principal: PrincipalDep,
+    services: ServicesDep,
+    download: Annotated[bool, Query()] = True,
+) -> Response:
+    """The signed letter as a PDF; refused (409) until a named reviewer has signed it."""
+    pdf, appeal = await services.appeals.export(principal, claim_id, version)
+    disposition = "attachment" if download else "inline"
+    filename = f"{claim_id}-appeal-v{appeal.version}.pdf"
+    return Response(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'{disposition}; filename="{filename}"',
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )

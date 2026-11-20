@@ -339,3 +339,77 @@ async def test_appeals_are_scoped_to_the_hospital(
         await services.appeals.get(other, claim_id, 1)
     with pytest.raises(ClaimNotFoundError):
         await services.appeals.versions(other, claim_id)
+
+
+def _pdf_text(data: bytes) -> str:
+    import pypdfium2 as pdfium
+
+    document = pdfium.PdfDocument(data)
+    try:
+        return "\n".join(page.get_textpage().get_text_range() for page in document)
+    finally:
+        document.close()
+
+
+async def test_export_is_impossible_before_signing_and_prints_the_signed_hash(
+    api: httpx.AsyncClient,
+) -> None:
+    claim_id = await _audited(api, "case_b")
+    await _draft(api, claim_id)
+    base = f"/api/v1/claims/{claim_id}/appeals"
+    signer = {"reviewer_name": "R. Mehta", "reviewer_role": "TPA desk manager", "declaration": True}
+
+    for step in ("draft", "in_review"):
+        refused = await api.get(f"{base}/1/export.pdf")
+        assert refused.status_code == 409, step
+        assert refused.json()["type"].endswith("/appeal-not-signed")
+        if step == "draft":
+            await api.post(f"{base}/1/submit")
+    signed = (await api.post(f"{base}/1/sign", json=signer)).json()
+    digest = signed["signature"]["content_sha256"]
+
+    exported = await api.get(f"{base}/1/export.pdf")
+    assert exported.status_code == 200
+    assert exported.headers["content-type"] == "application/pdf"
+    assert exported.headers["content-disposition"].startswith("attachment;")
+    assert exported.content.startswith(b"%PDF-")
+    text = " ".join(_pdf_text(exported.content).split())
+    assert f"Content SHA-256: {digest}" in text
+    assert "Prepared with Arzi decision support; reviewed and signed by R. Mehta." in text
+    assert "Reviewed and signed by R. Mehta TPA desk manager" in text
+    assert "Sanjeevani Multispeciality Hospital" in text
+    assert "The Grievance Redressal Officer" in text
+    assert "₹19,237.50" in text
+    assert "₹20,137.50" in text
+    assert "Page 1 of" in text
+    # Identifiers come back only in the printed letter, from the restricted vault.
+    assert "Hemlata Dilip Joshi" in text
+    assert "SHI/PSF/2026/003881" in text
+    appeal = (await api.get(f"{base}/1")).json()
+    assert "Hemlata" not in json.dumps(appeal)
+
+    assert appeal["status"] == "exported"
+    assert (await api.get(f"/api/v1/claims/{claim_id}")).json()["status"] == "exported"
+    again = await api.get(f"{base}/1/export.pdf?download=false")
+    assert again.content == exported.content  # same signed version, same bytes
+    assert again.headers["content-disposition"].startswith("inline;")
+    log = (await api.get(f"/api/v1/claims/{claim_id}/audit-log")).json()
+    exports = [e for e in log if e["action"] == "appeal.exported"]
+    assert [e["detail"]["sha256"] for e in exports] == [digest]
+
+    locked = await api.put(f"{base}/1", json={"subject": "Changed after export"})
+    assert locked.status_code == 409
+
+
+async def test_the_ombudsman_letter_is_addressed_to_the_ombudsman(api: httpx.AsyncClient) -> None:
+    claim_id = await _audited(api, "case_c")
+    complaint = {"filed_on": "2026-01-05", "outcome": "rejected", "replied_on": "2026-01-20"}
+    await _draft(api, claim_id, {"forum": "ombudsman", "gro_complaint": complaint})
+    base = f"/api/v1/claims/{claim_id}/appeals"
+    await api.post(f"{base}/1/submit")
+    signer = {"reviewer_name": "A. Shah", "reviewer_role": "Claims manager", "declaration": True}
+    await api.post(f"{base}/1/sign", json=signer)
+    text = " ".join(_pdf_text((await api.get(f"{base}/1/export.pdf")).content).split())
+    assert "The Insurance Ombudsman" in text
+    assert "Pre-existing disease: look-back and maximum waiting period" in text
+    assert "₹3,10,000.00" in text
