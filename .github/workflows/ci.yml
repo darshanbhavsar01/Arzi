@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "phase/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# No cloud credentials are available or needed here: tests use fakes and recorded responses.
+env:
+  ARZI_LLM_MODE: fake
+
+jobs:
+  api:
+    name: API (ruff, mypy, pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy src tests
+      - run: uv run pytest --cov --cov-report=term-missing:skip-covered
+      - name: Rules engine coverage gate (100% line + branch)
+        run: >
+          uv run pytest tests/unit/rules -q --cov=arzi.rules --cov-branch
+          --cov-report=term-missing --cov-fail-under=100
+
+  web:
+    name: Web (eslint, tsc, vitest, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  commits:
+    name: Commit messages (single author, no trailers)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Reject co-author trailers and tool footers
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            range="$HEAD"   # new branch or force push: check the full history
+          else
+            range="$BASE..$HEAD"
+          fi
+          bad=""
+          for sha in $(git rev-list "$range"); do
+            msg_file=$(mktemp)
+            git log -1 --format=%B "$sha" > "$msg_file"
+            if ! sh .githooks/commit-msg "$msg_file" 2>/dev/null; then
+              bad="$bad $sha"
+            fi
+            rm -f "$msg_file"
+          done
+          if [ -n "$bad" ]; then
+            echo "::error::Commits with co-author trailers or tool footers:$bad"
+            exit 1
+          fi
+          echo "All commit messages are clean."
