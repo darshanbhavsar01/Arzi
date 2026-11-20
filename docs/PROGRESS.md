@@ -470,5 +470,13 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Everything else in the project (Cloud Run, Firestore, Storage, Artifact Registry) bills through
   the project, so nothing else moved. Service runs in replay mode (no model spend).
 
+## Release (2026-11-21)
+- Hospital profiles seeded (`scripts/seed.py`). Hybrid LLM mode shipped (`adapters/hybrid.py`):
+  recorded answers for the demo cases, budget-guarded live Vertex AI on a recording miss; deployed
+  with `ARZI_LLM_MODE=hybrid`, daily cap INR 100 and a price table (Flash INR 135/675 per 1M,
+  assumed; TTS and Pro prices are conservative estimates to verify). The live Vertex path has not
+  been exercised on a visitor document yet. `deploy.sh` now passes the budget and price table.
+- Tagged `v0.1.0-buildathon`.
+
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.
