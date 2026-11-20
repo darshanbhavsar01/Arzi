@@ -7,7 +7,8 @@ Every infra script accepts `DRY_RUN=1` to print the exact commands without runni
 
 ```bash
 export PROJECT_ID=<gcp-project-id>
-export BILLING_ACCOUNT_EVENT=<event-credit-billing-account-id>   # gcloud billing accounts list
+export BILLING_ACCOUNT=<account-the-project-is-billed-to>        # gcloud billing accounts list
+export BILLING_ACCOUNT_EVENT=<event-credit-billing-account-id>   # optional; skipped if closed
 export BILLING_ACCOUNT_OWNER=<owner-billing-account-id>
 ```
 
@@ -15,10 +16,10 @@ export BILLING_ACCOUNT_OWNER=<owner-billing-account-id>
 
 ```bash
 gcloud auth login && gcloud auth application-default login
-bash infra/bootstrap.sh     # project, billing link (event account), APIs, Firestore, bucket, SA, IAM
-bash infra/budgets.sh       # budget alerts on both billing accounts, 25/50/90/100%
-firebase projects:addfirebase "$PROJECT_ID"
-firebase deploy --only firestore --project "$PROJECT_ID" --config infra/firebase.json  # deny-all rules
+bash infra/bootstrap.sh     # billing link (skipped if already correct), APIs, Firestore, bucket, SA, IAM
+bash infra/budgets.sh       # budget alerts on each open billing account, 25/50/90/100%
+npx firebase-tools@latest projects:addfirebase "$PROJECT_ID"
+npx firebase-tools@latest deploy --only firestore --project "$PROJECT_ID" --config infra/firebase.json  # deny-all rules
 GOOGLE_CLOUD_PROJECT="$PROJECT_ID" make models   # pick model IDs, record them in docs/PROGRESS.md
 make deploy
 ```

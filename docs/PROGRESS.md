@@ -39,6 +39,14 @@
   Build uses for `gcloud run deploy --source` in newly created projects.
 - 2026-11-20 — Dependency pins forced by peer ranges: TypeScript 5.9 (openapi-typescript needs
   `^5`, typescript-eslint `<6.1`) and ESLint 9 (eslint-plugin-jsx-a11y does not support 10).
+- 2026-11-20 — GCP project is `<project-id>` (number <project-number>, existing project). It is
+  already billed to the owner's INR account `<owner-billing-account>`; the event credit account
+  `<event-credit-account-1>` (USD) reported `open: False` when checked at ~10:55 IST, so the planned
+  event-to-owner billing switch is moot and no budget is created on the event account. Pre-existing
+  state checked read-only: no Firestore database, buckets, Cloud Run services, GKE/SQL/Composer/
+  Dataproc resources; Compute Engine API disabled.
+- 2026-11-20 — Infra scripts strip CRLF from gcloud output (Windows) and dry runs perform the
+  read-only lookups, so `DRY_RUN=1` prints exactly the commands a real run would execute.
 - 2026-11-20 — `web/src/api/openapi.json` is committed next to `schema.d.ts` so API contract
   changes show up in review diffs.
 
@@ -59,12 +67,14 @@
   Phase 0 because it downloads Chromium; the e2e journeys arrive in Phase 5.
 
 ## Follow-ups
-- Owner: run `infra/bootstrap.sh`, `infra/budgets.sh`, the Firebase steps, `make models`, and
+- Owner: approve and run `infra/bootstrap.sh`, `infra/budgets.sh`, the Firebase steps, `make models`, and
   `make deploy` (exact sequence in `docs/runbook.md`); then record model IDs and the Vertex
   location here and in `docs/architecture.md`, and confirm `/healthz` on the Cloud Run URL.
 - The Dockerfile is first built by Cloud Build on the first deploy (Docker is not installed on the
   dev machine); fix anything that surfaces there.
-- Firebase CLI is not installed locally; use `npx firebase-tools@latest …` for the rules deploy.
+- Firebase CLI is not installed locally; the scripts and runbook use `npx firebase-tools@latest`.
+- Owner: check Billing → Credits for why the event credit account is closed; if it is reopened,
+  run `infra/budgets.sh` with `BILLING_ACCOUNT_EVENT` set to add its budget.
 - CI: fail when `make openapi` changes `web/src/api/` (schema drift check).
 - Move to TypeScript 6+ and ESLint 10 when typescript-eslint, openapi-typescript and
   eslint-plugin-jsx-a11y support them.
