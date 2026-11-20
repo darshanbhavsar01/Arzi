@@ -74,13 +74,13 @@ class Patient(_Value):
 
 
 class PerDayAmountCap(_Value):
-    type: Literal[RoomRentCapType.PER_DAY_AMOUNT] = RoomRentCapType.PER_DAY_AMOUNT
+    type: Literal[RoomRentCapType.PER_DAY_AMOUNT]
     amount: Amount
     clause_id: Name | None = None
 
 
 class PctOfSumInsuredCap(_Value):
-    type: Literal[RoomRentCapType.PCT_OF_SI] = RoomRentCapType.PCT_OF_SI
+    type: Literal[RoomRentCapType.PCT_OF_SI]
     pct: Percent
     clause_id: Name | None = None
 
@@ -88,7 +88,7 @@ class PctOfSumInsuredCap(_Value):
 class CategoryCap(_Value):
     """Cap expressed as a room category ("single private AC"); the hospital tariff prices it."""
 
-    type: Literal[RoomRentCapType.CATEGORY] = RoomRentCapType.CATEGORY
+    type: Literal[RoomRentCapType.CATEGORY]
     category: Name
     clause_id: Name | None = None
 
