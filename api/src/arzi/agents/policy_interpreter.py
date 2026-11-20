@@ -149,5 +149,5 @@ def task(ctx: RunContext) -> ReasoningTask[PolicyTermsDraft]:
         build_input=build,
         check=check,
         finish=finish,
-        max_output_tokens=3072,
+        max_output_tokens=8192,
     )

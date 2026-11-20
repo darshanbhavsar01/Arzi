@@ -138,5 +138,5 @@ def task(job: AppealJob) -> ReasoningTask[AppealDraftOutput]:
         build_input=build,
         check=check,
         finish=finish,
-        max_output_tokens=6144,
+        max_output_tokens=8192,
     )

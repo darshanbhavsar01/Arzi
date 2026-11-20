@@ -86,9 +86,10 @@ class Settings(BaseSettings):
     """Thinking tokens for extraction (0 = off, -1 = the model's default). Transcription needs
     little reasoning; models that cannot switch thinking off need -1."""
     extraction_concurrency: int = Field(default=3, ge=1, le=10)
-    reasoning_thinking_budget: int = Field(default=-1, ge=-1)
-    """Thinking tokens for the reasoning agents (policy reading, explanations, appeals);
-    -1 = the model's default."""
+    reasoning_thinking_budget: int = Field(default=1024, ge=-1)
+    """Thinking tokens for the reasoning agents (policy reading, explanations, appeals); -1 =
+    the model's default. Bounded because thinking counts against the output-token cap: an
+    unbounded budget can truncate the JSON answer."""
 
     max_upload_mb: int = Field(default=20, ge=1, le=32)
     max_pages: int = Field(default=30, ge=1)
