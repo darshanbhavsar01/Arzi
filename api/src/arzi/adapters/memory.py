@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from arzi.adapters.demo_seed import DEMO_HOSPITAL, DEMO_HOSPITAL_ID
 from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AuditRun, ClaimRecord, Hospital, LlmCall
+from arzi.domain.models import AppealVersion, AuditRun, ClaimRecord, Hospital, LlmCall
 from arzi.services.ports import AuditLogEntry, ClaimPage, ConcurrentUpdateError, StoredDocument
 
 
@@ -30,6 +30,7 @@ class InMemoryClaimRepository:
         self._runs: dict[tuple[str, str, str], AuditRun] = {}
         self._log: dict[tuple[str, str], list[AuditLogEntry]] = defaultdict(list)
         self.vaults: dict[tuple[str, str], dict[str, str]] = {}
+        self._appeals: dict[tuple[str, str, int], AppealVersion] = {}
 
     async def get_hospital(self, hospital_id: str) -> Hospital | None:
         return self._hospitals.get(hospital_id)
@@ -122,6 +123,21 @@ class InMemoryClaimRepository:
         self, hospital_id: str, claim_id: str, vault: dict[str, str]
     ) -> None:
         self.vaults[(hospital_id, claim_id)] = dict(vault)
+
+    async def get_identity_vault(self, hospital_id: str, claim_id: str) -> dict[str, str]:
+        return dict(self.vaults.get((hospital_id, claim_id), {}))
+
+    async def save_appeal(self, hospital_id: str, appeal: AppealVersion) -> None:
+        self._appeals[(hospital_id, appeal.claim_id, appeal.version)] = appeal
+
+    async def get_appeal(
+        self, hospital_id: str, claim_id: str, version: int
+    ) -> AppealVersion | None:
+        return self._appeals.get((hospital_id, claim_id, version))
+
+    async def list_appeals(self, hospital_id: str, claim_id: str) -> list[AppealVersion]:
+        found = [a for (h, c, _), a in self._appeals.items() if (h, c) == (hospital_id, claim_id)]
+        return sorted(found, key=lambda a: a.version)
 
 
 class InMemoryBlobStore:

@@ -23,9 +23,10 @@ from arzi.adapters.genai_client import (
 )
 from arzi.adapters.memory import InMemoryBlobStore, InMemoryClaimRepository, InMemoryCostLedger
 from arzi.agents.nodes import ModelSettings
-from arzi.agents.pipeline import AdkAuditPipeline
+from arzi.agents.pipeline import AdkAuditPipeline, run_reasoning
 from arzi.agents.stubs import FakeLlmClient
 from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
+from arzi.services.appeal import AppealService
 from arzi.services.claims import ClaimService
 from arzi.services.cost_ledger import BudgetedLlmClient, ModelPrice, parse_price_table
 from arzi.services.extraction import ExtractionService
@@ -55,6 +56,7 @@ class Services:
     auth: AuthVerifier
     claims: ClaimService
     runs: RunService
+    appeals: AppealService
 
 
 def utc_now() -> dt.datetime:
@@ -185,4 +187,5 @@ def build_services(
             max_pages=settings.max_pages,
         ),
         runs=RunService(repo, pipeline, clock=clock, new_id=id_factory),
+        appeals=AppealService(repo, models, clock=clock, reason=run_reasoning),
     )

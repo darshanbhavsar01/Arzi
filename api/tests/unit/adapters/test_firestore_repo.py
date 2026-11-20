@@ -4,8 +4,16 @@ import pytest
 
 from arzi.adapters.demo_seed import DEMO_HOSPITAL
 from arzi.adapters.firestore_repo import FirestoreClaimRepository, FirestoreCostLedger
-from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AuditRun, ClaimRecord, LlmCall
+from arzi.domain.enums import AppealForum, ClaimMode, ClaimStatus, ReasoningStatus
+from arzi.domain.models import (
+    AppealContent,
+    AppealVersion,
+    AuditRun,
+    ClaimRecord,
+    LlmCall,
+    Prose,
+)
+from arzi.domain.money import ZERO
 from arzi.services.ports import AuditLogEntry, ConcurrentUpdateError, StoredDocument
 from tests.firestore_fake import FakeFirestore
 
@@ -152,3 +160,29 @@ async def test_cost_ledger_increments(db: FakeFirestore) -> None:
     await ledger.add(day, call)
     assert await ledger.spent_micro_inr(day) == 1400
     assert db.docs["cost_ledger/2026-11-20"][0]["output_tokens"] == 12
+
+
+async def test_appeal_versions_and_identity_vault(repo: FirestoreClaimRepository) -> None:
+    assert await repo.get_identity_vault("h1", "ARZ-1") == {}
+    await repo.save_identity_vault("h1", "ARZ-1", {"P-ABCD": "Name"})
+    assert await repo.get_identity_vault("h1", "ARZ-1") == {"P-ABCD": "Name"}
+
+    def version(n: int) -> AppealVersion:
+        text = Prose(template="t", text="t")
+        content = AppealContent(subject=text, facts=text, items=(), relief=text, relief_amount=ZERO)
+        return AppealVersion(
+            claim_id="ARZ-1",
+            version=n,
+            forum=AppealForum.INSURER_GRO,
+            content=content,
+            drafting=ReasoningStatus.PASSED,
+            created_by="u",
+            created_at=T0,
+        )
+
+    await repo.save_appeal("h1", version(2))
+    await repo.save_appeal("h1", version(1))
+    assert await repo.get_appeal("h1", "ARZ-1", 1) == version(1)
+    assert await repo.get_appeal("h1", "ARZ-1", 3) is None
+    assert [a.version for a in await repo.list_appeals("h1", "ARZ-1")] == [1, 2]
+    assert await repo.list_appeals("h2", "ARZ-1") == []

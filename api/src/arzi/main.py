@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from arzi.adapters.readiness_probes import build_readiness_probes
 from arzi.api.errors import register_error_handlers
 from arzi.api.request_id import request_id_middleware
-from arzi.api.routers import claims, health, meta, runs
+from arzi.api.routers import appeals, claims, health, meta, runs
 from arzi.bootstrap import Services, build_services
 from arzi.config import Settings, get_settings
 from arzi.services.readiness import ReadinessProbe
@@ -43,6 +43,7 @@ def create_app(
     app.include_router(health.router)
     app.include_router(claims.router)
     app.include_router(runs.router)
+    app.include_router(appeals.router)
     app.include_router(meta.router)
 
     if settings.static_dir is not None:

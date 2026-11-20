@@ -13,7 +13,7 @@ from typing import Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AuditRun, ClaimRecord, Hospital, LlmCall, RunEvent
+from arzi.domain.models import AppealVersion, AuditRun, ClaimRecord, Hospital, LlmCall, RunEvent
 from arzi.services.extraction_schemas import DocType
 
 
@@ -121,6 +121,22 @@ class ClaimRepository(Protocol):
         self, hospital_id: str, claim_id: str, vault: dict[str, str]
     ) -> None:
         """Pseudonym → original value, in a restricted document used only for signed letters."""
+        ...
+
+    async def get_identity_vault(self, hospital_id: str, claim_id: str) -> dict[str, str]:
+        """Read only to address a signed appeal; empty when the claim has none."""
+        ...
+
+    async def save_appeal(self, hospital_id: str, appeal: AppealVersion) -> None:
+        """Create or replace one appeal version (``claims/{cid}/appeals/{version}``)."""
+        ...
+
+    async def get_appeal(
+        self, hospital_id: str, claim_id: str, version: int
+    ) -> AppealVersion | None: ...
+
+    async def list_appeals(self, hospital_id: str, claim_id: str) -> list[AppealVersion]:
+        """All versions, oldest first."""
         ...
 
 

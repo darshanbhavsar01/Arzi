@@ -4,6 +4,8 @@ The API turns these into RFC 7807 responses. ``detail`` is written for the user 
 contain document text or identifiers.
 """
 
+from collections.abc import Iterable
+
 
 class AppError(Exception):
     status = 400
@@ -74,3 +76,32 @@ class BudgetReachedError(AppError):
 
 class NotAuthenticatedError(AppError):
     status, slug, detail = 401, "unauthenticated", "Sign in to continue."
+
+
+class AppealNotFoundError(AppError):
+    status, slug, detail = 404, "appeal-not-found", "No such appeal version on this claim."
+
+
+class AppealNotSignedError(AppError):
+    status, slug, detail = (
+        409,
+        "appeal-not-signed",
+        "A named reviewer must sign this appeal before it can be exported.",
+    )
+
+
+class ForumNotEligibleError(AppError):
+    status, slug, detail = 409, "forum-not-eligible", "This forum cannot take the appeal yet."
+
+
+class AppealGuardrailError(AppError):
+    """A person's edit broke the appeal rules (an amount written out, an unknown reference)."""
+
+    status, slug = 422, "appeal-guardrail"
+
+    def __init__(self, violations: Iterable[object]) -> None:
+        listed = "; ".join(str(v) for v in violations)
+        super().__init__(
+            "Write amounts only as placeholders such as {{totals.recoverable}} and cite only "
+            f"references in the claim. Problems: {listed}."
+        )

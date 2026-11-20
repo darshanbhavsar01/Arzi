@@ -8,6 +8,7 @@ Layout (``docs/BUILD_PLAN.md`` §3.1)::
     hospitals/{hid}/claims/{cid}/runs/{rid}          AuditRun with its events and model calls
     hospitals/{hid}/claims/{cid}/events/{eid}        append-only audit log
     hospitals/{hid}/claims/{cid}/restricted/identity pseudonym → original identifiers
+    hospitals/{hid}/claims/{cid}/appeals/{version}   AppealVersion (immutable content)
     cost_ledger/{yyyy-mm-dd}                         daily cost and token totals
 
 Concurrency: a claim write compares the stored ``revision`` and then writes with a
@@ -18,7 +19,7 @@ import datetime as dt
 from typing import Any
 
 from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import AuditRun, ClaimRecord, Hospital, LlmCall
+from arzi.domain.models import AppealVersion, AuditRun, ClaimRecord, Hospital, LlmCall
 from arzi.services.ports import AuditLogEntry, ClaimPage, ConcurrentUpdateError, StoredDocument
 
 # The Firestore SDK is only partly typed; values crossing this boundary are plain dicts.
@@ -163,6 +164,31 @@ class FirestoreClaimRepository:
     ) -> None:
         ref = self._claim(hospital_id, claim_id).collection("restricted").document("identity")
         await ref.set({"values": vault})
+
+    async def get_identity_vault(self, hospital_id: str, claim_id: str) -> dict[str, str]:
+        ref = self._claim(hospital_id, claim_id).collection("restricted").document("identity")
+        snap = await ref.get()
+        data = snap.to_dict() if snap.exists else None
+        return dict((data or {}).get("values", {}))
+
+    async def save_appeal(self, hospital_id: str, appeal: AppealVersion) -> None:
+        ref = (
+            self._claim(hospital_id, appeal.claim_id)
+            .collection("appeals")
+            .document(str(appeal.version))
+        )
+        await ref.set(appeal.model_dump(mode="json"))
+
+    async def get_appeal(
+        self, hospital_id: str, claim_id: str, version: int
+    ) -> AppealVersion | None:
+        ref = self._claim(hospital_id, claim_id).collection("appeals").document(str(version))
+        snap = await ref.get()
+        return AppealVersion.model_validate(snap.to_dict()) if snap.exists else None
+
+    async def list_appeals(self, hospital_id: str, claim_id: str) -> list[AppealVersion]:
+        q = self._claim(hospital_id, claim_id).collection("appeals").order_by("version")
+        return [AppealVersion.model_validate(s.to_dict()) async for s in q.stream()]
 
     async def seed_hospital(self, hospital_id: str, hospital: Hospital) -> None:
         await (
