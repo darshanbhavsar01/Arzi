@@ -1,0 +1,13 @@
+# Allow-list: only what the image build needs.
+*
+!Dockerfile
+!api/pyproject.toml
+!api/uv.lock
+!api/src/
+!web/
+web/node_modules/
+web/dist/
+web/coverage/
+web/playwright-report/
+web/test-results/
+**/__pycache__/

@@ -1,0 +1,15 @@
+# Allow-list for `gcloud run deploy --source`: upload only what the image build needs.
+/*
+!/Dockerfile
+!/.dockerignore
+!/api/
+!/web/
+api/.venv/
+api/tests/
+api/.*_cache/
+web/node_modules/
+web/dist/
+web/coverage/
+web/playwright-report/
+web/test-results/
+**/__pycache__/
