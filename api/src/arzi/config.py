@@ -94,6 +94,8 @@ class Settings(BaseSettings):
     max_upload_mb: int = Field(default=20, ge=1, le=32)
     max_pages: int = Field(default=30, ge=1)
     demo_hospital_id: str = "sanjeevani-ahd"
+    demo_cases_enabled: bool = True
+    """Offer "Load demo cases" (synthetic documents from ``replay_dir``) on the worklist."""
     sse_heartbeat_s: float = Field(default=15.0, gt=0)
 
     static_dir: Path | None = None

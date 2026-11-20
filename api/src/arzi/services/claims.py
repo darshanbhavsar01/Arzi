@@ -7,12 +7,13 @@ file names or document content, which can carry patient identifiers.
 import datetime as dt
 import hashlib
 from collections.abc import Callable
+from typing import Literal
 
 import anyio
 from pydantic import BaseModel, ConfigDict, Field
 
 from arzi.domain.enums import ClaimMode, ClaimStatus, IrdaiList, LineCategory
-from arzi.domain.models import ClaimRecord, Consent
+from arzi.domain.models import ClaimRecord, Consent, FlagReview
 from arzi.domain.money import MoneyParseError, to_paise
 from arzi.domain.state import ClaimEvent, transition
 from arzi.rules.engine import audit
@@ -21,6 +22,7 @@ from arzi.services.errors import (
     ConflictError,
     DocumentNotFoundError,
     FileTooLargeError,
+    FlagNotFoundError,
     InvalidInputError,
     InvalidStateError,
     LineNotFoundError,
@@ -44,6 +46,15 @@ _SIGNATURES = (
     (b"\x89PNG\r\n\x1a\n", "image/png"),
 )
 _UPLOADABLE = {ClaimStatus.DRAFT, ClaimStatus.DOCUMENTS_UPLOADED, ClaimStatus.FAILED}
+
+
+class FlagDecision(BaseModel):
+    """Accept a flag as a real risk, or dismiss it with a reason (both are audited)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    decision: Literal["accepted", "dismissed"]
+    reason: str = Field("", max_length=500)
 
 
 class LineCorrection(BaseModel):
@@ -172,7 +183,14 @@ class ClaimService:
         if status is ClaimStatus.FAILED:
             status = transition(status, ClaimEvent.RETRY)
         status = transition(status, ClaimEvent.UPLOAD_DOCUMENTS)
-        await self._save(claim.model_copy(update={"status": status, "updated_at": self._clock()}))
+        types = dict(claim.document_types)
+        if document_type is not None:
+            types[document_id] = str(document_type)
+        await self._save(
+            claim.model_copy(
+                update={"status": status, "updated_at": self._clock(), "document_types": types}
+            )
+        )
         await self._log(
             principal,
             claim_id,
@@ -249,6 +267,30 @@ class ClaimService:
         )
         fields = ",".join(sorted(correction.model_fields_set)) or "confirm"
         await self._log(principal, claim_id, "line.corrected", line_id=line_id, fields=fields)
+        return saved
+
+    async def review_flag(
+        self, principal: Principal, claim_id: str, flag_id: str, decision: FlagDecision
+    ) -> ClaimRecord:
+        claim = await self.get(principal, claim_id)
+        if claim.audit is None or flag_id not in {f.flag_id for f in claim.audit.flags}:
+            raise FlagNotFoundError
+        if decision.decision == "dismissed" and not decision.reason.strip():
+            raise InvalidInputError("Say why the flag is dismissed; the reason is audited.")
+        review = FlagReview(
+            flag_id=flag_id,
+            decision=decision.decision,
+            reason=decision.reason.strip(),
+            by=principal.user_id,
+            at=self._clock(),
+        )
+        others = tuple(r for r in claim.flag_reviews if r.flag_id != flag_id)
+        saved = await self._save(
+            claim.model_copy(
+                update={"flag_reviews": (*others, review), "updated_at": self._clock()}
+            )
+        )
+        await self._log(principal, claim_id, f"flag.{decision.decision}", flag_id=flag_id)
         return saved
 
     async def audit_log(self, principal: Principal, claim_id: str) -> list[AuditLogEntry]:

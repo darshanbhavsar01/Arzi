@@ -29,6 +29,7 @@ from arzi.config import AuthMode, Environment, LlmMode, LlmProvider, Settings
 from arzi.services.appeal import AppealService
 from arzi.services.claims import ClaimService
 from arzi.services.cost_ledger import BudgetedLlmClient, ModelPrice, parse_price_table
+from arzi.services.demo import DemoService
 from arzi.services.extraction import ExtractionService
 from arzi.services.pipeline import AuditStep, ExtractStep, ReconcileStep, RedactStep
 from arzi.services.ports import (
@@ -57,6 +58,8 @@ class Services:
     claims: ClaimService
     runs: RunService
     appeals: AppealService
+    demo: DemoService
+    clock: Callable[[], dt.datetime]
 
 
 def utc_now() -> dt.datetime:
@@ -172,20 +175,24 @@ def build_services(
         AuditStep(),
         models,
     )
+    claims = ClaimService(
+        repo,
+        blobs,
+        clock=clock,
+        new_id=id_factory,
+        max_upload_mb=settings.max_upload_mb,
+        max_pages=settings.max_pages,
+    )
+    runs = RunService(repo, pipeline, clock=clock, new_id=id_factory)
     return Services(
         repo=repo,
         blobs=blobs,
         ledger=ledger,
         llm=llm,
         auth=DemoAuthVerifier(),
-        claims=ClaimService(
-            repo,
-            blobs,
-            clock=clock,
-            new_id=id_factory,
-            max_upload_mb=settings.max_upload_mb,
-            max_pages=settings.max_pages,
-        ),
-        runs=RunService(repo, pipeline, clock=clock, new_id=id_factory),
+        claims=claims,
+        runs=runs,
         appeals=AppealService(repo, models, clock=clock, reason=run_reasoning),
+        demo=DemoService(claims, runs, settings.replay_dir, enabled=settings.demo_cases_enabled),
+        clock=clock,
     )

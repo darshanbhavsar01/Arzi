@@ -7,6 +7,9 @@
 !web/
 !demo_cases/*/llm_cache/
 !demo_cases/*/extraction/
+# The synthetic documents, for "Load demo cases" (about 2.5 MB).
+!demo_cases/*/*.pdf
+!demo_cases/*/*.jpg
 web/node_modules/
 web/dist/
 web/coverage/

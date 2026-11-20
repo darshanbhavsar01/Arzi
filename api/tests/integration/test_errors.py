@@ -90,3 +90,26 @@ async def test_static_spa_is_served_and_misses_are_problems(
     assert "<title>Arzi</title>" in index.text
     assert missing.status_code == 404
     assert missing.headers["content-type"] == "application/problem+json"
+
+
+async def test_client_routes_fall_back_to_the_spa_with_cache_headers(
+    tmp_path: Path, settings: Settings, make_app: AppFactory, client_for: ClientFor
+) -> None:
+    (tmp_path / "index.html").write_text("<!doctype html><title>Arzi</title>", encoding="utf-8")
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "assets" / "app-1a2b.js").write_text("export {};", encoding="utf-8")
+    app = make_app(app_settings=settings.model_copy(update={"static_dir": tmp_path}))
+
+    async with client_for(app) as client:
+        route = await client.get("/claims/ARZ-2026-ABC123/appeal")
+        asset = await client.get("/assets/app-1a2b.js")
+        api_miss = await client.get("/api/v1/nothing-here")
+        file_miss = await client.get("/brand/missing.png")
+
+    assert route.status_code == 200
+    assert "<title>Arzi</title>" in route.text
+    assert route.headers["cache-control"] == "no-cache"
+    assert asset.headers["cache-control"] == "public, max-age=31536000, immutable"
+    assert api_miss.status_code == 404
+    assert api_miss.headers["content-type"] == "application/problem+json"
+    assert file_miss.status_code == 404

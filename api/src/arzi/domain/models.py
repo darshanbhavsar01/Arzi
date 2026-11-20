@@ -463,6 +463,16 @@ class AppealVersion(_Value):
     exported_at: dt.datetime | None = None
 
 
+class FlagReview(_Value):
+    """A person's decision on one flag: accepted as a real risk, or dismissed with a reason."""
+
+    flag_id: Name
+    decision: Literal["accepted", "dismissed"]
+    reason: Text = ""
+    by: Name
+    at: dt.datetime
+
+
 class AppealSummary(_Value):
     appeal_id: Name
     forum: AppealForum
@@ -530,6 +540,9 @@ class ClaimRecord(_Value):
     redaction: RedactionSummary | None = None
     policy_review: PolicyReview | None = None
     narratives: ClaimNarratives | None = None
+    document_types: dict[str, Name] = Field(default_factory=dict)
+    """Document ID → type, as chosen at upload or classified by the last run."""
+    flag_reviews: tuple[FlagReview, ...] = ()
     runs: tuple[AuditRun, ...] = ()
     appeals: tuple[AppealSummary, ...] = ()
     audit_refs: tuple[str, ...] = ()

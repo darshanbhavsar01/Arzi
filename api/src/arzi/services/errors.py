@@ -30,6 +30,18 @@ class RunNotFoundError(AppError):
     status, slug, detail = 404, "run-not-found", "No such audit run on this claim."
 
 
+class FlagNotFoundError(AppError):
+    status, slug, detail = 404, "flag-not-found", "No such flag in this claim's audit."
+
+
+class DemoUnavailableError(AppError):
+    status, slug, detail = (
+        404,
+        "demo-cases-unavailable",
+        "Demo cases are not available on this deployment.",
+    )
+
+
 class LineNotFoundError(AppError):
     status, slug, detail = 404, "line-not-found", "No such bill line on this claim."
 

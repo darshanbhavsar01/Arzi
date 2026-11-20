@@ -11,9 +11,9 @@ from fastapi import APIRouter, File, Form, Query, Response, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from arzi.api.deps import PrincipalDep, ServicesDep, SettingsDep
-from arzi.domain.enums import ClaimMode, ClaimStatus
-from arzi.domain.models import ClaimRecord, Totals
-from arzi.services.claims import LineCorrection
+from arzi.domain.enums import ClaimMode, ClaimStatus, Severity
+from arzi.domain.models import AppealSummary, ClaimRecord, Totals
+from arzi.services.claims import FlagDecision, LineCorrection
 from arzi.services.errors import FileTooLargeError
 from arzi.services.extraction_schemas import DocType
 from arzi.services.ports import AuditLogEntry, StoredDocument
@@ -33,28 +33,48 @@ class CreateClaim(BaseModel):
 
 
 class ClaimSummary(_Out):
-    """One worklist row: no patient data, no document content."""
+    """One worklist row: pseudonymised patient, no document content."""
 
     claim_id: str
     mode: ClaimMode
     status: ClaimStatus
-    insurer_hint: str | None
+    insurer: str | None
+    patient: str | None
+    admitted_on: dt.date | None
+    discharged_on: dt.date | None
+    created_at: dt.datetime | None
     updated_at: dt.datetime | None
     totals: Totals | None
     flag_count: int
+    severities: list[Severity]
     needs_confirmation: int
+    audit_seconds: float | None
+    """How long the last completed audit took."""
+    latest_appeal: AppealSummary | None
 
     @classmethod
     def of(cls, record: ClaimRecord) -> "ClaimSummary":
+        facts = record.facts
+        done = [r for r in record.runs if r.status == "completed" and r.finished_at]
+        last = done[-1] if done else None
         return cls(
             claim_id=record.claim_id,
             mode=record.mode,
             status=record.status,
-            insurer_hint=record.insurer_hint,
+            insurer=facts.policy.insurer if facts else record.insurer_hint,
+            patient=facts.patient.redacted_id if facts else None,
+            admitted_on=facts.admission.date_in if facts else None,
+            discharged_on=facts.admission.date_out if facts else None,
+            created_at=record.created_at,
             updated_at=record.updated_at,
             totals=record.audit.totals if record.audit else None,
             flag_count=len(record.audit.flags) if record.audit else 0,
+            severities=[f.severity for f in record.audit.flags] if record.audit else [],
             needs_confirmation=len(record.issues),
+            audit_seconds=(last.finished_at - last.started_at).total_seconds()
+            if last and last.finished_at
+            else None,
+            latest_appeal=record.appeals[-1] if record.appeals else None,
         )
 
 
@@ -74,8 +94,11 @@ class DocumentOut(_Out):
     uploaded_at: dt.datetime
 
     @classmethod
-    def of(cls, doc: StoredDocument) -> "DocumentOut":
-        return cls.model_validate(doc.model_dump(exclude={"uri"}))
+    def of(cls, doc: StoredDocument, types: dict[str, str] | None = None) -> "DocumentOut":
+        out = doc.model_dump(exclude={"uri"})
+        if out["document_type"] is None and types:
+            out["document_type"] = types.get(doc.document_id)
+        return cls.model_validate(out)
 
 
 class ViewUrl(_Out):
@@ -121,7 +144,9 @@ async def get_claim(claim_id: str, principal: PrincipalDep, services: ServicesDe
 async def list_documents(
     claim_id: str, principal: PrincipalDep, services: ServicesDep
 ) -> list[DocumentOut]:
-    return [DocumentOut.of(d) for d in await services.claims.documents(principal, claim_id)]
+    claim = await services.claims.get(principal, claim_id)
+    documents = await services.claims.documents(principal, claim_id)
+    return [DocumentOut.of(d, claim.document_types) for d in documents]
 
 
 @router.post("/{claim_id}/documents", status_code=status.HTTP_201_CREATED)
@@ -185,6 +210,18 @@ async def correct_line(
     services: ServicesDep,
 ) -> ClaimRecord:
     return await services.claims.correct_line(principal, claim_id, line_id, body)
+
+
+@router.post("/{claim_id}/flags/{flag_id}/review")
+async def review_flag(
+    claim_id: str,
+    flag_id: str,
+    body: FlagDecision,
+    principal: PrincipalDep,
+    services: ServicesDep,
+) -> ClaimRecord:
+    """Accept a flag or dismiss it with a reason; the decision is audited."""
+    return await services.claims.review_flag(principal, claim_id, flag_id, body)
 
 
 @router.get("/{claim_id}/audit-log")

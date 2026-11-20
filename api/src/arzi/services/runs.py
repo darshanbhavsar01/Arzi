@@ -218,7 +218,17 @@ class RunService:
         claim = await self._repo.get_claim(hid, cid)
         if claim is None:  # pragma: no cover - claims are never deleted mid-run
             return
-        update: dict[str, object] = {"updated_at": self._clock()}
+        # The claim keeps a light copy of each run (no events) for the worklist's timings.
+        summary = run.model_copy(
+            update={
+                "status": "failed" if failed else "completed",
+                "finished_at": self._clock(),
+                "events": (),
+                "calls": tuple(ctx.calls),
+            }
+        )
+        runs = tuple(summary if r.run_id == run.run_id else r for r in claim.runs)
+        update: dict[str, object] = {"updated_at": self._clock(), "runs": runs}
         if failed:
             update["status"] = transition(claim.status, ClaimEvent.FAIL)
         else:
@@ -231,12 +241,31 @@ class RunService:
                 "redaction": ctx.redaction.summary if ctx.redaction else None,
                 "policy_review": ctx.policy_review,
                 "narratives": ctx.narratives,
+                "document_types": {
+                    e.document.document_id: str(e.document_type) for e in ctx.extractions
+                },
+                # Decisions on flags the new audit no longer raises would point at nothing.
+                "flag_reviews": tuple(
+                    r
+                    for r in claim.flag_reviews
+                    if result and r.flag_id in {f.flag_id for f in result.flags}
+                ),
             }
             if ctx.redaction is not None:
                 await self._repo.save_identity_vault(hid, cid, ctx.redaction.vault)
         await self._repo.save_claim(claim.model_copy(update=update))
 
     # ------------------------------------------------------------------ stream
+
+    async def list(self, principal: Principal, claim_id: str) -> list[AuditRun]:
+        """Every run of a claim, newest first, with its events and model calls."""
+        claim = await self._repo.get_claim(principal.hospital_id, claim_id)
+        if claim is None:
+            raise ClaimNotFoundError
+        runs = [
+            await self._repo.get_run(principal.hospital_id, claim_id, r.run_id) for r in claim.runs
+        ]
+        return sorted((r for r in runs if r), key=lambda r: r.started_at, reverse=True)
 
     async def get(self, principal: Principal, claim_id: str, run_id: str) -> AuditRun:
         run = await self._repo.get_run(principal.hospital_id, claim_id, run_id)

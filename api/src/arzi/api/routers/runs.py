@@ -38,6 +38,14 @@ async def start_run(
     )
 
 
+@router.get("")
+async def list_runs(
+    claim_id: str, principal: PrincipalDep, services: ServicesDep
+) -> list[AuditRun]:
+    """Every audit run of the claim, newest first: stages, timings, models, prompts, cost."""
+    return await services.runs.list(principal, claim_id)
+
+
 @router.get("/{run_id}")
 async def get_run(
     claim_id: str, run_id: str, principal: PrincipalDep, services: ServicesDep
