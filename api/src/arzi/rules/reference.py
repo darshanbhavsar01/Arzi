@@ -29,6 +29,7 @@ class NonPayableItem(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     list: IrdaiList
+    number: int = Field(ge=1)
     item: str
     aliases: tuple[str, ...] = Field(min_length=1)
     source: str

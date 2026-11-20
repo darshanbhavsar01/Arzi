@@ -37,15 +37,37 @@ def test_duplicate_citation_ids_are_rejected() -> None:
         index_citations((entry, entry))
 
 
-def test_non_payable_items_are_seeded_only_from_the_brief_and_unverified() -> None:
+def test_non_payable_lists_have_the_printed_sizes_and_stay_unverified() -> None:
     items = non_payable_items()
-    assert {item.item for item in items} == {
-        "Baby food",
-        "Beauty services",
-        "Laundry",
-        "Cold pack / hot pack",
-        "Crepe bandage",
-        "Admission / registration charges",
-    }
+    sizes = {name: sum(1 for i in items if i.list is name) for name in IrdaiList}
+    assert sizes == {IrdaiList.I: 68, IrdaiList.II: 37, IrdaiList.III: 23, IrdaiList.IV: 18}
+    for name in IrdaiList:
+        numbers = [i.number for i in items if i.list is name]
+        assert numbers == list(range(1, len(numbers) + 1))
+    # Verified only after a person reviews the parsed list against the scan.
     assert all(item.status is CitationStatus.VERIFY for item in items)
-    assert {item.list for item in items} == {IrdaiList.I, IrdaiList.IV}
+    assert all("Annexure I" in item.source for item in items)
+
+
+@pytest.mark.parametrize(
+    ("item", "expected"),
+    [
+        ("BABY FOOD", IrdaiList.I),
+        ("BEAUTY SERVICES", IrdaiList.I),
+        ("LAUNDRY CHARGES", IrdaiList.I),
+        ("COLD PACK/HOT PACK", IrdaiList.I),
+        ("CREPE BANDAGE", IrdaiList.I),
+        ("ADMISSION/REGISTRATION CHARGES", IrdaiList.IV),
+    ],
+)
+def test_items_named_in_the_domain_brief_are_on_the_expected_list(
+    item: str, expected: IrdaiList
+) -> None:
+    assert {i.item: i.list for i in non_payable_items()}[item] is expected
+
+
+def test_every_alias_names_something_specific() -> None:
+    generic = {"charges", "charge", "cost", "costs", "expenses", "etc", "any"}
+    for item in non_payable_items():
+        for alias in item.aliases:
+            assert any(w not in generic and len(w) > 2 for w in alias.split()), alias

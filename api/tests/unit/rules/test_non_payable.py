@@ -55,7 +55,7 @@ def test_non_payable_addon_covers_list_i() -> None:
 
 def test_category_hint_alone_never_cuts() -> None:
     """The extractor called it non-payable, but nothing in the reference list matches."""
-    result = audit(facts(line(1, C.NON_PAYABLE, 900, description="Attendant pass")))
+    result = audit(facts(line(1, C.NON_PAYABLE, 900, description="Wheelchair hire")))
     assert result.flags == ()
 
 

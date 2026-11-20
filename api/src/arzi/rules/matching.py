@@ -10,9 +10,9 @@ only a hint for a human to confirm, never an automatic cut.
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from functools import cache
+from functools import cache, lru_cache
 
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz, process
 
 from arzi.rules.reference import NonPayableItem, non_payable_items
 
@@ -50,18 +50,46 @@ def _alias_index() -> tuple[tuple[tuple[str, ...], str, NonPayableItem], ...]:
     )
 
 
+@cache
+def _vocabulary() -> tuple[str, ...]:
+    return tuple(sorted({token for tokens, _, _ in _alias_index() for token in tokens}))
+
+
+def _token_scores(tokens: tuple[str, ...]) -> dict[str, float]:
+    """Best ratio (at or above the threshold) of each reference token against the line.
+
+    The same comparison ``coverage_score`` makes for every (reference token, line token) pair,
+    but run inside rapidfuzz per line token instead of a Python loop per pair. Reference tokens
+    below the threshold are absent, which reads as 0.
+    """
+    best: dict[str, float] = {}
+    for token in tokens:
+        for choice, score, _ in process.extract(
+            token, _vocabulary(), scorer=fuzz.ratio, score_cutoff=THRESHOLD, limit=None
+        ):
+            best[choice] = max(score, best.get(choice, 0.0))
+    return best
+
+
+@lru_cache(maxsize=4096)
 def match_non_payable(description: str) -> NonPayableMatch | None:
     """The IRDAI Annexure I entry a bill line describes, or ``None`` below the threshold.
 
-    The highest score wins; on a tie the earlier entry in the reference file wins, so the
-    result never depends on iteration order.
+    The highest score wins, then the most specific alias (more words), so "Face mask" is the
+    List II face mask rather than the List I "mask". A remaining tie goes to the earlier entry
+    in the reference file, so the result never depends on iteration order.
     """
     tokens = normalise(description)
+    if not tokens:
+        return None
+    scores = _token_scores(tokens)
     best: NonPayableMatch | None = None
+    best_rank = (0.0, 0)
     for alias_tokens, alias, item in _alias_index():
-        score = coverage_score(alias_tokens, tokens)
-        if score >= THRESHOLD and (best is None or score > best.score):
-            best = NonPayableMatch(item=item, alias=alias, score=score)
+        score = min(scores.get(token, 0.0) for token in alias_tokens)
+        rank = (score, len(alias_tokens))
+        if score >= THRESHOLD and (best is None or rank > best_rank):
+            best, best_rank = NonPayableMatch(item=item, alias=alias, score=score), rank
     return best
 
 
