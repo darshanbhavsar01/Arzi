@@ -1,5 +1,12 @@
 # Arzi
 
+[![CI](https://github.com/darshanbhavsar01/Arzi/actions/workflows/ci.yml/badge.svg)](https://github.com/darshanbhavsar01/Arzi/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Google Cloud](https://img.shields.io/badge/Google_Cloud-asia--south1-4285F4?logo=googlecloud&logoColor=white)](https://cloud.google.com/)
+[![Vertex AI](https://img.shields.io/badge/Vertex_AI-Gemini-EA4335?logo=google&logoColor=white)](https://cloud.google.com/vertex-ai)
+
 **Your claim, defended before and after the insurer says no.** Arzi audits Indian hospital
 health-insurance claims before filing, shows every likely deduction with the ₹ at risk and the
 exact policy clause or IRDAI rule, and drafts clause-cited appeals that a qualified person
@@ -57,3 +64,7 @@ All settings are environment variables declared in
 Model IDs are configuration and are never hard-coded; `make models` lists what the project can use.
 
 
+## Licence
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright 2026 Darshan Bhavsar.
