@@ -101,6 +101,15 @@ class Settings(BaseSettings):
     demo_cases_enabled: bool = True
     tts_voice: str = "Kore"
     """Gemini TTS prebuilt voice for the family narration."""
+    rate_limit_per_minute: int = Field(default=300, ge=1)
+    """Per-client API requests per minute (token bucket, per instance)."""
+    rate_limit_burst: int = Field(default=120, ge=1)
+    max_request_mb: int = Field(default=80, ge=1)
+    """Cap on any request body; uploads are also limited per file by ``max_upload_mb``."""
+    log_json: bool | None = None
+    """JSON logs for Cloud Logging; defaults to on in the cloud environment."""
+    retention_days: int = Field(default=30, ge=1)
+    """Claims not updated for this long are erased by the retention sweep (as GCS lifecycle)."""
     share_link_days: int = Field(default=7, ge=1, le=30)
     desk_contact: str = "TPA desk, ground floor · 9 am to 7 pm, every day"
     """Shown to families on shared links."""

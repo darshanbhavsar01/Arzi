@@ -15,9 +15,16 @@ from starlette.responses import Response
 from arzi.adapters.readiness_probes import build_readiness_probes
 from arzi.api.errors import register_error_handlers
 from arzi.api.request_id import request_id_middleware
-from arzi.api.routers import appeals, check, claims, demo, family, health, meta, runs
+from arzi.api.routers import appeals, check, claims, demo, family, health, meta, privacy, runs
+from arzi.api.security import (
+    TokenBucketLimiter,
+    body_limit_middleware,
+    rate_limit_middleware,
+    security_headers_middleware,
+)
 from arzi.bootstrap import Services, build_services
-from arzi.config import Settings, get_settings
+from arzi.config import Environment, Settings, get_settings
+from arzi.observability.logging import configure_logging
 from arzi.services.readiness import ReadinessProbe
 
 Scope = MutableMapping[str, Any]
@@ -57,6 +64,10 @@ def create_app(
 ) -> FastAPI:
     """Build the ASGI app; tests pass settings, fake probes and services, production none."""
     settings = settings or get_settings()
+    json_logs = (
+        settings.log_json if settings.log_json is not None else (settings.env is Environment.CLOUD)
+    )
+    configure_logging(json_output=json_logs, project=settings.google_cloud_project)
     app = FastAPI(
         title="Arzi API",
         version="0.1.0",
@@ -69,6 +80,16 @@ def create_app(
 
     app.state.services = services or build_services(settings)
 
+    # Registered innermost first: the request ID wraps everything, so even a 429 or 413
+    # carries one, and every response gets the security headers.
+    limiter = TokenBucketLimiter(
+        settings.pseudonym_salt.get_secret_value().encode(),
+        rate_per_minute=settings.rate_limit_per_minute,
+        burst=settings.rate_limit_burst,
+    )
+    app.middleware("http")(rate_limit_middleware(limiter))
+    app.middleware("http")(body_limit_middleware(settings.max_request_mb * 1024 * 1024))
+    app.middleware("http")(security_headers_middleware)
     app.middleware("http")(request_id_middleware)
     register_error_handlers(app)
     app.include_router(health.router)
@@ -80,6 +101,7 @@ def create_app(
     app.include_router(family.desk)
     app.include_router(family.public)
     app.include_router(check.router)
+    app.include_router(privacy.router)
 
     if settings.static_dir is not None:
         # Mounted last so API and health routes always take precedence.

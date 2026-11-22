@@ -6,6 +6,7 @@ file names or document content, which can carry patient identifiers.
 
 import datetime as dt
 import hashlib
+import re
 from collections.abc import Callable
 from typing import Literal
 
@@ -66,6 +67,15 @@ class LineCorrection(BaseModel):
     amount: str | None = Field(None, max_length=32, description="Rupees, e.g. '8,000.00'")
     irdai_list: IrdaiList | None = None
     """Send null to say the item is on no IRDAI list."""
+
+
+# PDF names that run code or carry payloads. A byte scan sees names in plain dictionaries; names
+# inside compressed object streams are not visible to it (pdfium never executes them anyway).
+_ACTIVE_PDF = re.compile(rb"/(?:JavaScript|JS|Launch|EmbeddedFile|RichMedia|XFA)(?![A-Za-z0-9])")
+
+
+def has_active_content(data: bytes) -> bool:
+    return _ACTIVE_PDF.search(data) is not None
 
 
 def sniff(data: bytes) -> str | None:
@@ -158,6 +168,10 @@ class ClaimService:
         content_type = sniff(data)
         if content_type is None:
             raise UnsupportedMediaError
+        if content_type == "application/pdf" and has_active_content(data):
+            raise UploadRejectedError(
+                "PDFs with scripts, launch actions or attachments are refused."
+            )
         pages = await anyio.to_thread.run_sync(count_pages, data, content_type)
         if pages > self._max_pages:
             raise UploadRejectedError(f"Documents can have at most {self._max_pages} pages.")
