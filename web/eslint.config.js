@@ -37,7 +37,7 @@ export default defineConfig(
     extends: [tseslint.configs.disableTypeChecked],
   },
   {
-    files: ['*.config.{js,ts}', 'e2e/**'],
+    files: ['*.config.{js,ts}', 'e2e/**', 'capture/**'],
     languageOptions: { globals: { ...globals.node } },
   },
   prettier,

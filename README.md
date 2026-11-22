@@ -12,7 +12,7 @@ letter at `/check`.
 
 ![Claim workspace: money at stake, the flags with their citations and fix, beside the photographed bill](docs/screens/03-workspace-pre-submission.png)
 
-More screens in [`docs/screens/`](docs/screens/): worklist, deduction workspace, bill lines, forum checklist, appeal editor, the signed appeal, the family page on a phone and the free check.
+**Every screen of the deployed app, with captions:** [`docs/screens/live/`](docs/screens/live/README.md). Earlier stills in [`docs/screens/`](docs/screens/): worklist, deduction workspace, bill lines, forum checklist, appeal editor, the signed appeal, the family page on a phone and the free check.
 
 **Try it:** open the app, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
 
