@@ -59,6 +59,24 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  audit:
+    name: Dependency audit (pip-audit, npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - name: Python runtime dependencies (locked)
+        working-directory: api
+        run: |
+          uv export --locked --no-dev --no-hashes --no-emit-project --format requirements-txt -o requirements.txt
+          uvx pip-audit --requirement requirements.txt --disable-pip --no-deps --strict
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Web runtime dependencies
+        working-directory: web
+        run: npm audit --omit=dev --audit-level=high
+
   commits:
     name: Commit messages (single author, no trailers)
     runs-on: ubuntu-latest
