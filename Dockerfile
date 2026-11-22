@@ -27,10 +27,13 @@ COPY --from=api /app/.venv /app/.venv
 COPY --from=web /web/dist /app/static
 # Synthetic demo documents, recorded model responses (replay) and ideal extractions (fake).
 COPY demo_cases /app/demo_cases
+# The replay root defaults to a path relative to the source tree; in the image the package lives
+# in site-packages, so point it at the copied demo cases explicitly.
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     ARZI_STATIC_DIR=/app/static \
+    ARZI_REPLAY_DIR=/app/demo_cases \
     PORT=8080
 USER arzi
 EXPOSE 8080
