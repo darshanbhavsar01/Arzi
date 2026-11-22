@@ -56,6 +56,4 @@ All settings are environment variables declared in
 [`api/src/arzi/config.py`](api/src/arzi/config.py) (prefix `ARZI_`, plus `GOOGLE_CLOUD_PROJECT`).
 Model IDs are configuration and are never hard-coded; `make models` lists what the project can use.
 
-## Licence
 
-To be decided. All rights reserved until a licence is added.
