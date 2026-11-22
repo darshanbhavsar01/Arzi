@@ -10,11 +10,11 @@ letter at `/check`.
 > Arzi is decision support. A qualified person reviews and signs every appeal.
 > All data in this repository is synthetic; hospitals and insurers named in demos are fictional.
 
-![Claim workspace: money at stake, the flags with their citations and fix, beside the photographed bill](docs/screens/03-workspace-pre-submission.png)
+![Claim workspace: money at stake, the flags with their citations and fix, beside the photographed bill](docs/screens/live/04-a-pre-submission-flags.png)
 
-**Every screen of the deployed app, with captions:** [`docs/screens/live/`](docs/screens/live/README.md). Earlier stills in [`docs/screens/`](docs/screens/): worklist, deduction workspace, bill lines, forum checklist, appeal editor, the signed appeal, the family page on a phone and the free check.
+**Every screen of the deployed app, with captions:** [`docs/screens/live/`](docs/screens/live/README.md).
 
-**Try it:** open the app, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
+**Try it:** run `make dev`, open http://localhost:5173, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
 
 **Event deployment:** ran on Cloud Run (Mumbai) for Startup Buildathon India 2026 and has since been retired; [every screen](docs/screens/live/README.md) was captured from it first. Run it yourself with `make dev`.
 

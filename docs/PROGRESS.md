@@ -76,7 +76,7 @@
 | `/check` works end to end in replay mode | pass: Playwright uploads case C's letter, policy, bill and discharge summary on a phone, gives consent, watches the audit stream, reads the explanation, drafts the GRO appeal, signs it with a name and downloads `appeal-v1.pdf`; an API integration test does the same for B and C |
 | Rate limit and budget guard tested | pass: per-IP (5/day) and global (200/day) limits return 429 `rate-limited`; TTS calls go through the cost ledger and are refused over the daily cap (`BudgetedSpeech` tests); share links that are unknown, expired or revoked all return the same 404 |
 | Recordings | pass: `record_demo.py case_a case_b case_c --replay` exits 0 offline: three languages and three audio clips per case, both public checks with their appeals; 19 unused recordings pruned |
-| Screenshots | `docs/screens/09-share-dialog.png` to `13-free-check.png` (phone, 390 px, 2× scale) |
+| Screenshots | `docs/screens/live/` (every screen, captured from the deployment) |
 | `make check` green | pass (recipes run directly): 645 API tests, 98.04% coverage; rules gate 100%; ruff, mypy strict, ESLint strict, Prettier, tsc, 30 Vitest tests; 7 Playwright journeys with axe |
 
 ## Decisions
@@ -459,7 +459,7 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Project `<project-id>` re-linked to billing account `<event-credit-account-2>` ("GDP Event
   Credit: Buildathon day 2", USD 5 credit), away from the owner's personal account. Budget
   `arzi-cap-event` (USD 5, alerts at 25/50/90/100%) created on it. The first event account
-  (`012742-...`) is closed. Budgets alert only; the kill switches in the runbook still apply.
+  (`<event-credit-account-1>`) is closed. Budgets alert only; the kill switches in the runbook still apply.
 - Everything else in the project (Cloud Run, Firestore, Storage, Artifact Registry) bills through
   the project, so nothing else moved. Service runs in replay mode (no model spend).
 
