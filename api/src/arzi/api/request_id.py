@@ -10,6 +10,8 @@ from collections.abc import Awaitable, Callable
 
 from fastapi import Request, Response
 
+from arzi.observability.logging import request_id_var, trace_id, trace_var
+
 REQUEST_ID_HEADER = "X-Request-ID"
 _VALID_ID = re.compile(r"^[A-Za-z0-9-]{8,64}$")
 
@@ -25,6 +27,13 @@ async def request_id_middleware(
     inbound = request.headers.get(REQUEST_ID_HEADER, "")
     request_id = inbound if _VALID_ID.fullmatch(inbound) else uuid.uuid4().hex
     request.state.request_id = request_id
-    response = await call_next(request)
+    # Log lines written while handling this request carry its ID and Cloud Trace ID.
+    id_token = request_id_var.set(request_id)
+    trace_token = trace_var.set(trace_id(request.headers.get("x-cloud-trace-context")))
+    try:
+        response = await call_next(request)
+    finally:
+        request_id_var.reset(id_token)
+        trace_var.reset(trace_token)
     response.headers[REQUEST_ID_HEADER] = request_id
     return response

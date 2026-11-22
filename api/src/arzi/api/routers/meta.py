@@ -48,6 +48,46 @@ def prompt_versions() -> list[str]:
     return sorted(n.removesuffix(".md").replace(".v", "@v") for n in names)
 
 
+class Status(BaseModel):
+    """What is running: build, AI configuration and today's model spend against the cap."""
+
+    model_config = ConfigDict(frozen=True)
+
+    build_sha: str
+    environment: str
+    region: str
+    llm_mode: str
+    llm_provider: str
+    models: ModelIds
+    prompt_versions: list[str]
+    daily_budget_inr: int
+    spent_today_inr: float
+    budget_used_fraction: float
+
+
+@router.get("/status")
+async def status(services: ServicesDep, settings: SettingsDep) -> Status:
+    spent = await services.ledger.spent_micro_inr(today_ist(services.clock)) / 1_000_000
+    cap = settings.daily_budget_inr
+    return Status(
+        build_sha=settings.build_sha,
+        environment=str(settings.env),
+        region=settings.gcp_region,
+        llm_mode=str(settings.llm_mode),
+        llm_provider=str(settings.llm_provider),
+        models=ModelIds(
+            flash=settings.model_flash,
+            pro=settings.model_pro,
+            tts=settings.model_tts,
+            live=settings.model_live,
+        ),
+        prompt_versions=prompt_versions(),
+        daily_budget_inr=cap,
+        spent_today_inr=spent,
+        budget_used_fraction=round(spent / cap, 4) if cap else 1.0,
+    )
+
+
 @router.get("/citations")
 async def list_citations() -> list[RuleCitation]:
     return list(citations().values())
