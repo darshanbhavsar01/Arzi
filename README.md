@@ -1,6 +1,5 @@
 # Arzi
 
-[![CI](https://github.com/darshanbhavsar01/Arzi/actions/workflows/ci.yml/badge.svg)](https://github.com/darshanbhavsar01/Arzi/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
