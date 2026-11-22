@@ -90,7 +90,11 @@ export interface paths {
         get: operations["get_claim_api_v1_claims__claim_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Erase Claim
+         * @description Erase the claim and all its data (administrators only; cannot be undone).
+         */
+        delete: operations["erase_claim_api_v1_claims__claim_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -374,6 +378,8 @@ export interface paths {
         /**
          * Sign Appeal
          * @description A named reviewer signs; the SHA-256 of the exact content is stored with the signature.
+         *
+         *     Only the reviewer and admin roles may sign: the human gate is enforced here, not in the UI.
          */
         post: operations["sign_appeal_api_v1_claims__claim_id__appeals__version__sign_post"];
         delete?: never;
@@ -394,6 +400,23 @@ export interface paths {
          * @description The signed letter as a PDF; refused (409) until a named reviewer has signed it.
          */
         get: operations["export_appeal_api_v1_claims__claim_id__appeals__version__export_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/meta/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_v1_meta_status_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -660,6 +683,46 @@ export interface paths {
          * @description Upload, audit and get a private link to the result (a 7-day family view).
          */
         post: operations["start_check_api_v1_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/claims/{claim_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Claim
+         * @description Everything held about the claim, for a data principal's access request.
+         */
+        get: operations["export_claim_api_v1_claims__claim_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Retention
+         * @description Erase claims not updated within the retention window. Meant for Cloud Scheduler.
+         */
+        post: operations["run_retention_api_v1_admin_retention_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1028,6 +1091,36 @@ export interface components {
          */
         CitationStatus: "verified" | "verify";
         /**
+         * ClaimExport
+         * @description What Arzi holds about one claim, for a DPDP access request.
+         */
+        ClaimExport: {
+            /**
+             * Exported At
+             * Format: date-time
+             */
+            exported_at: string;
+            claim: components["schemas"]["ClaimRecord"];
+            /** Documents */
+            documents: components["schemas"]["ExportedDocument"][];
+            /** Runs */
+            runs: components["schemas"]["AuditRun"][];
+            /** Appeals */
+            appeals: components["schemas"]["AppealVersion"][];
+            /** Audit Log */
+            audit_log: components["schemas"]["AuditLogEntry"][];
+            /**
+             * Family Links
+             * @description Links created; tokens are never stored or exported
+             */
+            family_links: number;
+            /**
+             * Identifiers Held
+             * @description Pseudonyms with a raw value in the restricted vault (values not exported)
+             */
+            identifiers_held: string[];
+        };
+        /**
          * ClaimFacts
          * @description Everything the rules engine needs, already extracted, confirmed and redacted.
          */
@@ -1294,6 +1387,33 @@ export interface components {
         DraftAppeal: {
             forum: components["schemas"]["AppealForum"];
             gro_complaint?: components["schemas"]["GroComplaint"] | null;
+        };
+        /** Erasure */
+        Erasure: {
+            /** Claim Id */
+            claim_id: string;
+            /** Objects Deleted */
+            objects_deleted: number;
+        };
+        /** ExportedDocument */
+        ExportedDocument: {
+            /** Document Id */
+            document_id: string;
+            /** Filename */
+            filename: string;
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+            /** Pages */
+            pages: number;
+            /** Sha256 */
+            sha256: string;
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
         };
         /** FamilyAppealOut */
         FamilyAppealOut: {
@@ -1989,6 +2109,21 @@ export interface components {
          * @enum {string}
          */
         RejectionGround: "ped_waiting" | "specific_waiting" | "non_disclosure" | "other";
+        /** RetentionRequest */
+        RetentionRequest: {
+            /** Older Than Days */
+            older_than_days?: number | null;
+        };
+        /** RetentionResult */
+        RetentionResult: {
+            /**
+             * Cutoff
+             * Format: date-time
+             */
+            cutoff: string;
+            /** Erased */
+            erased: string[];
+        };
         /**
          * ReviewIssue
          * @description Something a person must confirm before the numbers can be trusted.
@@ -2121,6 +2256,31 @@ export interface components {
              * @constant
              */
             declaration: true;
+        };
+        /**
+         * Status
+         * @description What is running: build, AI configuration and today's model spend against the cap.
+         */
+        Status: {
+            /** Build Sha */
+            build_sha: string;
+            /** Environment */
+            environment: string;
+            /** Region */
+            region: string;
+            /** Llm Mode */
+            llm_mode: string;
+            /** Llm Provider */
+            llm_provider: string;
+            models: components["schemas"]["ModelIds"];
+            /** Prompt Versions */
+            prompt_versions: string[];
+            /** Daily Budget Inr */
+            daily_budget_inr: number;
+            /** Spent Today Inr */
+            spent_today_inr: number;
+            /** Budget Used Fraction */
+            budget_used_fraction: number;
         };
         /**
          * SubLimit
@@ -2405,6 +2565,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClaimRecord"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    erase_claim_api_v1_claims__claim_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erasure"];
                 };
             };
             /** @description Validation Error */
@@ -3126,6 +3319,26 @@ export interface operations {
             };
         };
     };
+    status_api_v1_meta_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Status"];
+                };
+            };
+        };
+    };
     list_citations_api_v1_meta_citations_get: {
         parameters: {
             query?: never;
@@ -3617,6 +3830,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CheckStarted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_claim_api_v1_claims__claim_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimExport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    run_retention_api_v1_admin_retention_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RetentionRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetentionResult"];
                 };
             };
             /** @description Validation Error */

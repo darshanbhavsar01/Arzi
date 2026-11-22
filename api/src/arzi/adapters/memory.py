@@ -170,6 +170,19 @@ class InMemoryClaimRepository:
         ]
         return sorted(found, key=lambda s: s.created_at)
 
+    async def delete_claim(self, hospital_id: str, claim_id: str) -> None:
+        key = (hospital_id, claim_id)
+        self._claims.pop(key, None)
+        self._documents.pop(key, None)
+        self._log.pop(key, None)
+        self.vaults.pop(key, None)
+        for run_key in [k for k in self._runs if k[:2] == key]:
+            del self._runs[run_key]
+        for appeal_key in [k for k in self._appeals if k[:2] == key]:
+            del self._appeals[appeal_key]
+        for token in [t for t, s in self._shares.items() if (s.hospital_id, s.claim_id) == key]:
+            del self._shares[token]
+
 
 class InMemoryBlobStore:
     def __init__(self) -> None:
@@ -187,6 +200,13 @@ class InMemoryBlobStore:
 
     async def view_url(self, uri: str, *, ttl_s: int = 600) -> str | None:
         return None  # the API streams the bytes itself
+
+    async def delete_claim(self, hospital_id: str, claim_id: str) -> int:
+        prefix = f"memory://hospitals/{hospital_id}/claims/{claim_id}/"
+        doomed = [uri for uri in self._blobs if uri.startswith(prefix)]
+        for uri in doomed:
+            del self._blobs[uri]
+        return len(doomed)
 
 
 class InMemoryCostLedger:

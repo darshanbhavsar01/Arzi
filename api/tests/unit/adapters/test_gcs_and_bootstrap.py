@@ -22,6 +22,9 @@ class FakeBlob:
     def download_as_bytes(self) -> bytes:
         return self._store[self.path]
 
+    def delete(self) -> None:
+        del self._store[self.path]
+
     def generate_signed_url(self, **kwargs: Any) -> str:  # noqa: ANN401 - SDK keywords
         if not self._can_sign:
             raise AttributeError("credentials cannot sign")
@@ -39,6 +42,19 @@ class FakeStorage:
 
     def blob(self, path: str) -> FakeBlob:
         return FakeBlob(self.objects, path, can_sign=self._can_sign)
+
+    def list_blobs(self, bucket: str, *, prefix: str) -> list[FakeBlob]:
+        return [self.blob(p) for p in self.objects if p.startswith(prefix)]
+
+
+async def test_gcs_deletes_every_object_of_one_claim_only() -> None:
+    storage = FakeStorage()
+    store = GcsBlobStore(storage, "b")
+    await store.put("h1", "ARZ-1", "d1", b"a", "application/pdf")
+    await store.put("h1", "ARZ-1", "d2", b"b", "application/pdf")
+    await store.put("h1", "ARZ-10", "d3", b"c", "application/pdf")
+    assert await store.delete_claim("h1", "ARZ-1") == 2
+    assert list(storage.objects) == ["hospitals/h1/claims/ARZ-10/d3"]
 
 
 async def test_gcs_store_put_get_and_sign() -> None:

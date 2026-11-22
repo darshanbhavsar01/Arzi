@@ -42,6 +42,12 @@ class FakeFirestore:
     def write_option(self, *, last_update_time: int | None) -> WriteOption:
         return WriteOption(last_update_time)
 
+    async def recursive_delete(self, reference: "Doc") -> None:
+        for path in [
+            p for p in self.docs if p == reference.path or p.startswith(f"{reference.path}/")
+        ]:
+            del self.docs[path]
+
 
 class Doc:
     def __init__(self, db: FakeFirestore, path: str) -> None:
@@ -70,6 +76,9 @@ class Doc:
                 current.get(key, 0) + value.value if isinstance(value, Increment) else value
             )
         self._db.docs[self.path] = (current, next(_clock))
+
+    async def delete(self) -> None:
+        self._db.docs.pop(self.path, None)
 
     async def update(self, data: dict[str, Any], option: WriteOption | None = None) -> None:
         found = self._db.docs.get(self.path)

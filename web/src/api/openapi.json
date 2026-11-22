@@ -321,6 +321,63 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "privacy"
+        ],
+        "summary": "Erase Claim",
+        "description": "Erase the claim and all its data (administrators only; cannot be undone).",
+        "operationId": "erase_claim_api_v1_claims__claim_id__delete",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erasure"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/claims/{claim_id}/documents": {
@@ -1628,7 +1685,7 @@
           "appeals"
         ],
         "summary": "Sign Appeal",
-        "description": "A named reviewer signs; the SHA-256 of the exact content is stored with the signature.",
+        "description": "A named reviewer signs; the SHA-256 of the exact content is stored with the signature.\n\nOnly the reviewer and admin roles may sign: the human gate is enforced here, not in the UI.",
         "operationId": "sign_appeal_api_v1_claims__claim_id__appeals__version__sign_post",
         "parameters": [
           {
@@ -1767,6 +1824,27 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meta/status": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Status",
+        "operationId": "status_api_v1_meta_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
                 }
               }
             }
@@ -2540,6 +2618,132 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CheckStarted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/claims/{claim_id}/export": {
+      "get": {
+        "tags": [
+          "privacy"
+        ],
+        "summary": "Export Claim",
+        "description": "Everything held about the claim, for a data principal's access request.",
+        "operationId": "export_claim_api_v1_claims__claim_id__export_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimExport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/retention": {
+      "post": {
+        "tags": [
+          "privacy"
+        ],
+        "summary": "Run Retention",
+        "description": "Erase claims not updated within the retention window. Meant for Cloud Scheduler.",
+        "operationId": "run_retention_api_v1_admin_retention_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/RetentionRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionResult"
                 }
               }
             }
@@ -3496,6 +3700,72 @@
         "title": "CitationStatus",
         "description": "``verify`` is rendered as an amber \"Verify before filing\" badge."
       },
+      "ClaimExport": {
+        "properties": {
+          "exported_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Exported At"
+          },
+          "claim": {
+            "$ref": "#/components/schemas/ClaimRecord"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/ExportedDocument"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditRun"
+            },
+            "type": "array",
+            "title": "Runs"
+          },
+          "appeals": {
+            "items": {
+              "$ref": "#/components/schemas/AppealVersion"
+            },
+            "type": "array",
+            "title": "Appeals"
+          },
+          "audit_log": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogEntry"
+            },
+            "type": "array",
+            "title": "Audit Log"
+          },
+          "family_links": {
+            "type": "integer",
+            "title": "Family Links",
+            "description": "Links created; tokens are never stored or exported"
+          },
+          "identifiers_held": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Identifiers Held",
+            "description": "Pseudonyms with a raw value in the restricted vault (values not exported)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exported_at",
+          "claim",
+          "documents",
+          "runs",
+          "appeals",
+          "audit_log",
+          "family_links",
+          "identifiers_held"
+        ],
+        "title": "ClaimExport",
+        "description": "What Arzi holds about one claim, for a DPDP access request."
+      },
       "ClaimFacts": {
         "properties": {
           "claim_id": {
@@ -4271,6 +4541,68 @@
           "forum"
         ],
         "title": "DraftAppeal"
+      },
+      "Erasure": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "objects_deleted": {
+            "type": "integer",
+            "title": "Objects Deleted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim_id",
+          "objects_deleted"
+        ],
+        "title": "Erasure"
+      },
+      "ExportedDocument": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "title": "Document Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "filename",
+          "content_type",
+          "size_bytes",
+          "pages",
+          "sha256",
+          "uploaded_at"
+        ],
+        "title": "ExportedDocument"
       },
       "FamilyAppealOut": {
         "properties": {
@@ -5974,6 +6306,48 @@
         ],
         "title": "RejectionGround"
       },
+      "RetentionRequest": {
+        "properties": {
+          "older_than_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 3650.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Older Than Days"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RetentionRequest"
+      },
+      "RetentionResult": {
+        "properties": {
+          "cutoff": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Cutoff"
+          },
+          "erased": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Erased"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cutoff",
+          "erased"
+        ],
+        "title": "RetentionResult"
+      },
       "ReviewIssue": {
         "properties": {
           "code": {
@@ -6315,6 +6689,67 @@
           "declaration"
         ],
         "title": "SignRequest"
+      },
+      "Status": {
+        "properties": {
+          "build_sha": {
+            "type": "string",
+            "title": "Build Sha"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "region": {
+            "type": "string",
+            "title": "Region"
+          },
+          "llm_mode": {
+            "type": "string",
+            "title": "Llm Mode"
+          },
+          "llm_provider": {
+            "type": "string",
+            "title": "Llm Provider"
+          },
+          "models": {
+            "$ref": "#/components/schemas/ModelIds"
+          },
+          "prompt_versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Prompt Versions"
+          },
+          "daily_budget_inr": {
+            "type": "integer",
+            "title": "Daily Budget Inr"
+          },
+          "spent_today_inr": {
+            "type": "number",
+            "title": "Spent Today Inr"
+          },
+          "budget_used_fraction": {
+            "type": "number",
+            "title": "Budget Used Fraction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "build_sha",
+          "environment",
+          "region",
+          "llm_mode",
+          "llm_provider",
+          "models",
+          "prompt_versions",
+          "daily_budget_inr",
+          "spent_today_inr",
+          "budget_used_fraction"
+        ],
+        "title": "Status",
+        "description": "What is running: build, AI configuration and today's model spend against the cap."
       },
       "SubLimit": {
         "properties": {

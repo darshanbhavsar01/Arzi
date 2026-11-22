@@ -186,3 +186,34 @@ async def test_appeal_versions_and_identity_vault(repo: FirestoreClaimRepository
     assert await repo.get_appeal("h1", "ARZ-1", 3) is None
     assert [a.version for a in await repo.list_appeals("h1", "ARZ-1")] == [1, 2]
     assert await repo.list_appeals("h2", "ARZ-1") == []
+
+
+async def test_delete_claim_erases_subcollections_and_links_of_that_claim_only(
+    repo: FirestoreClaimRepository, db: FakeFirestore
+) -> None:
+    from arzi.domain.models import ShareLink
+
+    await repo.create_claim(_record("ARZ-1"))
+    await repo.create_claim(_record("ARZ-2"))
+    await repo.save_identity_vault("h1", "ARZ-1", {"P-1": "Ramesh"})
+    await repo.append_audit_log("h1", "ARZ-1", AuditLogEntry(action="x", actor="u", at=T0))
+    for cid, token in (("ARZ-1", "1" * 64), ("ARZ-2", "2" * 64)):
+        await repo.save_share(
+            ShareLink.model_validate(
+                {
+                    "token_sha256": token,
+                    "hospital_id": "h1",
+                    "claim_id": cid,
+                    "created_by": "u",
+                    "created_at": T0,
+                    "expires_at": T0,
+                }
+            )
+        )
+    await repo.delete_claim("h1", "ARZ-1")
+    assert await repo.get_claim("h1", "ARZ-1") is None
+    assert await repo.get_identity_vault("h1", "ARZ-1") == {}
+    assert await repo.list_audit_log("h1", "ARZ-1") == []
+    assert await repo.get_share("1" * 64) is None
+    assert await repo.get_claim("h1", "ARZ-2") is not None
+    assert await repo.get_share("2" * 64) is not None

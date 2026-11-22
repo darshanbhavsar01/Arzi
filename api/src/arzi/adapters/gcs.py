@@ -57,3 +57,15 @@ class GcsBlobStore:
         except Exception as exc:  # signing needs IAM the deployment may not have
             logger.warning("signed URL unavailable (%s); streaming instead", type(exc).__name__)
             return None
+
+    async def delete_claim(self, hospital_id: str, claim_id: str) -> int:
+        prefix = f"hospitals/{hospital_id}/claims/{claim_id}/"
+
+        def delete_all() -> int:
+            blobs = list(self._client.list_blobs(self._bucket, prefix=prefix))
+            for blob in blobs:
+                blob.delete()
+            return len(blobs)
+
+        removed: int = await anyio.to_thread.run_sync(delete_all)
+        return removed

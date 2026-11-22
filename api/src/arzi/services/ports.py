@@ -155,6 +155,11 @@ class ClaimRepository(Protocol):
         """Every family link of a claim, oldest first."""
         ...
 
+    async def delete_claim(self, hospital_id: str, claim_id: str) -> None:
+        """Erase the claim and everything under it (documents, runs, log, identity vault,
+        appeals) plus its family links. A DPDP erasure, so nothing is kept."""
+        ...
+
 
 class ConcurrentUpdateError(Exception):
     """Someone else changed the claim since it was read."""
@@ -171,6 +176,10 @@ class BlobStore(Protocol):
 
     async def view_url(self, uri: str, *, ttl_s: int = 600) -> str | None:
         """A short-lived URL for the browser, or None when the API must stream the bytes."""
+        ...
+
+    async def delete_claim(self, hospital_id: str, claim_id: str) -> int:
+        """Delete every object stored for the claim; returns how many were removed."""
         ...
 
 

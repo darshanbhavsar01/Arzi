@@ -217,6 +217,13 @@ class FirestoreClaimRepository:
         found = [ShareLink.model_validate(s.to_dict()) async for s in q.stream()]
         return sorted(found, key=lambda s: s.created_at)
 
+    async def delete_claim(self, hospital_id: str, claim_id: str) -> None:
+        claim = self._claim(hospital_id, claim_id)
+        # recursive_delete removes the document and every subcollection under it.
+        await self._db.recursive_delete(claim)
+        for share in await self.list_shares(hospital_id, claim_id):
+            await self._db.collection("share_tokens").document(share.token_sha256).delete()
+
     async def seed_hospital(self, hospital_id: str, hospital: Hospital) -> None:
         await (
             self._db.collection("hospitals")

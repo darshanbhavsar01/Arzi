@@ -51,6 +51,7 @@ from arzi.services.ports import (
     SpeechClient,
     StoredDocument,
 )
+from arzi.services.privacy import PrivacyService
 from arzi.services.public_check import DailyLimiter, PublicCheckService
 from arzi.services.redaction import Redactor
 from arzi.services.runs import RunService
@@ -73,6 +74,7 @@ class Services:
     demo: DemoService
     family: FamilyService
     public_check: PublicCheckService
+    privacy: PrivacyService
     clock: Callable[[], dt.datetime]
 
 
@@ -281,6 +283,7 @@ def build_services(
         appeals=appeals,
         demo=DemoService(claims, runs, settings.replay_dir, enabled=settings.demo_cases_enabled),
         family=family,
+        privacy=PrivacyService(repo, blobs, claims, clock=clock),
         public_check=PublicCheckService(
             claims,
             runs,
