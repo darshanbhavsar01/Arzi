@@ -20,6 +20,12 @@ export interface Analytics {
 
 const SIGNED = new Set(['signed', 'exported']);
 
+/** What the audit found on a claim: the likely deduction, or for a rejection (nothing "at risk"
+ * because nothing is payable) the disputed amount an appeal can recover. */
+export function exposure(c: ClaimSummary): number {
+  return Math.max(c.totals?.at_risk ?? 0, c.totals?.recoverable_on_appeal ?? 0);
+}
+
 /** Monday of the claim's week, as a sortable ISO date. */
 export function weekStart(iso: string): string {
   const d = new Date(iso);
@@ -60,7 +66,7 @@ export function summarise(
     byMode: sumBy(audited, (c) => modeLabel(c.mode)),
     weekly,
     funnel: [
-      { label: 'At risk found', value: atRisk },
+      { label: 'At risk or disputed', value: sum(exposure) },
       {
         label: 'Appealable',
         value: sum((c) => c.totals?.recoverable_on_appeal ?? 0),

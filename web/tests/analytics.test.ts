@@ -52,6 +52,17 @@ describe('summarise', () => {
     expect(stats.funnel.map((b) => b.value)).toEqual([80, 50, 25, 25]);
   });
 
+  it('counts a rejection by its disputed amount, so the funnel never grows', () => {
+    const rejected = claim({
+      mode: 'post_rejection',
+      totals: { billed: 300, predicted_payable: 0, at_risk: 0, recoverable_on_appeal: 300 },
+    });
+    const stats = summarise([claim({}), rejected], (m) => m);
+    const values = stats.funnel.map((b) => b.value);
+    expect(values[0]).toBe(340);
+    expect(values).toEqual([...values].sort((a, b) => b - a));
+  });
+
   it('has no average when nothing was timed', () => {
     expect(summarise([claim({ audit_seconds: null })], (m) => m).avgAuditSeconds).toBeNull();
   });
