@@ -1,5 +1,9 @@
 # Runbook
 
+> The event deployment was torn down on 22 November 2026 (service, buckets, Firestore database,
+> images, runtime service account and budget deleted; billing unlinked). These commands rebuild
+> it from scratch with `infra/bootstrap.sh` then `make deploy`.
+
 Operational commands for the Arzi deployment. Region: `asia-south1` (Mumbai). Service: `arzi`.
 Every infra script accepts `DRY_RUN=1` to print the exact commands without running them.
 
@@ -66,7 +70,7 @@ gcloud run services update arzi --region asia-south1 --min-instances=0   # rever
 
 ## LLM mode flip
 
-The live link runs `hybrid`: the demo cases are served from recorded Gemini responses (free,
+The deployment runs `hybrid`: the demo cases are served from recorded Gemini responses (free,
 instant) and any other document goes to Vertex AI behind the daily budget guard
 (`ARZI_DAILY_BUDGET_INR`, ₹100; prices from `ARZI_PRICE_TABLE_JSON`, passed by `make deploy`).
 Modes: `replay` (never spends), `hybrid`, `live` (everything live). To switch:
@@ -79,11 +83,24 @@ gcloud run services update arzi --region asia-south1 --update-env-vars ARZI_LLM_
 ## Smoke test after a deploy
 
 ```bash
-curl -fsS https://arzi-<hash>.a.run.app/health
-curl -fsS https://arzi-<hash>.a.run.app/readyz
+URL="$(gcloud run services describe arzi --region asia-south1 --format='value(status.url)')"
+curl -fsS "$URL/health" && curl -fsS "$URL/readyz" && curl -fsS "$URL/api/v1/meta/status"
+curl -sI "$URL/worklist" | grep -iE 'content-security-policy|strict-transport|referrer-policy'
 ```
 
 Then run the demo script in `docs/demo-script.md` once on a laptop and once on a phone.
+
+## Retention sweep (optional)
+
+```bash
+# Daily erasure of claims untouched for ARZI_RETENTION_DAYS (default 30); needs an admin principal.
+gcloud scheduler jobs create http arzi-retention --location asia-south1 --schedule "30 2 * * *"   --uri "$URL/api/v1/admin/retention" --http-method POST   --oidc-service-account-email "arzi-run@$PROJECT_ID.iam.gserviceaccount.com"
+```
+
+## Firestore indexes
+
+The worklist queries need the composite indexes in `infra/firestore.indexes.json`; deploy them
+right after bootstrap (`npx firebase-tools@latest deploy --only firestore:indexes --project "$PROJECT_ID" --config infra/firebase.json`), or the worklist returns 500.
 
 ## Health
 

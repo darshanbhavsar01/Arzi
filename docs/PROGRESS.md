@@ -10,9 +10,9 @@
 | 4 | done | 2026-11-20 | ADK Workflow audit (policy interpreter + flag explainer as guarded LlmAgents), citation whitelist + amount guard, forum-specific AppealDrafter, versioned review/sign with SHA-256, signed PDF export, forum checklist. Recorded A, B, C replay. |
 | 5 | done | 2026-11-20 | Desk web app: design system, shell, worklist, new-audit wizard, claim workspace (pdf.js viewer, flags, bill lines, policy, activity), appeal editor with signing and PDF, appeals list, settings; demo cases in one click. |
 | 6 | done | 2026-11-21 | Family explanation in Gujarati, Hindi and English with narrated audio, hashed 7-day share links, mobile family page, free public "check my claim" through to a family-signed appeal PDF. Recorded A, B, C replay. |
-| 7 | not started | | Production hardening |
-| 8 | not started | | Analytics |
-| 9 | not started | | Release and submission |
+| 7 | done | 2026-11-22 | Reviewer-only sign/export; tenancy sweep over every claim route; CSP/HSTS/no-referrer headers, request cap, per-client rate limit, active-PDF refusal; DPDP export/erase, retention sweep; PII-scrubbing JSON logs with trace IDs; `/meta/status`; replay eval; pip-audit + npm audit in CI. Firebase Auth, OTel export, DLP/Document AI not built (see Deviations). |
+| 8 | done | 2026-11-21 | `/analytics` from worklist summaries (KPIs, by insurer/stage/week, recovery funnel). |
+| 9 | done | 2026-11-22 | Deployed hybrid, docs, `v0.1.0-buildathon`; every screen captured to `docs/screens/live/`; event deployment torn down. |
 
 ### Phase 0 gate
 | Check | Result |
@@ -387,7 +387,6 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Move to TypeScript 6+ and ESLint 10 when typescript-eslint, openapi-typescript and
   eslint-plugin-jsx-a11y support them.
 - Phase 5: self-host IBM Plex fonts (the placeholder page uses system fallbacks).
-- Phase 7: structured JSON logging with trace correlation and a PII-scrubbing filter.
 - Owner: review `docs/context/irdai/PARSED_LISTS.md` against the scan, confirm the circular number,
   and check the 2024 Master Circular annexure for changes; then flip the 146 items to verified (steps
   in `docs/context/irdai/SOURCE.md`).
@@ -417,8 +416,6 @@ each tier, `asia-south1` if served there, otherwise `global`.
   field or prefix index if volumes grow.
 - Phase 4: escalation after export (GRO letter exported, no reply → Ombudsman) needs a state
   transition from `exported`; today an exported claim cannot be appealed again.
-- Phase 4: signing is open to any signed-in desk user who names a reviewer; restrict it to the
-  `reviewer` role with Firebase Auth (Phase 7).
 - Phase 4: give agents dates as "3 October 2026" rather than ISO (the recorded case B facts read
   "2026-10-03"); needs a re-recording.
 - Phase 4: treat transport errors (httpx connect/read) as retryable `llm-network` in the Gemini
@@ -432,16 +429,12 @@ each tier, `asia-south1` if served there, otherwise `global`.
 - Phase 5: a document delete endpoint, so uploaded files can be replaced on a draft claim.
 - Phase 5: an OCR text layer for photographed bills (Document AI or Gemini boxes) to highlight lines on images.
 - Phase 5: CI job for `make test-e2e` (needs uv and Chromium on the runner).
-- Phase 7/9: a hybrid LLM mode for the live link (replay for the demo cases, live Vertex AI for anything
-  else behind the budget guard), so a judge's own document does not fail with `replay-miss`.
 - Phase 6: Gemini Live Q&A on the family page through a FastAPI WebSocket proxy, grounded in the
   explanation, with narration and text fallback.
 - Phase 6: GCS lifecycle and a Firestore TTL for the `public` tenant so free checks are deleted after
   7 days (today the 30-day upload rule applies and claim records are not swept).
 - Phase 6: rate limits are per instance (in memory); with up to 3 Cloud Run instances the real limit
   is up to 3×. Move the counters to Firestore if abuse appears.
-- Phase 6: the share token appears in request paths, so access logs contain it; redact `/f/` and
-  `/family/` paths in the logging filter (Phase 7).
 - Phase 6: re-record family explanations and narration on Vertex AI with the demo-day TTS model.
 - Phase 6: the hospital desk contact belongs on the hospital profile (settings page).
 
@@ -477,6 +470,36 @@ each tier, `asia-south1` if served there, otherwise `global`.
   assumed; TTS and Pro prices are conservative estimates to verify). The live Vertex path has not
   been exercised on a visitor document yet. `deploy.sh` now passes the budget and price table.
 - Tagged `v0.1.0-buildathon`.
+
+## Phase 7 completed (2026-11-22, after the event)
+- Shipped: `api/security.py` (CSP, HSTS, nosniff, X-Frame-Options, `Referrer-Policy: no-referrer`,
+  Permissions-Policy, COOP; `ARZI_MAX_REQUEST_MB` cap → 413; token bucket per HMAC'd client →
+  429 + `Retry-After`, probes exempt). No CORS middleware: same origin only.
+- Shipped: PDF uploads naming `/JavaScript`, `/JS`, `/Launch`, `/EmbeddedFile`, `/RichMedia` or
+  `/XFA` are refused (422). A byte scan; names inside compressed object streams are not seen.
+- Shipped: `services/privacy.py` + `routers/privacy.py`: `GET /claims/{id}/export`,
+  `DELETE /claims/{id}` (admin), `POST /admin/retention` (admin, `ARZI_RETENTION_DAYS`=30);
+  `delete_claim` on the repository and blob-store ports (Firestore `recursive_delete`, GCS prefix).
+- Shipped: `observability/logging.py`: one stdout handler, PII filter (email, PAN, Aadhaar-like,
+  Indian mobile, family-link tokens in paths, exception text), JSON with `severity`, `request_id`
+  and `logging.googleapis.com/trace` in the cloud; `GET /api/v1/meta/status`.
+- Tests: 674 API tests, 98% coverage; `test_hardening_api.py` sweeps all 27 claim routes from the
+  OpenAPI contract as another hospital's admin (all 404). E2E: 8 journeys incl. a new CSP-violation
+  check across every screen (zero violations). pip-audit and npm audit clean.
+- Fixed during the screenshot run: the image never found the demo cases (replay root resolved
+  under site-packages) → `ARZI_REPLAY_DIR=/app/demo_cases` in the Dockerfile; the analytics funnel
+  counted rejections as ₹0 found (now at risk or disputed, monotonic).
+- Not built, by owner decision or as optional: Firebase Auth (owner dropped sign-in; demo
+  workspace only), OpenTelemetry export to Cloud Trace (logs carry trace IDs instead), DLP and
+  Document AI fallbacks (flag-gated optional items).
+
+## Teardown (2026-11-22)
+- Every screen captured from the deployment to `docs/screens/live/` first.
+- Deleted from `<project-id>` (owner's 2023 project, kept): Cloud Run `arzi`, Artifact Registry
+  `cloud-run-source-deploy`, buckets `<project-id>-arzi-docs` and
+  `run-sources-<project-id>-asia-south1`, Firestore `(default)`, service account `arzi-run`,
+  budget `arzi-cap-event`. Billing unlinked from the project. Enabled APIs left as they are (no
+  cost without billing). Rebuild with `infra/bootstrap.sh` then `make deploy` (runbook).
 
 ## Known issues
 - On Windows, `make` needs bash on PATH (Git Bash) because the Makefile sets `SHELL := bash`.

@@ -29,32 +29,39 @@ queue, ADK in process, citation whitelist plus amount guard, one container for A
   **human sign-off**: an appeal is exportable only after a reviewer or admin signs the exact
   content (SHA-256 stored). The role is enforced by the API, not just the UI.
 
-## Live vs roadmap
+## Built vs roadmap
+
+The event deployment ran on Cloud Run from 20 to 22 November 2026 and has been retired; every
+screen is recorded in [`docs/screens/live/`](screens/live/README.md). "Built" means it is in this
+repository, tested, and ran on that deployment unless the row says otherwise.
 
 | Capability | Status |
 |---|---|
-| Gemini multimodal extraction, ADK multi-agent pipeline on Vertex AI | **Live** (deployed link serves recorded Gemini responses, see below) |
-| Deterministic rules engine, citation and amount guardrails | **Live** |
-| Appeals with forum checklist, reviewer sign-off, signed PDF | **Live** |
-| Family page in English, Hindi, Gujarati with Gemini TTS narration | **Live** |
-| Free rejection check at `/check` | **Live** |
-| Desk analytics (insurer, stage, week, recovery funnel) | **Live** (computed from the worklist) |
-| Firestore + Cloud Storage in Mumbai, Cloud Run, per-day budget guard, cost ledger | **Live** |
-| Demo-workspace sign-in; reviewer-only signing and export | **Live** |
+| Gemini multimodal extraction, ADK multi-agent pipeline on Vertex AI | **Built** (deployment ran hybrid: recorded responses for demo cases, live otherwise) |
+| Deterministic rules engine, citation and amount guardrails | **Built** |
+| Appeals with forum checklist, reviewer sign-off, signed PDF | **Built** |
+| Family page in English, Hindi, Gujarati with Gemini TTS narration | **Built** |
+| Free rejection check at `/check` | **Built** |
+| Desk analytics (insurer, stage, week, recovery funnel) | **Built** (computed from the worklist) |
+| Firestore + Cloud Storage in Mumbai, Cloud Run, per-day budget guard, cost ledger | **Built** |
+| Demo-workspace sign-in; reviewer-only signing and export | **Built** |
 | Per-rule ₹ chart, BigQuery export, Looker Studio | Roadmap |
 | Firebase Auth (SSO), per-tenant role admin | Roadmap |
-| Tenancy test sweep, CSP/HSTS headers, rate limits, DPDP export/delete endpoints | Roadmap |
-| OpenTelemetry tracing, structured log correlation | Roadmap |
+| Tenancy sweep (every claim route as another hospital → 404), role tests | **Built** (after the event) |
+| CSP, HSTS, no-referrer, frame-ancestors none, request cap, per-client rate limit, active-PDF refusal | **Built** (after the event) |
+| DPDP export and erasure, retention sweep, PII-scrubbing JSON logs with trace correlation, `/meta/status` | **Built** (after the event); see [`privacy.md`](privacy.md) |
+| Dependency audit (pip-audit, npm audit) in CI | **Built** |
+| OpenTelemetry spans exported to Cloud Trace | Roadmap (logs already carry the Cloud Trace ID) |
 | Sensitive Data Protection and Document AI fallbacks | Roadmap |
 | Gemini Live Q&A on the family page | Roadmap |
 | Gemma redaction inside the hospital's project, Vertex AI Search over circulars, Agent Engine, VPC-SC | Roadmap |
 | NHCX (FHIR) and WhatsApp intake, Terraform onboarding | Roadmap |
 
-### Replay mode on the live link
-The deployed service runs `ARZI_LLM_MODE=replay`: the three demo cases are served from Gemini
-responses recorded on the project's models, so the demo is instant, free and reliable on venue
-Wi-Fi. A document that is not one of the demo cases returns `replay-miss`. Live mode (Vertex AI,
-behind the daily budget guard `ARZI_DAILY_BUDGET_INR`) is one env flip; see the runbook.
+### LLM modes
+`replay` serves the three demo cases from Gemini responses recorded on the project's models
+(instant, free, reliable on venue Wi-Fi); any other document returns `replay-miss`. `hybrid`, which
+the event deployment ran, serves recordings when they exist and calls Vertex AI behind the daily
+budget guard (`ARZI_DAILY_BUDGET_INR`) otherwise. `live` calls Vertex AI for everything.
 
 ### Vertex AI location
 Models are served from the `global` endpoint (`ARZI_VERTEX_LOCATION=global`); data at rest stays

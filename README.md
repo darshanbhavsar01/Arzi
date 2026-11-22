@@ -16,7 +16,7 @@ letter at `/check`.
 
 **Try it:** open the app, choose *Continue to the demo workspace*, then *Load demo cases* — three synthetic claims are audited in seconds.
 
-**Live link:** https://arzi-<hash>.a.run.app (demo workspace, no account needed).
+**Event deployment:** ran on Cloud Run (Mumbai) for Startup Buildathon India 2026 and has since been retired; [every screen](docs/screens/live/README.md) was captured from it first. Run it yourself with `make dev`.
 
 **Measured (replay eval, `make eval`):** 11/11 deductions caught, 11/11 exact rupee amounts,
 totals exact on all three demo cases. See [`evals/report.md`](evals/report.md). Desk analytics are at `/analytics`.
@@ -44,9 +44,10 @@ reconcile → policy interpreter → rules engine → flag explainer); every mod
 passes an amount guard and a citation whitelist, and appeals are exported only after a named
 reviewer signs them.
 
-- Architecture and the **Live vs roadmap** table: [`docs/architecture.md`](docs/architecture.md) 
+- Architecture and the **Built vs roadmap** table: [`docs/architecture.md`](docs/architecture.md) 
 - Build plan and status: [`docs/BUILD_PLAN.md`](docs/BUILD_PLAN.md), [`docs/PROGRESS.md`](docs/PROGRESS.md)
 - Decisions: [`docs/adr/`](docs/adr/)
+- Privacy, DPDP rights and retention: [`docs/privacy.md`](docs/privacy.md)
 - Operations, kill switches and billing: [`docs/runbook.md`](docs/runbook.md)
 
 ## Configuration

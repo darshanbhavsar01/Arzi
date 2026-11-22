@@ -1,7 +1,6 @@
 # Demo script (75 seconds)
 
-Aligned with `docs/context/04_PITCH_DEMO_QA.md`. Run it on the live link; keep the backup video
-and `make dev` (replay mode) ready.
+Aligned with `docs/context/04_PITCH_DEMO_QA.md`. Run it locally with `make dev` (replay mode); the event deployment has been retired.
 
 1. **Sign in.** Choose *Continue to the demo workspace*, then *Load demo cases* (seconds).
 2. **Case A (before filing).** Open it: identifiers are redacted, **₹67,887.50 at risk**, 4 flags,
